@@ -238,6 +238,9 @@ function ApplicationDetail() {
   const { appId } = Route.useParams();
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6">
+      <Button asChild variant="ghost" size="sm" className="mb-6 print:hidden">
+        <Link to="/applications">← All applications</Link>
+      </Button>
       <ApplicationDetailView appId={appId} />
     </div>
   );
