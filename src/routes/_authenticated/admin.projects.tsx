@@ -191,14 +191,14 @@ function ProjectManagement() {
             />
           </div>
           <div className="space-y-1.5 sm:col-span-2">
-            <Label htmlFor="project_hero">Hero image URL</Label>
-            <Input
+            <Label htmlFor="project_hero">Hero image</Label>
+            <ImageUploadField
               id="project_hero"
               value={form.hero_image}
-              onChange={(e) => setForm({ ...form, hero_image: e.target.value })}
-              placeholder="/images/project-mountain.jpg"
+              onChange={(url) => setForm({ ...form, hero_image: url })}
             />
           </div>
+
           <div className="space-y-1.5 sm:col-span-2">
             <Label htmlFor="project_desc">Description</Label>
             <Textarea
