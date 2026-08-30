@@ -204,6 +204,53 @@ function Landing() {
         </div>
       </section>
 
+      <section className="border-t border-border bg-card">
+        <div className="mx-auto grid w-full max-w-7xl items-center gap-10 px-5 py-20 sm:px-8 md:grid-cols-2">
+          <div className="relative overflow-hidden rounded-lg border border-border bg-onyx">
+            <img
+              src={adviserAsset.url}
+              alt="A KAIVRA investment adviser"
+              loading="lazy"
+              width={1119}
+              height={1280}
+              className="aspect-[4/5] size-full object-cover object-top"
+            />
+          </div>
+          <div>
+            <p className="eyebrow text-primary">Guided investing</p>
+            <h2 className="mt-3 font-display text-4xl leading-tight sm:text-5xl">
+              An adviser beside you, from first enquiry to allocation.
+            </h2>
+            <p className="mt-5 text-sm text-muted-foreground sm:text-base">
+              Every KAIVRA subscription is reviewed by a dedicated adviser who verifies your payments, confirms your
+              documents and keeps your application moving — while your records stay private and fully in your name.
+            </p>
+            <div className="mt-8">
+              <Button asChild size="lg" className="uppercase tracking-[0.12em]">
+                {signedIn ? (
+                  <Link to="/application">Begin your application</Link>
+                ) : (
+                  <Link to="/auth">Speak to an adviser</Link>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="relative">
+        <img
+          src={residenceAsset.url}
+          alt="Signature KAIVRA residence exterior"
+          loading="lazy"
+          width={952}
+          height={1280}
+          className="h-[46svh] w-full object-cover"
+        />
+      </section>
+
+
+
       <footer className="surface-onyx">
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-5 py-12 sm:flex-row sm:items-center sm:justify-between sm:px-8">
           <Brand tone="inverted" withTagline />
