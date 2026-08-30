@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useProfile, useRoles, useSession, primaryRole } from "@/hooks/useAuth";
+import { UserAvatar } from "./UserAvatar";
 import { cn } from "@/lib/utils";
 import type { AppRole } from "@/lib/kaivra";
 
@@ -109,8 +110,8 @@ export function AppShell({ children }: { children: ReactNode }) {
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label="Account">
-                  <User className="size-5" />
+                <Button variant="ghost" size="icon" aria-label="Account" className="rounded-full">
+                  <UserAvatar url={profile?.avatar_url} name={profile?.full_name} />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
