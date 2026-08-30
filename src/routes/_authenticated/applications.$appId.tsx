@@ -111,7 +111,12 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
         </div>
         <div className="flex flex-wrap items-center gap-2 print:hidden">
           <StatusBadge status={record.status as ApplicationStatus} />
-          <Button variant="outline" onClick={() => void handleDownload()} disabled={downloading}>
+          <Button
+            variant="outline"
+            onClick={() => void handleDownload()}
+            disabled={downloading || isIncomplete}
+            title={isIncomplete ? "Complete and submit the application first" : undefined}
+          >
             {downloading ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Download className="mr-2 size-4" />}
             Download PDF
           </Button>
