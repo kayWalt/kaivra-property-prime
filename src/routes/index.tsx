@@ -48,6 +48,31 @@ function useProjects() {
   });
 }
 
+function LegacyReveal({ children }: { children: React.ReactNode }) {
+  const ref = React.useRef<HTMLDivElement>(null);
+  const [shown, setShown] = React.useState(false);
+  React.useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setShown(true);
+          io.disconnect();
+        }
+      },
+      { threshold: 0.25 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  return (
+    <div ref={ref} className={shown ? "kv-reveal" : "kv-reveal-pending"}>
+      {children}
+    </div>
+  );
+}
+
 function Landing() {
   const projects = useProjects();
   const { session } = useSession();
