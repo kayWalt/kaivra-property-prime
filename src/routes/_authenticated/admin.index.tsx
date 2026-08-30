@@ -44,7 +44,7 @@ function AdminDashboard() {
       let query = supabase
         .from("applications")
         .select(
-          "id, reference, status, created_at, submitted_at, investment, personal, contact, projects(name), properties(name), application_payments(amount, status)",
+          "id, reference, status, investor_id, created_at, submitted_at, investment, personal, contact, projects(name), properties(name), application_payments(amount, status)",
           { count: "exact" },
         )
         .neq("status", "draft")
