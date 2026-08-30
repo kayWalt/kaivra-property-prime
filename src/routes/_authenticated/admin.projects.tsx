@@ -1,9 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { Loader2, Plus } from "lucide-react";
+import { ImagePlus, Loader2, Plus, Save, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { createProjectImageUploadTicket } from "@/lib/project-media.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +12,67 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useRoles, useSession, primaryRole } from "@/hooks/useAuth";
 import { formatNaira } from "@/lib/kaivra";
+
+function ImageUploadField({
+  id,
+  value,
+  onChange,
+  scope = "project",
+}: {
+  id: string;
+  value: string;
+  onChange: (url: string) => void;
+  scope?: "project" | "property";
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function handleFile(file: File | undefined) {
+    if (!file) return;
+    setBusy(true);
+    try {
+      const ticket = await createProjectImageUploadTicket({ data: { scope, fileName: file.name } });
+      const { error } = await supabase.storage.from(ticket.bucket).uploadToSignedUrl(ticket.path, ticket.token, file);
+      if (error) throw error;
+      onChange(ticket.url);
+      toast.success("Image uploaded.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "The image could not be uploaded.");
+    } finally {
+      setBusy(false);
+      if (inputRef.current) inputRef.current.value = "";
+    }
+  }
+
+  return (
+    <div className="space-y-2">
+      <div className="flex flex-wrap items-center gap-2">
+        <Input
+          id={id}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="Upload an image or paste a URL"
+        />
+        <Button type="button" variant="outline" size="sm" disabled={busy} onClick={() => inputRef.current?.click()}>
+          {busy ? <Loader2 className="mr-2 size-4 animate-spin" /> : <ImagePlus className="mr-2 size-4" />}
+          Upload image
+        </Button>
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          className="sr-only"
+          aria-label="Upload project image"
+          onChange={(e) => void handleFile(e.target.files?.[0])}
+        />
+      </div>
+      {value ? (
+        <img src={value} alt="Project cover preview" className="h-28 w-full rounded-md object-cover sm:w-64" />
+      ) : null}
+    </div>
+  );
+}
+
 
 export const Route = createFileRoute("/_authenticated/admin/projects")({
   head: () => ({
@@ -34,6 +96,8 @@ function ProjectManagement() {
 
   const [creating, setCreating] = useState(false);
   const [openProject, setOpenProject] = useState<string | null>(null);
+  const [editProject, setEditProject] = useState<string | null>(null);
+
   const [form, setForm] = useState({ name: "", location: "", description: "", hero_image: "" });
 
   const projects = useQuery({
@@ -129,14 +193,14 @@ function ProjectManagement() {
             />
           </div>
           <div className="space-y-1.5 sm:col-span-2">
-            <Label htmlFor="project_hero">Hero image URL</Label>
-            <Input
+            <Label htmlFor="project_hero">Hero image</Label>
+            <ImageUploadField
               id="project_hero"
               value={form.hero_image}
-              onChange={(e) => setForm({ ...form, hero_image: e.target.value })}
-              placeholder="/images/project-mountain.jpg"
+              onChange={(url) => setForm({ ...form, hero_image: url })}
             />
           </div>
+
           <div className="space-y-1.5 sm:col-span-2">
             <Label htmlFor="project_desc">Description</Label>
             <Textarea
@@ -172,6 +236,13 @@ function ProjectManagement() {
                 <Button
                   size="sm"
                   variant="ghost"
+                  onClick={() => setEditProject((current) => (current === project.id ? null : project.id))}
+                >
+                  {editProject === project.id ? "Close editor" : "Edit"}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
                   onClick={() => setOpenProject((current) => (current === project.id ? null : project.id))}
                 >
                   {openProject === project.id ? "Hide properties" : "Properties"}
@@ -179,11 +250,20 @@ function ProjectManagement() {
               </div>
             </div>
 
+            {editProject === project.id ? (
+              <ProjectEditor
+                project={project}
+                onClose={() => setEditProject(null)}
+                onSaved={() => void projects.refetch()}
+              />
+            ) : null}
+
             {openProject === project.id ? (
               <PropertyManager projectId={project.id} onChanged={() => void projects.refetch()} properties={project.properties ?? []} />
             ) : null}
           </section>
         ))}
+
       </div>
     </div>
   );
@@ -305,6 +385,102 @@ function PropertyManager({
         {saving ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Plus className="mr-2 size-4" />}
         Add property
       </Button>
+    </div>
+  );
+}
+
+function ProjectEditor({
+  project,
+  onClose,
+  onSaved,
+}: {
+  project: {
+    id: string;
+    name: string;
+    location: string | null;
+    description: string | null;
+    hero_image: string | null;
+  };
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const [form, setForm] = useState({
+    name: project.name ?? "",
+    location: project.location ?? "",
+    description: project.description ?? "",
+    hero_image: project.hero_image ?? "",
+  });
+  const [saving, setSaving] = useState(false);
+
+  async function save() {
+    if (!form.name.trim()) {
+      toast.error("Give the project a name.");
+      return;
+    }
+    setSaving(true);
+    const { error } = await supabase
+      .from("projects")
+      .update({
+        name: form.name.trim(),
+        location: form.location.trim(),
+        description: form.description.trim(),
+        hero_image: form.hero_image.trim() || null,
+      })
+      .eq("id", project.id);
+    setSaving(false);
+    if (error) {
+      toast.error("The project could not be updated. Please try again.");
+      return;
+    }
+    toast.success("Project updated.");
+    onSaved();
+    onClose();
+  }
+
+  return (
+    <div className="mt-5 grid gap-4 border-t border-border pt-5 sm:grid-cols-2">
+      <div className="space-y-1.5">
+        <Label htmlFor={`edit-name-${project.id}`}>Project name</Label>
+        <Input
+          id={`edit-name-${project.id}`}
+          value={form.name}
+          onChange={(e) => setForm({ ...form, name: e.target.value })}
+        />
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor={`edit-loc-${project.id}`}>Location</Label>
+        <Input
+          id={`edit-loc-${project.id}`}
+          value={form.location}
+          onChange={(e) => setForm({ ...form, location: e.target.value })}
+        />
+      </div>
+      <div className="space-y-1.5 sm:col-span-2">
+        <Label htmlFor={`edit-hero-${project.id}`}>Hero image</Label>
+        <ImageUploadField
+          id={`edit-hero-${project.id}`}
+          value={form.hero_image}
+          onChange={(url) => setForm({ ...form, hero_image: url })}
+        />
+      </div>
+      <div className="space-y-1.5 sm:col-span-2">
+        <Label htmlFor={`edit-desc-${project.id}`}>Description</Label>
+        <Textarea
+          id={`edit-desc-${project.id}`}
+          rows={3}
+          value={form.description}
+          onChange={(e) => setForm({ ...form, description: e.target.value })}
+        />
+      </div>
+      <div className="flex gap-2 sm:col-span-2">
+        <Button size="sm" onClick={() => void save()} disabled={saving}>
+          {saving ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Save className="mr-2 size-4" />}
+          Save changes
+        </Button>
+        <Button size="sm" variant="ghost" onClick={onClose}>
+          <X className="mr-2 size-4" /> Cancel
+        </Button>
+      </div>
     </div>
   );
 }
