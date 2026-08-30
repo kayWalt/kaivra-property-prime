@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Brand } from "@/components/kaivra/Brand";
+import { parseGallery } from "@/components/kaivra/ProjectImageFields";
 import { formatNaira } from "@/lib/kaivra";
 
 export const Route = createFileRoute("/projects/$projectId")({
