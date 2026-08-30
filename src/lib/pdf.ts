@@ -74,10 +74,42 @@ export async function generateApplicationPdf(input: PdfInput): Promise<jsPDF> {
   const M = 46;
   let y = 0;
 
-  const personal = app.personal as Record<string, string>;
-  const contact = app.contact as Record<string, string>;
-  const investment = app.investment as Record<string, number | string>;
-  const paymentInfo = app.payment_info as Record<string, string | number>;
+  const personal = (app.personal ?? {}) as Partial<{
+    full_name: string;
+    date_of_birth: string;
+    gender: string;
+    nationality: string;
+    marital_status: string;
+    occupation: string;
+    company: string;
+    residential_address: string;
+    state: string;
+    country: string;
+  }>;
+  const contact = (app.contact ?? {}) as Partial<{
+    phone: string;
+    email: string;
+    whatsapp: string;
+    alt_phone: string;
+    residential_address: string;
+    mailing_address: string;
+  }>;
+  const investment = (app.investment ?? {}) as Partial<{
+    total_value: number;
+    units: number;
+    unit_price: number;
+    payment_plan: string;
+  }>;
+  const paymentInfo = (app.payment_info ?? {}) as Partial<{
+    subscriber_name: string;
+    sender: string;
+    bank: string;
+    site: string;
+    initial_deposit: number;
+    next_payment_amount: number;
+    next_payment_date: string;
+    description: string;
+  }>;
   const currency = app.projects?.currency ?? "NGN";
 
   const totalValue = Number(investment.total_value ?? 0);
