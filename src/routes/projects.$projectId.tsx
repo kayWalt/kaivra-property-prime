@@ -47,7 +47,7 @@ function ProjectDetail() {
       navigate({ to: "/auth" });
       return;
     }
-    navigate({ to: "/application", search: { project: projectId, property: propertyId } });
+    navigate({ to: "/application", search: propertyId ? { project: projectId, property: propertyId } : { project: projectId } });
   }
 
   if (query.isLoading) {
