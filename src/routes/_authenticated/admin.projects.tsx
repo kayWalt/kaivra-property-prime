@@ -1,10 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
-import { ImagePlus, Loader2, Plus, Save, X } from "lucide-react";
+import { Loader2, Plus, Save, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { createProjectImageUploadTicket } from "@/lib/project-media.functions";
+import {
+  GalleryUploadField,
+  ImageUploadField,
+  parseGallery,
+  type GalleryImage,
+} from "@/components/kaivra/ProjectImageFields";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,65 +18,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useRoles, useSession, primaryRole } from "@/hooks/useAuth";
 import { formatNaira } from "@/lib/kaivra";
 
-function ImageUploadField({
-  id,
-  value,
-  onChange,
-  scope = "project",
-}: {
-  id: string;
-  value: string;
-  onChange: (url: string) => void;
-  scope?: "project" | "property";
-}) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [busy, setBusy] = useState(false);
-
-  async function handleFile(file: File | undefined) {
-    if (!file) return;
-    setBusy(true);
-    try {
-      const ticket = await createProjectImageUploadTicket({ data: { scope, fileName: file.name } });
-      const { error } = await supabase.storage.from(ticket.bucket).uploadToSignedUrl(ticket.path, ticket.token, file);
-      if (error) throw error;
-      onChange(ticket.url);
-      toast.success("Image uploaded.");
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "The image could not be uploaded.");
-    } finally {
-      setBusy(false);
-      if (inputRef.current) inputRef.current.value = "";
-    }
-  }
-
-  return (
-    <div className="space-y-2">
-      <div className="flex flex-wrap items-center gap-2">
-        <Input
-          id={id}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder="Upload an image or paste a URL"
-        />
-        <Button type="button" variant="outline" size="sm" disabled={busy} onClick={() => inputRef.current?.click()}>
-          {busy ? <Loader2 className="mr-2 size-4 animate-spin" /> : <ImagePlus className="mr-2 size-4" />}
-          Upload image
-        </Button>
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          className="sr-only"
-          aria-label="Upload project image"
-          onChange={(e) => void handleFile(e.target.files?.[0])}
-        />
-      </div>
-      {value ? (
-        <img src={value} alt="Project cover preview" className="h-28 w-full rounded-md object-cover sm:w-64" />
-      ) : null}
-    </div>
-  );
-}
 
 
 export const Route = createFileRoute("/_authenticated/admin/projects")({
@@ -99,6 +45,7 @@ function ProjectManagement() {
   const [editProject, setEditProject] = useState<string | null>(null);
 
   const [form, setForm] = useState({ name: "", location: "", description: "", hero_image: "" });
+  const [gallery, setGallery] = useState<GalleryImage[]>([]);
 
   const projects = useQuery({
     queryKey: ["admin-projects"],
@@ -144,7 +91,8 @@ function ProjectManagement() {
       name: form.name.trim(),
       location: form.location.trim(),
       description: form.description.trim(),
-      hero_image: form.hero_image.trim() || null,
+      hero_image: form.hero_image.trim() || (gallery[0]?.url ?? null),
+      gallery_images: gallery,
     });
     setCreating(false);
     if (error) {
@@ -153,6 +101,7 @@ function ProjectManagement() {
     }
     toast.success("Project created.");
     setForm({ name: "", location: "", description: "", hero_image: "" });
+    setGallery([]);
     void projects.refetch();
   }
 
@@ -199,6 +148,11 @@ function ProjectManagement() {
               value={form.hero_image}
               onChange={(url) => setForm({ ...form, hero_image: url })}
             />
+          </div>
+
+          <div className="space-y-1.5 sm:col-span-2">
+            <Label>Gallery images & captions</Label>
+            <GalleryUploadField idPrefix="new-project" images={gallery} onChange={setGallery} />
           </div>
 
           <div className="space-y-1.5 sm:col-span-2">
@@ -400,6 +354,7 @@ function ProjectEditor({
     location: string | null;
     description: string | null;
     hero_image: string | null;
+    gallery_images?: unknown;
   };
   onClose: () => void;
   onSaved: () => void;
@@ -410,6 +365,7 @@ function ProjectEditor({
     description: project.description ?? "",
     hero_image: project.hero_image ?? "",
   });
+  const [gallery, setGallery] = useState<GalleryImage[]>(() => parseGallery(project.gallery_images));
   const [saving, setSaving] = useState(false);
 
   async function save() {
@@ -424,7 +380,8 @@ function ProjectEditor({
         name: form.name.trim(),
         location: form.location.trim(),
         description: form.description.trim(),
-        hero_image: form.hero_image.trim() || null,
+        hero_image: form.hero_image.trim() || (gallery[0]?.url ?? null),
+        gallery_images: gallery,
       })
       .eq("id", project.id);
     setSaving(false);
@@ -462,6 +419,10 @@ function ProjectEditor({
           value={form.hero_image}
           onChange={(url) => setForm({ ...form, hero_image: url })}
         />
+      </div>
+      <div className="space-y-1.5 sm:col-span-2">
+        <Label>Gallery images & captions</Label>
+        <GalleryUploadField idPrefix={`edit-gallery-${project.id}`} images={gallery} onChange={setGallery} />
       </div>
       <div className="space-y-1.5 sm:col-span-2">
         <Label htmlFor={`edit-desc-${project.id}`}>Description</Label>
