@@ -380,7 +380,8 @@ function ProjectEditor({
         name: form.name.trim(),
         location: form.location.trim(),
         description: form.description.trim(),
-        hero_image: form.hero_image.trim() || null,
+        hero_image: form.hero_image.trim() || (gallery[0]?.url ?? null),
+        gallery_images: gallery,
       })
       .eq("id", project.id);
     setSaving(false);
