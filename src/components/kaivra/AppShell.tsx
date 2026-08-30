@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useProfile, useRoles, useSession, primaryRole } from "@/hooks/useAuth";
 import { UserAvatar } from "./UserAvatar";
+import { ShareQrButton } from "./ShareQrButton";
 import { cn } from "@/lib/utils";
 import type { AppRole } from "@/lib/kaivra";
 
@@ -98,6 +99,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             ))}
           </nav>
           <div className="ml-auto flex items-center gap-1">
+            {role === "admin" || role === "super_admin" ? <ShareQrButton /> : null}
             <Button asChild variant="ghost" size="icon" aria-label="Notifications" className="relative">
               <Link to="/notifications">
                 <Bell className="size-5" />
