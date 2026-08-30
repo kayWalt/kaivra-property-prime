@@ -37,11 +37,13 @@ import {
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/application")({
-  validateSearch: (search: Record<string, unknown>) => ({
-    id: typeof search['id'] === "string" ? (search['id'] as string) : undefined,
-    project: typeof search['project'] === "string" ? (search['project'] as string) : undefined,
-    property: typeof search['property'] === "string" ? (search['property'] as string) : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>) => {
+    const out: { id?: string; project?: string; property?: string } = {};
+    if (typeof search['id'] === "string") out.id = search['id'];
+    if (typeof search['project'] === "string") out.project = search['project'];
+    if (typeof search['property'] === "string") out.property = search['property'];
+    return out;
+  },
   head: () => ({
     meta: [
       { title: "KAIVRA | Investor Application" },
