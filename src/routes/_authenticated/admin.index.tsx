@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/kaivra/StatusBadge";
+import { StatusPicker } from "@/components/kaivra/StatusPicker";
 import { EmptyState } from "@/components/kaivra/EmptyState";
 import { useRoles, useSession, primaryRole, isStaffRole } from "@/hooks/useAuth";
 import { totals } from "@/lib/applications";
