@@ -5,7 +5,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Brand } from "@/components/kaivra/Brand";
+import { useSession } from "@/hooks/useAuth";
 import { formatCompact } from "@/lib/kaivra";
+import heroAsset from "@/assets/kaivra-22-00-40.jpg.asset.json";
+import adviserAsset from "@/assets/kaivra-22-00-16.jpg.asset.json";
+import residenceAsset from "@/assets/kaivra-22-00-51.jpg.asset.json";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -45,6 +50,8 @@ function useProjects() {
 
 function Landing() {
   const projects = useProjects();
+  const { session } = useSession();
+  const signedIn = !!session;
 
   return (
     <div className="min-h-screen bg-background">
@@ -53,7 +60,7 @@ function Landing() {
           <Brand tone="inverted" />
           <div className="ml-auto flex items-center gap-2">
             <Button asChild variant="ghost" className="text-onyx-foreground hover:bg-onyx-foreground/10">
-              <Link to="/auth">Sign in</Link>
+              {signedIn ? <Link to="/dashboard">My dashboard</Link> : <Link to="/auth">Sign in</Link>}
             </Button>
           </div>
         </div>
@@ -61,11 +68,11 @@ function Landing() {
 
       <section className="relative min-h-[92svh] w-full">
         <img
-          src="/images/hero.jpg"
-          alt="Aerial view of a luxury gated estate at dusk"
+          src={heroAsset.url}
+          alt="Contemporary KAIVRA residences with landscaped courtyards at dusk"
           className="absolute inset-0 size-full object-cover"
-          width={1920}
-          height={1200}
+          width={1280}
+          height={784}
           fetchPriority="high"
         />
         <div className="hero-scrim absolute inset-0" />
@@ -81,7 +88,11 @@ function Landing() {
             </p>
             <div className="mt-10 flex flex-col gap-3 sm:flex-row">
               <Button asChild size="lg" className="h-13 px-8 text-sm tracking-[0.14em] uppercase">
-                <Link to="/auth">Start investing</Link>
+                {signedIn ? (
+                  <Link to="/application">Continue application</Link>
+                ) : (
+                  <Link to="/auth">Start investing</Link>
+                )}
               </Button>
               <Button
                 asChild
@@ -89,12 +100,18 @@ function Landing() {
                 variant="outline"
                 className="h-13 border-onyx-foreground/40 bg-transparent px-8 text-sm uppercase tracking-[0.14em] text-onyx-foreground hover:bg-onyx-foreground/10 hover:text-onyx-foreground"
               >
-                <Link to="/auth">Access my investment</Link>
+                {signedIn ? (
+                  <Link to="/dashboard">Access my investment</Link>
+                ) : (
+                  <Link to="/auth">Access my investment</Link>
+                )}
               </Button>
             </div>
           </div>
         </div>
       </section>
+
+
 
       <section className="border-b border-border bg-card">
         <div className="mx-auto grid w-full max-w-7xl gap-8 px-5 py-14 sm:grid-cols-3 sm:px-8">
@@ -186,6 +203,53 @@ function Landing() {
           })}
         </div>
       </section>
+
+      <section className="border-t border-border bg-card">
+        <div className="mx-auto grid w-full max-w-7xl items-center gap-10 px-5 py-20 sm:px-8 md:grid-cols-2">
+          <div className="relative overflow-hidden rounded-lg border border-border bg-onyx">
+            <img
+              src={adviserAsset.url}
+              alt="A KAIVRA investment adviser"
+              loading="lazy"
+              width={1119}
+              height={1280}
+              className="aspect-[4/5] size-full object-cover object-top"
+            />
+          </div>
+          <div>
+            <p className="eyebrow text-primary">Guided investing</p>
+            <h2 className="mt-3 font-display text-4xl leading-tight sm:text-5xl">
+              An adviser beside you, from first enquiry to allocation.
+            </h2>
+            <p className="mt-5 text-sm text-muted-foreground sm:text-base">
+              Every KAIVRA subscription is reviewed by a dedicated adviser who verifies your payments, confirms your
+              documents and keeps your application moving — while your records stay private and fully in your name.
+            </p>
+            <div className="mt-8">
+              <Button asChild size="lg" className="uppercase tracking-[0.12em]">
+                {signedIn ? (
+                  <Link to="/application">Begin your application</Link>
+                ) : (
+                  <Link to="/auth">Speak to an adviser</Link>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="relative">
+        <img
+          src={residenceAsset.url}
+          alt="Signature KAIVRA residence exterior"
+          loading="lazy"
+          width={952}
+          height={1280}
+          className="h-[46svh] w-full object-cover"
+        />
+      </section>
+
+
 
       <footer className="surface-onyx">
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-5 py-12 sm:flex-row sm:items-center sm:justify-between sm:px-8">
