@@ -73,7 +73,16 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
   const { paid, outstanding } = totals(payments.data ?? [], totalValue);
   const docs = documents.data ?? [];
 
+  // A form with no project/property selection and no investment value is
+  // "empty" — block PDF download and guide the investor back to the wizard.
+  const isIncomplete =
+    record.status === "draft" || !record.project_id || !record.property_id || totalValue <= 0;
+
   async function handleDownload() {
+    if (isIncomplete) {
+      toast.error("Complete and submit your application before downloading the PDF.");
+      return;
+    }
     setDownloading(true);
     try {
       await downloadApplicationPdf({
