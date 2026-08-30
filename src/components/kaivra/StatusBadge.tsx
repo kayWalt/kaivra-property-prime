@@ -1,0 +1,35 @@
+import { cn } from "@/lib/utils";
+import { STATUS_LABEL, statusTone, type ApplicationStatus, type PaymentStatus } from "@/lib/kaivra";
+
+const toneClass = {
+  neutral: "border-border bg-muted text-muted-foreground",
+  gold: "border-gold/40 bg-gold/15 text-gold-foreground",
+  emerald: "border-primary/30 bg-primary/10 text-primary",
+  red: "border-destructive/30 bg-destructive/10 text-destructive",
+};
+
+export function StatusBadge({ status, className }: { status: ApplicationStatus; className?: string }) {
+  return (
+    <span
+      className={cn(
+        "eyebrow inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1",
+        toneClass[statusTone(status)],
+        className,
+      )}
+    >
+      <span aria-hidden className="size-1.5 rounded-full bg-current" />
+      {STATUS_LABEL[status]}
+    </span>
+  );
+}
+
+export function PaymentBadge({ status }: { status: PaymentStatus }) {
+  const tone = status === "verified" ? "emerald" : status === "rejected" ? "red" : "gold";
+  const label = status === "verified" ? "Verified" : status === "rejected" ? "Rejected" : "Pending Verification";
+  return (
+    <span className={cn("eyebrow inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1", toneClass[tone])}>
+      <span aria-hidden className="size-1.5 rounded-full bg-current" />
+      {label}
+    </span>
+  );
+}

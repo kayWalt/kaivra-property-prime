@@ -1,0 +1,159 @@
+import { Link, useNavigate } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Bell, LogOut, Menu, User } from "lucide-react";
+import { useState, type ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Brand } from "./Brand";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useProfile, useRoles, useSession, primaryRole } from "@/hooks/useAuth";
+import { cn } from "@/lib/utils";
+import type { AppRole } from "@/lib/kaivra";
+
+type NavItem = { to: string; label: string };
+
+const NAV: Record<AppRole, NavItem[]> = {
+  investor: [
+    { to: "/dashboard", label: "Dashboard" },
+    { to: "/applications", label: "My Applications" },
+    { to: "/documents", label: "Documents" },
+  ],
+  adviser: [
+    { to: "/dashboard", label: "Dashboard" },
+    { to: "/admin", label: "My Applications" },
+    { to: "/admin/investors", label: "My Investors" },
+  ],
+  admin: [
+    { to: "/admin", label: "Applications" },
+    { to: "/admin/investors", label: "Investors" },
+    { to: "/admin/projects", label: "Projects" },
+    { to: "/admin/advisers", label: "Advisers" },
+  ],
+  super_admin: [
+    { to: "/admin", label: "Applications" },
+    { to: "/admin/investors", label: "Investors" },
+    { to: "/admin/projects", label: "Projects" },
+    { to: "/admin/advisers", label: "Advisers" },
+  ],
+};
+
+function useUnreadCount(userId?: string) {
+  return useQuery({
+    queryKey: ["notifications", "unread", userId],
+    enabled: !!userId,
+    refetchInterval: 60_000,
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from("notifications")
+        .select("id", { count: "exact", head: true })
+        .is("read_at", null);
+      if (error) throw error;
+      return count ?? 0;
+    },
+  });
+}
+
+export function AppShell({ children }: { children: ReactNode }) {
+  const { user } = useSession();
+  const { data: roles } = useRoles(user?.id);
+  const { data: profile } = useProfile(user?.id);
+  const role = primaryRole(roles);
+  const items = NAV[role];
+  const unread = useUnreadCount(user?.id);
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [open, setOpen] = useState(false);
+
+  async function signOut() {
+    await queryClient.cancelQueries();
+    queryClient.clear();
+    await supabase.auth.signOut();
+    navigate({ to: "/auth", replace: true });
+  }
+
+  return (
+    <div className="flex min-h-screen flex-col bg-background">
+      <header className="no-print sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
+        <div className="mx-auto flex h-16 w-full max-w-7xl items-center gap-4 px-4 sm:px-6">
+          <Brand />
+          <nav className="ml-6 hidden items-center gap-1 md:flex">
+            {items.map((item) => (
+              <Link
+                key={item.to}
+                to={item.to}
+                className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                activeProps={{ className: "bg-accent text-foreground" }}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+          <div className="ml-auto flex items-center gap-1">
+            <Button asChild variant="ghost" size="icon" aria-label="Notifications" className="relative">
+              <Link to="/notifications">
+                <Bell className="size-5" />
+                {unread.data ? (
+                  <span className="absolute right-1 top-1 min-w-4 rounded-full bg-primary px-1 text-[0.6rem] font-bold leading-4 text-primary-foreground">
+                    {unread.data > 9 ? "9+" : unread.data}
+                  </span>
+                ) : null}
+              </Link>
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" aria-label="Account">
+                  <User className="size-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel className="truncate">
+                  {profile?.full_name || user?.email}
+                  <span className="eyebrow mt-1 block text-muted-foreground">{role.replace("_", " ")}</span>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link to="/profile">Profile</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={signOut}>
+                  <LogOut className="mr-2 size-4" /> Sign out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Sheet open={open} onOpenChange={setOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="md:hidden" aria-label="Open menu">
+                  <Menu className="size-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-72 p-6">
+                <SheetTitle className="font-display text-xl tracking-[0.2em]">KAIVRA</SheetTitle>
+                <nav className="mt-6 flex flex-col gap-1">
+                  {items.map((item) => (
+                    <Link
+                      key={item.to}
+                      to={item.to}
+                      onClick={() => setOpen(false)}
+                      className="rounded-md px-3 py-3 text-base font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
+                      activeProps={{ className: "bg-accent text-foreground" }}
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </nav>
+              </SheetContent>
+            </Sheet>
+          </div>
+        </div>
+      </header>
+      <main className={cn("flex-1")}>{children}</main>
+    </div>
+  );
+}
