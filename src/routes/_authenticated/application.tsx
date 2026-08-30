@@ -246,6 +246,7 @@ function ApplicationWizard() {
         .single();
       if (cancelled) return;
       if (error || !data) {
+        bootRef.current = false;
         toast.error("We could not start your application. Please try again.");
         return;
       }
