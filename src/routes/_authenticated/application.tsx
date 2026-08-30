@@ -102,6 +102,7 @@ function ApplicationWizard() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [initialised, setInitialised] = useState(false);
   const pendingRef = useRef<DraftState | null>(null);
+  const bootRef = useRef(false);
 
   // ---------- data ----------
   const projects = useQuery({
