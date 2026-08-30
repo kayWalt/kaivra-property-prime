@@ -75,6 +75,7 @@ function ProjectDetail() {
 
   const project = query.data;
   const properties = (project.properties ?? []).filter((p) => p.is_active);
+  const gallery = parseGallery(project.gallery_images);
 
   return (
     <div className="min-h-screen bg-background">
