@@ -14,6 +14,78 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_audit_events: {
+        Row: {
+          action: string
+          actor: string | null
+          actor_name: string | null
+          created_at: string
+          detail: Json
+          id: string
+          project_id: string | null
+          subject_user: string | null
+        }
+        Insert: {
+          action: string
+          actor?: string | null
+          actor_name?: string | null
+          created_at?: string
+          detail?: Json
+          id?: string
+          project_id?: string | null
+          subject_user?: string | null
+        }
+        Update: {
+          action?: string
+          actor?: string | null
+          actor_name?: string | null
+          created_at?: string
+          detail?: Json
+          id?: string
+          project_id?: string | null
+          subject_user?: string | null
+        }
+        Relationships: []
+      }
+      adviser_invitations: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          email: string
+          error_detail: string | null
+          full_name: string | null
+          id: string
+          invited_by: string | null
+          phone: string | null
+          project_ids: string[]
+          status: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          email: string
+          error_detail?: string | null
+          full_name?: string | null
+          id?: string
+          invited_by?: string | null
+          phone?: string | null
+          project_ids?: string[]
+          status?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          email?: string
+          error_detail?: string | null
+          full_name?: string | null
+          id?: string
+          invited_by?: string | null
+          phone?: string | null
+          project_ids?: string[]
+          status?: string
+        }
+        Relationships: []
+      }
       application_documents: {
         Row: {
           application_id: string
