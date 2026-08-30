@@ -354,6 +354,7 @@ function ProjectEditor({
     location: string | null;
     description: string | null;
     hero_image: string | null;
+    gallery_images?: unknown;
   };
   onClose: () => void;
   onSaved: () => void;
@@ -364,6 +365,7 @@ function ProjectEditor({
     description: project.description ?? "",
     hero_image: project.hero_image ?? "",
   });
+  const [gallery, setGallery] = useState<GalleryImage[]>(() => parseGallery(project.gallery_images));
   const [saving, setSaving] = useState(false);
 
   async function save() {
