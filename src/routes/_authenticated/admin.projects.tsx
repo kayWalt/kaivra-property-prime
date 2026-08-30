@@ -234,6 +234,13 @@ function ProjectManagement() {
                 <Button
                   size="sm"
                   variant="ghost"
+                  onClick={() => setEditProject((current) => (current === project.id ? null : project.id))}
+                >
+                  {editProject === project.id ? "Close editor" : "Edit"}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
                   onClick={() => setOpenProject((current) => (current === project.id ? null : project.id))}
                 >
                   {openProject === project.id ? "Hide properties" : "Properties"}
@@ -241,11 +248,20 @@ function ProjectManagement() {
               </div>
             </div>
 
+            {editProject === project.id ? (
+              <ProjectEditor
+                project={project}
+                onClose={() => setEditProject(null)}
+                onSaved={() => void projects.refetch()}
+              />
+            ) : null}
+
             {openProject === project.id ? (
               <PropertyManager projectId={project.id} onChanged={() => void projects.refetch()} properties={project.properties ?? []} />
             ) : null}
           </section>
         ))}
+
       </div>
     </div>
   );
