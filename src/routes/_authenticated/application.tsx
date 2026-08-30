@@ -194,7 +194,34 @@ function ApplicationWizard() {
         }
       }
 
+      // Reuse the investor's most recent untouched draft instead of creating a
+      // new empty application every time the wizard is opened.
+      const { data: reusable } = await supabase
+        .from("applications")
+        .select("id")
+        .eq("investor_id", user!.id)
+        .eq("status", "draft")
+        .is("reference", null)
+        .is("project_id", null)
+        .is("property_id", null)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (cancelled) return;
+      if (reusable && !search.project && !search.property) {
+        setApplicationId(reusable.id);
+        setDraft({
+          ...EMPTY_DRAFT,
+          personal: { full_name: profile?.full_name ?? "" },
+          contact: { email: profile?.email ?? user?.email ?? "", phone: profile?.phone ?? "" },
+        });
+        setInitialised(true);
+        void navigate({ to: "/application", search: { id: reusable.id }, replace: true });
+        return;
+      }
+
       // create a fresh draft
+
       const seed: DraftState = {
         ...EMPTY_DRAFT,
         project_id: search.project ?? null,
