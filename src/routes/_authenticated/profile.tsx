@@ -1,13 +1,15 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Camera, Loader2, Trash2, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { createAvatarUploadTicket, removeAvatarFile } from "@/lib/avatar.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useProfile, useRoles, useSession, primaryRole } from "@/hooks/useAuth";
+
 
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({
