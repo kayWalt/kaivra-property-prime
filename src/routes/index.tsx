@@ -111,9 +111,7 @@ function Landing() {
         </div>
       </section>
 
-          </div>
-        </div>
-      </section>
+
 
       <section className="border-b border-border bg-card">
         <div className="mx-auto grid w-full max-w-7xl gap-8 px-5 py-14 sm:grid-cols-3 sm:px-8">
