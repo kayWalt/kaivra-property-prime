@@ -50,6 +50,8 @@ function useProjects() {
 
 function Landing() {
   const projects = useProjects();
+  const { session } = useSession();
+  const signedIn = !!session;
 
   return (
     <div className="min-h-screen bg-background">
@@ -58,7 +60,7 @@ function Landing() {
           <Brand tone="inverted" />
           <div className="ml-auto flex items-center gap-2">
             <Button asChild variant="ghost" className="text-onyx-foreground hover:bg-onyx-foreground/10">
-              <Link to="/auth">Sign in</Link>
+              {signedIn ? <Link to="/dashboard">My dashboard</Link> : <Link to="/auth">Sign in</Link>}
             </Button>
           </div>
         </div>
@@ -66,11 +68,11 @@ function Landing() {
 
       <section className="relative min-h-[92svh] w-full">
         <img
-          src="/images/hero.jpg"
-          alt="Aerial view of a luxury gated estate at dusk"
+          src={heroAsset.url}
+          alt="Contemporary KAIVRA residences with landscaped courtyards at dusk"
           className="absolute inset-0 size-full object-cover"
-          width={1920}
-          height={1200}
+          width={1280}
+          height={784}
           fetchPriority="high"
         />
         <div className="hero-scrim absolute inset-0" />
@@ -86,7 +88,11 @@ function Landing() {
             </p>
             <div className="mt-10 flex flex-col gap-3 sm:flex-row">
               <Button asChild size="lg" className="h-13 px-8 text-sm tracking-[0.14em] uppercase">
-                <Link to="/auth">Start investing</Link>
+                {signedIn ? (
+                  <Link to="/application">Continue application</Link>
+                ) : (
+                  <Link to="/auth">Start investing</Link>
+                )}
               </Button>
               <Button
                 asChild
@@ -94,9 +100,17 @@ function Landing() {
                 variant="outline"
                 className="h-13 border-onyx-foreground/40 bg-transparent px-8 text-sm uppercase tracking-[0.14em] text-onyx-foreground hover:bg-onyx-foreground/10 hover:text-onyx-foreground"
               >
-                <Link to="/auth">Access my investment</Link>
+                {signedIn ? (
+                  <Link to="/dashboard">Access my investment</Link>
+                ) : (
+                  <Link to="/auth">Access my investment</Link>
+                )}
               </Button>
             </div>
+          </div>
+        </div>
+      </section>
+
           </div>
         </div>
       </section>
