@@ -38,7 +38,7 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/application")({
   validateSearch: (search: Record<string, unknown>) => {
-    const out: { id?: string; project?: string; property?: string } = {};
+    const out: { id?: string | undefined; project?: string | undefined; property?: string | undefined } = {};
     if (typeof search['id'] === "string") out.id = search['id'];
     if (typeof search['project'] === "string") out.project = search['project'];
     if (typeof search['property'] === "string") out.property = search['property'];
@@ -650,8 +650,8 @@ function Field({
   htmlFor,
 }: {
   label: string;
-  error?: string;
-  required?: boolean;
+  error?: string | undefined;
+  required?: boolean | undefined;
   children: React.ReactNode;
   htmlFor: string;
 }) {
@@ -690,7 +690,7 @@ function StepProject({
     size_label: string | null;
     unit_price: number;
     units_available: number | null;
-    image_urls: string[] | null;
+    image_urls: unknown;
   }[];
   loadingProjects: boolean;
   loadingProperties: boolean;
@@ -758,7 +758,7 @@ function StepProject({
                 )}
               >
                 <img
-                  src={property.image_urls?.[0] ?? "/images/property-terrace.jpg"}
+                  src={(property.image_urls as string[] | null)?.[0] ?? "/images/property-terrace.jpg"}
                   alt={property.name}
                   loading="lazy"
                   width={1280}
@@ -974,7 +974,7 @@ function StepContact({
             onCheckedChange={(checked) =>
               update({
                 mailing_same_as_residential: !!checked,
-                mailing_address: checked ? (value.residential_address ?? residential) : value.mailing_address,
+                mailing_address: checked ? (value.residential_address ?? residential) : (value.mailing_address ?? ""),
               })
             }
           />
