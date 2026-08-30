@@ -15,10 +15,14 @@ export const createUploadTicket = createServerFn({ method: "POST" })
       .parse(data),
   )
   .handler(async ({ data, context }) => {
-    const { data: allowed, error: rpcError } = await context.supabase.rpc("can_view_application", {
-      _app_id: data.applicationId,
-    });
-    if (rpcError) throw new Error("Could not verify access to this application.");
+    // RLS on `applications` decides visibility: if the caller can select the
+    // row, they are allowed to attach documents to it.
+    const { data: allowed, error: accessError } = await context.supabase
+      .from("applications")
+      .select("id")
+      .eq("id", data.applicationId)
+      .maybeSingle();
+    if (accessError) throw new Error("Could not verify access to this application.");
     if (!allowed) throw new Error("You do not have permission to upload to this application.");
 
     const path = buildDocPath(data.applicationId, data.kind, data.fileName);

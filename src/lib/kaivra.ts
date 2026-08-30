@@ -42,6 +42,19 @@ export function formatNaira(value: number | string | null | undefined, currency 
   return `${currency === "NGN" ? "₦" : currency + " "}${formatted}`;
 }
 
+/**
+ * PDF-safe money formatting. The standard PDF fonts have no naira glyph, so
+ * printed documents use the ISO code instead of the ₦ symbol.
+ */
+export function formatMoneyPdf(value: number | string | null | undefined, currency = "NGN") {
+  const amount = Number(value ?? 0);
+  const formatted = new Intl.NumberFormat("en-NG", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(Number.isFinite(amount) ? amount : 0);
+  return `${currency} ${formatted}`;
+}
+
 export function formatCompact(value: number | string | null | undefined) {
   const amount = Number(value ?? 0);
   return `₦${new Intl.NumberFormat("en-NG", { maximumFractionDigits: 0 }).format(amount)}`;

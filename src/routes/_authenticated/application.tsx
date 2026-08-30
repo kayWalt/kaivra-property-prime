@@ -37,11 +37,13 @@ import {
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/application")({
-  validateSearch: (search: Record<string, unknown>) => ({
-    id: typeof search['id'] === "string" ? (search['id'] as string) : undefined,
-    project: typeof search['project'] === "string" ? (search['project'] as string) : undefined,
-    property: typeof search['property'] === "string" ? (search['property'] as string) : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>) => {
+    const out: { id?: string | undefined; project?: string | undefined; property?: string | undefined } = {};
+    if (typeof search['id'] === "string") out.id = search['id'];
+    if (typeof search['project'] === "string") out.project = search['project'];
+    if (typeof search['property'] === "string") out.property = search['property'];
+    return out;
+  },
   head: () => ({
     meta: [
       { title: "KAIVRA | Investor Application" },
@@ -202,6 +204,7 @@ function ApplicationWizard() {
         .from("applications")
         .insert({
           investor_id: user!.id,
+          created_by: user!.id,
           project_id: seed.project_id,
           property_id: seed.property_id,
           personal: seed.personal as never,
@@ -243,6 +246,16 @@ function ApplicationWizard() {
         return;
       }
       setSaveState("saving");
+      // Persist the derived money fields so detail pages, admin views and the
+      // PDF all read the same totals as the wizard.
+      const savedUnits = Math.max(1, Number(next.investment.units ?? 1));
+      const savedUnitPrice = Number(next.investment.unit_price ?? 0);
+      const normalisedInvestment = {
+        ...next.investment,
+        units: savedUnits,
+        unit_price: savedUnitPrice,
+        total_value: savedUnitPrice * savedUnits,
+      };
       const { error } = await supabase
         .from("applications")
         .update({
@@ -250,7 +263,7 @@ function ApplicationWizard() {
           property_id: next.property_id,
           personal: next.personal as never,
           contact: next.contact as never,
-          investment: next.investment as never,
+          investment: normalisedInvestment as never,
           payment_info: next.payment_info as never,
           declaration_accepted: next.declaration_accepted,
           current_step: next.current_step,
@@ -648,8 +661,8 @@ function Field({
   htmlFor,
 }: {
   label: string;
-  error?: string;
-  required?: boolean;
+  error?: string | undefined;
+  required?: boolean | undefined;
   children: React.ReactNode;
   htmlFor: string;
 }) {
@@ -688,7 +701,7 @@ function StepProject({
     size_label: string | null;
     unit_price: number;
     units_available: number | null;
-    image_urls: string[] | null;
+    image_urls: unknown;
   }[];
   loadingProjects: boolean;
   loadingProperties: boolean;
@@ -756,7 +769,7 @@ function StepProject({
                 )}
               >
                 <img
-                  src={property.image_urls?.[0] ?? "/images/property-terrace.jpg"}
+                  src={(property.image_urls as string[] | null)?.[0] ?? "/images/property-terrace.jpg"}
                   alt={property.name}
                   loading="lazy"
                   width={1280}
@@ -972,7 +985,7 @@ function StepContact({
             onCheckedChange={(checked) =>
               update({
                 mailing_same_as_residential: !!checked,
-                mailing_address: checked ? (value.residential_address ?? residential) : value.mailing_address,
+                mailing_address: checked ? (value.residential_address ?? residential) : (value.mailing_address ?? ""),
               })
             }
           />

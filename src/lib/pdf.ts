@@ -1,6 +1,6 @@
 import { jsPDF } from "jspdf";
 import { getDocumentUrl } from "@/lib/storage.functions";
-import { formatNaira, formatDate, STATUS_LABEL, type ApplicationStatus } from "@/lib/kaivra";
+import { formatMoneyPdf as formatNaira, formatDate, STATUS_LABEL, type ApplicationStatus } from "@/lib/kaivra";
 
 interface DocRow {
   id: string;
