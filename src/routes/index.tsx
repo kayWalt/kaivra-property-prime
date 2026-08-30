@@ -109,9 +109,11 @@ function Landing() {
             <h1 className="mt-4 font-display text-5xl leading-[1.05] text-onyx-foreground sm:text-7xl">
               Invest in the future you can own.
             </h1>
-            <p className="mt-6 max-w-xl text-base text-onyx-foreground/80 sm:text-lg">
-              Securely manage your real-estate investments, subscriptions and payments in one simple platform.
-            </p>
+            <div className="mt-6 inline-block max-w-xl rounded-lg bg-onyx/60 px-4 py-3 backdrop-blur-md">
+              <p className="text-base text-onyx-foreground sm:text-lg">
+                Securely manage your real-estate investments, subscriptions and payments in one simple platform.
+              </p>
+            </div>
             <div className="mt-10 flex flex-col gap-3 sm:flex-row">
               <Button asChild size="lg" className="h-13 px-8 text-sm tracking-[0.14em] uppercase">
                 {signedIn ? (
