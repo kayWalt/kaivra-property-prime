@@ -1,3 +1,4 @@
+import * as React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, MapPin, ShieldCheck, Sparkles } from "lucide-react";
@@ -46,6 +47,31 @@ function useProjects() {
       return data ?? [];
     },
   });
+}
+
+function LegacyReveal({ children }: { children: React.ReactNode }) {
+  const ref = React.useRef<HTMLDivElement>(null);
+  const [shown, setShown] = React.useState(false);
+  React.useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          setShown(true);
+          io.disconnect();
+        }
+      },
+      { threshold: 0.25 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  return (
+    <div ref={ref} className={shown ? "kv-reveal" : "kv-reveal-pending"}>
+      {children}
+    </div>
+  );
 }
 
 function Landing() {
@@ -247,6 +273,37 @@ function Landing() {
           height={1280}
           className="h-[46svh] w-full object-cover"
         />
+      </section>
+
+      <section className="surface-onyx relative overflow-hidden">
+        <div className="mx-auto w-full max-w-7xl px-5 py-24 text-center sm:px-8 sm:py-32">
+          <LegacyReveal>
+          <p className="font-display text-2xl tracking-[0.35em] text-gold sm:text-3xl kv-legacy" style={{ animationDelay: "0ms" }}>
+            HUTU PRESTIGE
+          </p>
+          <div className="mx-auto mt-5 flex items-center justify-center gap-4 kv-legacy" style={{ animationDelay: "150ms" }}>
+            <span className="h-px w-10 bg-gold/70 sm:w-16" />
+            <span className="eyebrow text-gold">Abuja</span>
+            <span className="h-px w-10 bg-gold/70 sm:w-16" />
+          </div>
+          <h2 className="mx-auto mt-10 max-w-3xl font-display text-5xl leading-[1.05] text-onyx-foreground sm:text-7xl kv-legacy" style={{ animationDelay: "300ms" }}>
+            Own more than <span className="text-gold">a property.</span>
+          </h2>
+          <div className="mx-auto mt-8 max-w-md rounded-sm border border-gold/40 bg-gold/10 px-6 py-3 kv-legacy" style={{ animationDelay: "450ms" }}>
+            <p className="font-display text-xl tracking-[0.3em] text-gold sm:text-2xl">OWN A LEGACY</p>
+          </div>
+          <p className="mx-auto mt-10 max-w-xl text-sm text-onyx-foreground/70 sm:text-base kv-legacy" style={{ animationDelay: "600ms" }}>
+            We deliver premium, affordable and secure properties for a better tomorrow.
+          </p>
+          <div className="mt-10 kv-legacy" style={{ animationDelay: "750ms" }}>
+            <Button asChild size="lg" className="uppercase tracking-[0.14em]">
+              <Link to="/projects/$projectId" params={{ projectId: "11111111-1111-4111-8111-111111111111" }}>
+                Explore Hutu Prestige <ArrowRight className="ml-2 size-4" />
+              </Link>
+            </Button>
+          </div>
+          </LegacyReveal>
+        </div>
       </section>
 
 
