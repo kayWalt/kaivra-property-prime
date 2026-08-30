@@ -204,6 +204,7 @@ function ApplicationWizard() {
         .from("applications")
         .insert({
           investor_id: user!.id,
+          created_by: user!.id,
           project_id: seed.project_id,
           property_id: seed.property_id,
           personal: seed.personal as never,
