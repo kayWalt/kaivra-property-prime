@@ -112,7 +112,7 @@ function AdvisersPage() {
     action: string;
     subject_user?: string | null;
     project_id?: string | null;
-    detail?: Record<string, unknown>;
+    detail?: Record<string, string | number | boolean | null>;
   }) {
     if (!user) return;
     const { error } = await supabase.from("admin_audit_events").insert({
@@ -121,7 +121,7 @@ function AdvisersPage() {
       action: entry.action,
       subject_user: entry.subject_user ?? null,
       project_id: entry.project_id ?? null,
-      detail: entry.detail ?? {},
+      detail: (entry.detail ?? {}) as Record<string, string | number | boolean | null>,
     });
     if (error) console.error("audit log failed", error.message);
   }
