@@ -45,6 +45,7 @@ function ProjectManagement() {
   const [editProject, setEditProject] = useState<string | null>(null);
 
   const [form, setForm] = useState({ name: "", location: "", description: "", hero_image: "" });
+  const [gallery, setGallery] = useState<GalleryImage[]>([]);
 
   const projects = useQuery({
     queryKey: ["admin-projects"],
