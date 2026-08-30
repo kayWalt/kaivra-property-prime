@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/kaivra/StatusBadge";
+import { StatusPicker } from "@/components/kaivra/StatusPicker";
 import { EmptyState } from "@/components/kaivra/EmptyState";
 import { useRoles, useSession, primaryRole, isStaffRole } from "@/hooks/useAuth";
 import { totals } from "@/lib/applications";
@@ -44,7 +45,7 @@ function AdminDashboard() {
       let query = supabase
         .from("applications")
         .select(
-          "id, reference, status, created_at, submitted_at, investment, personal, contact, projects(name), properties(name), application_payments(amount, status)",
+          "id, reference, status, investor_id, created_at, submitted_at, investment, personal, contact, projects(name), properties(name), application_payments(amount, status)",
           { count: "exact" },
         )
         .neq("status", "draft")
@@ -216,12 +217,25 @@ function AdminDashboard() {
                         <StatusBadge status={row.status as ApplicationStatus} />
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">{formatDate(row.submitted_at)}</td>
-                      <td className="px-4 py-3 text-right">
-                        <Button asChild size="sm" variant="ghost">
-                          <Link to="/admin/applications/$appId" params={{ appId: row.id }}>
-                            View
-                          </Link>
-                        </Button>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center justify-end gap-2">
+                          <StatusPicker
+                            applicationId={row.id}
+                            reference={row.reference}
+                            investorId={row.investor_id}
+                            current={row.status as ApplicationStatus}
+                            reviewerId={user?.id}
+                            onUpdated={() => {
+                              void apps.refetch();
+                              void stats.refetch();
+                            }}
+                          />
+                          <Button asChild size="sm" variant="ghost">
+                            <Link to="/admin/applications/$appId" params={{ appId: row.id }}>
+                              View
+                            </Link>
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -236,21 +250,31 @@ function AdminDashboard() {
             const investment = (row.investment ?? {}) as { total_value?: number };
             const personal = (row.personal ?? {}) as Record<string, string>;
             return (
-              <Link
-                key={row.id}
-                to="/admin/applications/$appId"
-                params={{ appId: row.id }}
-                className="block rounded-lg border border-border bg-card p-4"
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <p className="eyebrow text-muted-foreground">{row.reference}</p>
-                  <StatusBadge status={row.status as ApplicationStatus} />
+              <div key={row.id} className="rounded-lg border border-border bg-card p-4">
+                <Link to="/admin/applications/$appId" params={{ appId: row.id }} className="block">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="eyebrow text-muted-foreground">{row.reference}</p>
+                    <StatusBadge status={row.status as ApplicationStatus} />
+                  </div>
+                  <p className="mt-2 text-sm font-semibold">{personal['full_name'] ?? "—"}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {row.projects?.name ?? "—"} · {formatNaira(investment.total_value ?? 0)}
+                  </p>
+                </Link>
+                <div className="mt-3">
+                  <StatusPicker
+                    applicationId={row.id}
+                    reference={row.reference}
+                    investorId={row.investor_id}
+                    current={row.status as ApplicationStatus}
+                    reviewerId={user?.id}
+                    onUpdated={() => {
+                      void apps.refetch();
+                      void stats.refetch();
+                    }}
+                  />
                 </div>
-                <p className="mt-2 text-sm font-semibold">{personal['full_name'] ?? "—"}</p>
-                <p className="text-xs text-muted-foreground">
-                  {row.projects?.name ?? "—"} · {formatNaira(investment.total_value ?? 0)}
-                </p>
-              </Link>
+              </div>
             );
           })}
         </div>
