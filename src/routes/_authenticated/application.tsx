@@ -156,7 +156,8 @@ function ApplicationWizard() {
 
   // ---------- bootstrap: load or create the draft ----------
   useEffect(() => {
-    if (initialised || !user) return;
+    if (initialised || bootRef.current || !user) return;
+    bootRef.current = true;
     let cancelled = false;
 
     async function boot() {
