@@ -1,9 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { Loader2, Plus } from "lucide-react";
+import { ImagePlus, Loader2, Plus, Save, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { createProjectImageUploadTicket } from "@/lib/project-media.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +12,67 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useRoles, useSession, primaryRole } from "@/hooks/useAuth";
 import { formatNaira } from "@/lib/kaivra";
+
+function ImageUploadField({
+  id,
+  value,
+  onChange,
+  scope = "project",
+}: {
+  id: string;
+  value: string;
+  onChange: (url: string) => void;
+  scope?: "project" | "property";
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function handleFile(file: File | undefined) {
+    if (!file) return;
+    setBusy(true);
+    try {
+      const ticket = await createProjectImageUploadTicket({ data: { scope, fileName: file.name } });
+      const { error } = await supabase.storage.from(ticket.bucket).uploadToSignedUrl(ticket.path, ticket.token, file);
+      if (error) throw error;
+      onChange(ticket.url);
+      toast.success("Image uploaded.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "The image could not be uploaded.");
+    } finally {
+      setBusy(false);
+      if (inputRef.current) inputRef.current.value = "";
+    }
+  }
+
+  return (
+    <div className="space-y-2">
+      <div className="flex flex-wrap items-center gap-2">
+        <Input
+          id={id}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="Upload an image or paste a URL"
+        />
+        <Button type="button" variant="outline" size="sm" disabled={busy} onClick={() => inputRef.current?.click()}>
+          {busy ? <Loader2 className="mr-2 size-4 animate-spin" /> : <ImagePlus className="mr-2 size-4" />}
+          Upload image
+        </Button>
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          className="sr-only"
+          aria-label="Upload project image"
+          onChange={(e) => void handleFile(e.target.files?.[0])}
+        />
+      </div>
+      {value ? (
+        <img src={value} alt="Project cover preview" className="h-28 w-full rounded-md object-cover sm:w-64" />
+      ) : null}
+    </div>
+  );
+}
+
 
 export const Route = createFileRoute("/_authenticated/admin/projects")({
   head: () => ({

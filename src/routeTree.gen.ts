@@ -25,6 +25,7 @@ import { Route as AuthenticatedAdminProjectsRouteImport } from './routes/_authen
 import { Route as AuthenticatedApplicationsIndexRouteImport } from './routes/_authenticated/applications.index'
 import { Route as AuthenticatedApplicationsAppIdRouteImport } from './routes/_authenticated/applications.$appId'
 import { Route as AuthenticatedAdminApplicationsAppIdRouteImport } from './routes/_authenticated/admin.applications.$appId'
+import { Route as ApiPublicProjectImageSplatRouteImport } from './routes/api/public/project-image.$'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -113,6 +114,12 @@ const AuthenticatedAdminApplicationsAppIdRoute =
     path: '/admin/applications/$appId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiPublicProjectImageSplatRoute =
+  ApiPublicProjectImageSplatRouteImport.update({
+    id: '/api/public/project-image/$',
+    path: '/api/public/project-image/$',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -130,6 +137,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/applications/': typeof AuthenticatedApplicationsIndexRoute
   '/admin/applications/$appId': typeof AuthenticatedAdminApplicationsAppIdRoute
+  '/api/public/project-image/$': typeof ApiPublicProjectImageSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -147,6 +155,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/applications': typeof AuthenticatedApplicationsIndexRoute
   '/admin/applications/$appId': typeof AuthenticatedAdminApplicationsAppIdRoute
+  '/api/public/project-image/$': typeof ApiPublicProjectImageSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -166,6 +175,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/applications/': typeof AuthenticatedApplicationsIndexRoute
   '/_authenticated/admin/applications/$appId': typeof AuthenticatedAdminApplicationsAppIdRoute
+  '/api/public/project-image/$': typeof ApiPublicProjectImageSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -185,6 +195,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/applications/'
     | '/admin/applications/$appId'
+    | '/api/public/project-image/$'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -202,6 +213,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/applications'
     | '/admin/applications/$appId'
+    | '/api/public/project-image/$'
   id:
     | '__root__'
     | '/'
@@ -220,6 +232,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/'
     | '/_authenticated/applications/'
     | '/_authenticated/admin/applications/$appId'
+    | '/api/public/project-image/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -227,6 +240,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   ProjectsProjectIdRoute: typeof ProjectsProjectIdRoute
+  ApiPublicProjectImageSplatRoute: typeof ApiPublicProjectImageSplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -343,6 +357,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminApplicationsAppIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/project-image/$': {
+      id: '/api/public/project-image/$'
+      path: '/api/public/project-image/$'
+      fullPath: '/api/public/project-image/$'
+      preLoaderRoute: typeof ApiPublicProjectImageSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -385,6 +406,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   ProjectsProjectIdRoute: ProjectsProjectIdRoute,
+  ApiPublicProjectImageSplatRoute: ApiPublicProjectImageSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
