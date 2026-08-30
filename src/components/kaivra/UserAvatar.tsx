@@ -7,8 +7,8 @@ export function UserAvatar({
   className,
   iconClassName,
 }: {
-  url?: string | null;
-  name?: string | null;
+  url?: string | null | undefined;
+  name?: string | null | undefined;
   className?: string;
   iconClassName?: string;
 }) {
