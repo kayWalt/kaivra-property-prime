@@ -246,6 +246,16 @@ function ApplicationWizard() {
         return;
       }
       setSaveState("saving");
+      // Persist the derived money fields so detail pages, admin views and the
+      // PDF all read the same totals as the wizard.
+      const savedUnits = Math.max(1, Number(next.investment.units ?? 1));
+      const savedUnitPrice = Number(next.investment.unit_price ?? 0);
+      const normalisedInvestment = {
+        ...next.investment,
+        units: savedUnits,
+        unit_price: savedUnitPrice,
+        total_value: savedUnitPrice * savedUnits,
+      };
       const { error } = await supabase
         .from("applications")
         .update({
@@ -253,7 +263,7 @@ function ApplicationWizard() {
           property_id: next.property_id,
           personal: next.personal as never,
           contact: next.contact as never,
-          investment: next.investment as never,
+          investment: normalisedInvestment as never,
           payment_info: next.payment_info as never,
           declaration_accepted: next.declaration_accepted,
           current_step: next.current_step,
