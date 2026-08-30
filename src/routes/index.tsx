@@ -277,6 +277,7 @@ function Landing() {
 
       <section className="surface-onyx relative overflow-hidden">
         <div className="mx-auto w-full max-w-7xl px-5 py-24 text-center sm:px-8 sm:py-32">
+          <LegacyReveal>
           <p className="font-display text-2xl tracking-[0.35em] text-gold sm:text-3xl kv-legacy" style={{ animationDelay: "0ms" }}>
             HUTU PRESTIGE
           </p>
