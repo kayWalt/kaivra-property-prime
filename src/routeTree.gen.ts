@@ -18,8 +18,10 @@ import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authentica
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as ProjectsProjectIdRouteImport } from './routes/projects.$projectId'
+import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedApplicationsIndexRouteImport } from './routes/_authenticated/applications.index'
 import { Route as AuthenticatedApplicationsAppIdRouteImport } from './routes/_authenticated/applications.$appId'
+import { Route as AuthenticatedAdminApplicationsAppIdRouteImport } from './routes/_authenticated/admin.applications.$appId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -67,6 +69,11 @@ const ProjectsProjectIdRoute = ProjectsProjectIdRouteImport.update({
   path: '/projects/$projectId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedApplicationsIndexRoute =
   AuthenticatedApplicationsIndexRouteImport.update({
     id: '/applications/',
@@ -77,6 +84,12 @@ const AuthenticatedApplicationsAppIdRoute =
   AuthenticatedApplicationsAppIdRouteImport.update({
     id: '/applications/$appId',
     path: '/applications/$appId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminApplicationsAppIdRoute =
+  AuthenticatedAdminApplicationsAppIdRouteImport.update({
+    id: '/admin/applications/$appId',
+    path: '/admin/applications/$appId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 
@@ -90,7 +103,9 @@ export interface FileRoutesByFullPath {
   '/profile': typeof AuthenticatedProfileRoute
   '/projects/$projectId': typeof ProjectsProjectIdRoute
   '/applications/$appId': typeof AuthenticatedApplicationsAppIdRoute
+  '/admin/': typeof AuthenticatedAdminIndexRoute
   '/applications/': typeof AuthenticatedApplicationsIndexRoute
+  '/admin/applications/$appId': typeof AuthenticatedAdminApplicationsAppIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -102,7 +117,9 @@ export interface FileRoutesByTo {
   '/profile': typeof AuthenticatedProfileRoute
   '/projects/$projectId': typeof ProjectsProjectIdRoute
   '/applications/$appId': typeof AuthenticatedApplicationsAppIdRoute
+  '/admin': typeof AuthenticatedAdminIndexRoute
   '/applications': typeof AuthenticatedApplicationsIndexRoute
+  '/admin/applications/$appId': typeof AuthenticatedAdminApplicationsAppIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -116,7 +133,9 @@ export interface FileRoutesById {
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/projects/$projectId': typeof ProjectsProjectIdRoute
   '/_authenticated/applications/$appId': typeof AuthenticatedApplicationsAppIdRoute
+  '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/applications/': typeof AuthenticatedApplicationsIndexRoute
+  '/_authenticated/admin/applications/$appId': typeof AuthenticatedAdminApplicationsAppIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -130,7 +149,9 @@ export interface FileRouteTypes {
     | '/profile'
     | '/projects/$projectId'
     | '/applications/$appId'
+    | '/admin/'
     | '/applications/'
+    | '/admin/applications/$appId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -142,7 +163,9 @@ export interface FileRouteTypes {
     | '/profile'
     | '/projects/$projectId'
     | '/applications/$appId'
+    | '/admin'
     | '/applications'
+    | '/admin/applications/$appId'
   id:
     | '__root__'
     | '/'
@@ -155,7 +178,9 @@ export interface FileRouteTypes {
     | '/_authenticated/profile'
     | '/projects/$projectId'
     | '/_authenticated/applications/$appId'
+    | '/_authenticated/admin/'
     | '/_authenticated/applications/'
+    | '/_authenticated/admin/applications/$appId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -230,6 +255,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectsProjectIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/admin/': {
+      id: '/_authenticated/admin/'
+      path: '/admin'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/applications/': {
       id: '/_authenticated/applications/'
       path: '/applications'
@@ -244,6 +276,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedApplicationsAppIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/applications/$appId': {
+      id: '/_authenticated/admin/applications/$appId'
+      path: '/admin/applications/$appId'
+      fullPath: '/admin/applications/$appId'
+      preLoaderRoute: typeof AuthenticatedAdminApplicationsAppIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -254,7 +293,9 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedApplicationsAppIdRoute: typeof AuthenticatedApplicationsAppIdRoute
+  AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
   AuthenticatedApplicationsIndexRoute: typeof AuthenticatedApplicationsIndexRoute
+  AuthenticatedAdminApplicationsAppIdRoute: typeof AuthenticatedAdminApplicationsAppIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -264,7 +305,10 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedApplicationsAppIdRoute: AuthenticatedApplicationsAppIdRoute,
+  AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
   AuthenticatedApplicationsIndexRoute: AuthenticatedApplicationsIndexRoute,
+  AuthenticatedAdminApplicationsAppIdRoute:
+    AuthenticatedAdminApplicationsAppIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
