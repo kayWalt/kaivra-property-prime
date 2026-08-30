@@ -92,6 +92,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: appCss,
       },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      // Pre-warm connections used by Google sign-in so the popup opens faster.
+      { rel: "preconnect", href: "https://accounts.google.com", crossOrigin: "anonymous" },
+      { rel: "dns-prefetch", href: "https://accounts.google.com" },
+      { rel: "preconnect", href: "https://www.gstatic.com", crossOrigin: "anonymous" },
     ],
   }),
   shellComponent: RootShell,
