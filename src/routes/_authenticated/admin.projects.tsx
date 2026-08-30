@@ -151,6 +151,11 @@ function ProjectManagement() {
           </div>
 
           <div className="space-y-1.5 sm:col-span-2">
+            <Label>Gallery images & captions</Label>
+            <GalleryUploadField idPrefix="new-project" images={gallery} onChange={setGallery} />
+          </div>
+
+          <div className="space-y-1.5 sm:col-span-2">
             <Label htmlFor="project_desc">Description</Label>
             <Textarea
               id="project_desc"
