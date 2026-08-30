@@ -117,7 +117,7 @@ export function UploadCard({
     setBusy(true);
     setProgress(20);
     try {
-      const list = multiple ? Array.from(files) : [files[0]];
+      const list: File[] = multiple ? Array.from(files) : Array.from(files).slice(0, 1);
       for (const file of list) {
         await uploadDocument({ applicationId, kind, file, paymentId, label: title });
         setProgress((p) => Math.min(90, p + 60 / list.length));
