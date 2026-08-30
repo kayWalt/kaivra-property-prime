@@ -80,7 +80,9 @@ function AdvisersPage() {
         .ilike("email", targetEmail.trim())
         .maybeSingle();
       if (error) throw error;
-      if (!profile) throw new Error("No KAIVRA account uses that email address.");
+      if (!profile) {
+        throw new Error("No KAIVRA account uses that email yet. Ask them to sign up first, then grant access.");
+      }
       const { error: insertError } = await supabase
         .from("user_roles")
         .insert({ user_id: profile.id, role: "adviser" });
