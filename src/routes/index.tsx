@@ -5,7 +5,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Brand } from "@/components/kaivra/Brand";
+import { useSession } from "@/hooks/useAuth";
 import { formatCompact } from "@/lib/kaivra";
+import heroAsset from "@/assets/kaivra-22-00-40.jpg.asset.json";
+import adviserAsset from "@/assets/kaivra-22-00-16.jpg.asset.json";
+import residenceAsset from "@/assets/kaivra-22-00-51.jpg.asset.json";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
