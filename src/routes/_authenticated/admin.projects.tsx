@@ -421,6 +421,10 @@ function ProjectEditor({
         />
       </div>
       <div className="space-y-1.5 sm:col-span-2">
+        <Label>Gallery images & captions</Label>
+        <GalleryUploadField idPrefix={`edit-gallery-${project.id}`} images={gallery} onChange={setGallery} />
+      </div>
+      <div className="space-y-1.5 sm:col-span-2">
         <Label htmlFor={`edit-desc-${project.id}`}>Description</Label>
         <Textarea
           id={`edit-desc-${project.id}`}
