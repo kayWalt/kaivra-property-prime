@@ -216,12 +216,25 @@ function AdminDashboard() {
                         <StatusBadge status={row.status as ApplicationStatus} />
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">{formatDate(row.submitted_at)}</td>
-                      <td className="px-4 py-3 text-right">
-                        <Button asChild size="sm" variant="ghost">
-                          <Link to="/admin/applications/$appId" params={{ appId: row.id }}>
-                            View
-                          </Link>
-                        </Button>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center justify-end gap-2">
+                          <StatusPicker
+                            applicationId={row.id}
+                            reference={row.reference}
+                            investorId={row.investor_id}
+                            current={row.status as ApplicationStatus}
+                            reviewerId={user?.id}
+                            onUpdated={() => {
+                              void apps.refetch();
+                              void stats.refetch();
+                            }}
+                          />
+                          <Button asChild size="sm" variant="ghost">
+                            <Link to="/admin/applications/$appId" params={{ appId: row.id }}>
+                              View
+                            </Link>
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   );
