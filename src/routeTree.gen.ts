@@ -14,7 +14,9 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedApplicationRouteImport } from './routes/_authenticated/application'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authenticated/documents'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
+import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as ProjectsProjectIdRouteImport } from './routes/projects.$projectId'
 import { Route as AuthenticatedApplicationsIndexRouteImport } from './routes/_authenticated/applications.index'
 import { Route as AuthenticatedApplicationsAppIdRouteImport } from './routes/_authenticated/applications.$appId'
@@ -44,12 +46,22 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedDocumentsRoute = AuthenticatedDocumentsRouteImport.update({
+  id: '/documents',
+  path: '/documents',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedNotificationsRoute =
   AuthenticatedNotificationsRouteImport.update({
     id: '/notifications',
     path: '/notifications',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const ProjectsProjectIdRoute = ProjectsProjectIdRouteImport.update({
   id: '/projects/$projectId',
   path: '/projects/$projectId',
@@ -73,7 +85,9 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/application': typeof AuthenticatedApplicationRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/documents': typeof AuthenticatedDocumentsRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
+  '/profile': typeof AuthenticatedProfileRoute
   '/projects/$projectId': typeof ProjectsProjectIdRoute
   '/applications/$appId': typeof AuthenticatedApplicationsAppIdRoute
   '/applications/': typeof AuthenticatedApplicationsIndexRoute
@@ -83,7 +97,9 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/application': typeof AuthenticatedApplicationRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/documents': typeof AuthenticatedDocumentsRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
+  '/profile': typeof AuthenticatedProfileRoute
   '/projects/$projectId': typeof ProjectsProjectIdRoute
   '/applications/$appId': typeof AuthenticatedApplicationsAppIdRoute
   '/applications': typeof AuthenticatedApplicationsIndexRoute
@@ -95,7 +111,9 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/application': typeof AuthenticatedApplicationRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/documents': typeof AuthenticatedDocumentsRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
+  '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/projects/$projectId': typeof ProjectsProjectIdRoute
   '/_authenticated/applications/$appId': typeof AuthenticatedApplicationsAppIdRoute
   '/_authenticated/applications/': typeof AuthenticatedApplicationsIndexRoute
@@ -107,7 +125,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/application'
     | '/dashboard'
+    | '/documents'
     | '/notifications'
+    | '/profile'
     | '/projects/$projectId'
     | '/applications/$appId'
     | '/applications/'
@@ -117,7 +137,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/application'
     | '/dashboard'
+    | '/documents'
     | '/notifications'
+    | '/profile'
     | '/projects/$projectId'
     | '/applications/$appId'
     | '/applications'
@@ -128,7 +150,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/application'
     | '/_authenticated/dashboard'
+    | '/_authenticated/documents'
     | '/_authenticated/notifications'
+    | '/_authenticated/profile'
     | '/projects/$projectId'
     | '/_authenticated/applications/$appId'
     | '/_authenticated/applications/'
@@ -178,11 +202,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/documents': {
+      id: '/_authenticated/documents'
+      path: '/documents'
+      fullPath: '/documents'
+      preLoaderRoute: typeof AuthenticatedDocumentsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/notifications': {
       id: '/_authenticated/notifications'
       path: '/notifications'
       fullPath: '/notifications'
       preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/profile': {
+      id: '/_authenticated/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AuthenticatedProfileRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/projects/$projectId': {
@@ -212,7 +250,9 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedApplicationRoute: typeof AuthenticatedApplicationRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedDocumentsRoute: typeof AuthenticatedDocumentsRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
+  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedApplicationsAppIdRoute: typeof AuthenticatedApplicationsAppIdRoute
   AuthenticatedApplicationsIndexRoute: typeof AuthenticatedApplicationsIndexRoute
 }
@@ -220,7 +260,9 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedApplicationRoute: AuthenticatedApplicationRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedDocumentsRoute: AuthenticatedDocumentsRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
+  AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedApplicationsAppIdRoute: AuthenticatedApplicationsAppIdRoute,
   AuthenticatedApplicationsIndexRoute: AuthenticatedApplicationsIndexRoute,
 }
