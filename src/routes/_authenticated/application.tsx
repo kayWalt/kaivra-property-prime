@@ -593,7 +593,18 @@ function ApplicationWizard() {
 
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 px-4 py-3 backdrop-blur">
         <div className="mx-auto flex w-full max-w-4xl items-center justify-between gap-3">
-          <Button variant="ghost" onClick={() => goto(step - 1)} disabled={step === 1}>
+          <Button
+            variant="ghost"
+            onClick={() => {
+              if (step > 1) {
+                goto(step - 1);
+              } else if (window.history.length > 1) {
+                window.history.back();
+              } else {
+                void navigate({ to: "/applications" });
+              }
+            }}
+          >
             <ChevronLeft className="mr-1 size-4" /> Back
           </Button>
           {step < 7 ? (
