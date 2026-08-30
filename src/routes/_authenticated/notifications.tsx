@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -59,15 +59,30 @@ function Notifications() {
         {list.data?.length === 0 ? (
           <EmptyState title="No notifications yet." body="We will let you know when there is an update." />
         ) : null}
-        {list.data?.map((item) => (
-          <article key={item.id} className="rounded-lg border border-border bg-card p-4">
-            <div className="flex items-center justify-between gap-3">
-              <h2 className="text-sm font-semibold">{item.title}</h2>
-              <span className="text-xs text-muted-foreground">{formatDate(item.created_at)}</span>
-            </div>
-            <p className="mt-1 text-sm text-muted-foreground">{item.body}</p>
-          </article>
-        ))}
+        {list.data?.map((item) => {
+          const card = (
+            <>
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="text-sm font-semibold">{item.title}</h2>
+                <span className="text-xs text-muted-foreground">{formatDate(item.created_at)}</span>
+              </div>
+              <p className="mt-1 text-sm text-muted-foreground">{item.body}</p>
+            </>
+          );
+          return item.link ? (
+            <Link
+              key={item.id}
+              to={item.link}
+              className="block rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary/60"
+            >
+              {card}
+            </Link>
+          ) : (
+            <article key={item.id} className="rounded-lg border border-border bg-card p-4">
+              {card}
+            </article>
+          );
+        })}
       </div>
     </div>
   );
