@@ -102,7 +102,7 @@ function InvestorsPage() {
     return (
       <EmptyState
         title="Not available"
-        description="This workspace is for KAIVRA advisers and administrators."
+        body="This workspace is for KAIVRA advisers and administrators."
       />
     );
   }
@@ -132,7 +132,7 @@ function InvestorsPage() {
       ) : investors.length === 0 ? (
         <EmptyState
           title="No investors yet"
-          description="Investors appear here once they submit an application."
+          body="Investors appear here once they submit an application."
         />
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
