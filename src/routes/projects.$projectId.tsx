@@ -129,6 +129,27 @@ function ProjectDetail() {
           </aside>
         </div>
 
+        {gallery.length > 0 ? (
+          <>
+            <h2 className="mt-16 font-display text-4xl">Gallery</h2>
+            <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {gallery.map((image, index) => (
+                <figure key={`${image.url}-${index}`} className="overflow-hidden rounded-lg border border-border bg-card">
+                  <img
+                    src={image.url}
+                    alt={image.caption || `${project.name} image ${index + 1}`}
+                    loading="lazy"
+                    className="aspect-[4/3] w-full object-cover"
+                  />
+                  {image.caption ? (
+                    <figcaption className="p-4 text-sm text-muted-foreground">{image.caption}</figcaption>
+                  ) : null}
+                </figure>
+              ))}
+            </div>
+          </>
+        ) : null}
+
         <h2 className="mt-16 font-display text-4xl">Property options</h2>
         {properties.length === 0 ? (
           <p className="mt-4 text-sm text-muted-foreground">
