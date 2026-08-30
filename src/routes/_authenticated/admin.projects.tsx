@@ -388,3 +388,99 @@ function PropertyManager({
     </div>
   );
 }
+
+function ProjectEditor({
+  project,
+  onClose,
+  onSaved,
+}: {
+  project: {
+    id: string;
+    name: string;
+    location: string | null;
+    description: string | null;
+    hero_image: string | null;
+  };
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const [form, setForm] = useState({
+    name: project.name ?? "",
+    location: project.location ?? "",
+    description: project.description ?? "",
+    hero_image: project.hero_image ?? "",
+  });
+  const [saving, setSaving] = useState(false);
+
+  async function save() {
+    if (!form.name.trim()) {
+      toast.error("Give the project a name.");
+      return;
+    }
+    setSaving(true);
+    const { error } = await supabase
+      .from("projects")
+      .update({
+        name: form.name.trim(),
+        location: form.location.trim(),
+        description: form.description.trim(),
+        hero_image: form.hero_image.trim() || null,
+      })
+      .eq("id", project.id);
+    setSaving(false);
+    if (error) {
+      toast.error("The project could not be updated. Please try again.");
+      return;
+    }
+    toast.success("Project updated.");
+    onSaved();
+    onClose();
+  }
+
+  return (
+    <div className="mt-5 grid gap-4 border-t border-border pt-5 sm:grid-cols-2">
+      <div className="space-y-1.5">
+        <Label htmlFor={`edit-name-${project.id}`}>Project name</Label>
+        <Input
+          id={`edit-name-${project.id}`}
+          value={form.name}
+          onChange={(e) => setForm({ ...form, name: e.target.value })}
+        />
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor={`edit-loc-${project.id}`}>Location</Label>
+        <Input
+          id={`edit-loc-${project.id}`}
+          value={form.location}
+          onChange={(e) => setForm({ ...form, location: e.target.value })}
+        />
+      </div>
+      <div className="space-y-1.5 sm:col-span-2">
+        <Label htmlFor={`edit-hero-${project.id}`}>Hero image</Label>
+        <ImageUploadField
+          id={`edit-hero-${project.id}`}
+          value={form.hero_image}
+          onChange={(url) => setForm({ ...form, hero_image: url })}
+        />
+      </div>
+      <div className="space-y-1.5 sm:col-span-2">
+        <Label htmlFor={`edit-desc-${project.id}`}>Description</Label>
+        <Textarea
+          id={`edit-desc-${project.id}`}
+          rows={3}
+          value={form.description}
+          onChange={(e) => setForm({ ...form, description: e.target.value })}
+        />
+      </div>
+      <div className="flex gap-2 sm:col-span-2">
+        <Button size="sm" onClick={() => void save()} disabled={saving}>
+          {saving ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Save className="mr-2 size-4" />}
+          Save changes
+        </Button>
+        <Button size="sm" variant="ghost" onClick={onClose}>
+          <X className="mr-2 size-4" /> Cancel
+        </Button>
+      </div>
+    </div>
+  );
+}
