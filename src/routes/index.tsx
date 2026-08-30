@@ -158,76 +158,80 @@ function Landing() {
       </section>
 
       <section className="mx-auto w-full max-w-7xl px-5 py-20 sm:px-8">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="eyebrow text-primary">Featured opportunities</p>
-            <h2 className="mt-3 font-display text-4xl sm:text-5xl">Investment projects</h2>
+        <LegacyReveal>
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="eyebrow text-primary kv-legacy" style={{ animationDelay: "0ms" }}>Featured opportunities</p>
+              <h2 className="mt-3 font-display text-4xl sm:text-5xl kv-legacy" style={{ animationDelay: "120ms" }}>Investment projects</h2>
+            </div>
           </div>
-        </div>
 
-        <div className="mt-10 grid gap-6 md:grid-cols-2">
-          {projects.isLoading
-            ? [0, 1].map((i) => <Skeleton key={i} className="h-[26rem] w-full rounded-lg" />)
-            : null}
+          <div className="mt-10 grid gap-6 md:grid-cols-2">
+            {projects.isLoading
+              ? [0, 1].map((i) => <Skeleton key={i} className="h-[26rem] w-full rounded-lg" />)
+              : null}
 
-          {projects.isError ? (
-            <p className="text-sm text-destructive">
-              Projects could not be loaded right now. Please refresh and try again.
-            </p>
-          ) : null}
+            {projects.isError ? (
+              <p className="text-sm text-destructive">
+                Projects could not be loaded right now. Please refresh and try again.
+              </p>
+            ) : null}
 
-          {projects.data?.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No investment projects have been published yet.</p>
-          ) : null}
+            {projects.data?.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No investment projects have been published yet.</p>
+            ) : null}
 
-          {projects.data?.map((project) => {
-            const active = (project.properties ?? []).filter((p) => p.is_active);
-            const from = active.length ? Math.min(...active.map((p) => Number(p.unit_price))) : 0;
-            const types = Array.from(new Set(active.map((p) => p.property_type))).slice(0, 3);
-            return (
-              <article
-                key={project.id}
-                className="group overflow-hidden rounded-lg border border-border bg-card shadow-card transition-transform duration-300 hover:-translate-y-1"
-              >
-                <div className="relative aspect-[16/10] overflow-hidden">
-                  <img
-                    src={project.hero_image ?? "/images/project-mountain.jpg"}
-                    alt={project.name}
-                    loading="lazy"
-                    width={1920}
-                    height={1088}
-                    className="size-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                </div>
-                <div className="p-6">
-                  <p className="eyebrow flex items-center gap-1.5 text-muted-foreground">
-                    <MapPin className="size-3.5" aria-hidden /> {project.location}
-                  </p>
-                  <h3 className="mt-3 font-display text-2xl leading-tight">{project.name}</h3>
-                  <p className="mt-3 line-clamp-2 text-sm text-muted-foreground">{project.description}</p>
-                  <div className="mt-5 flex flex-wrap gap-2">
-                    {types.map((t) => (
-                      <span key={t} className="rounded-full border border-border bg-muted px-3 py-1 text-xs">
-                        {t}
-                      </span>
-                    ))}
+            {projects.data?.map((project, idx) => {
+              const active = (project.properties ?? []).filter((p) => p.is_active);
+              const from = active.length ? Math.min(...active.map((p) => Number(p.unit_price))) : 0;
+              const types = Array.from(new Set(active.map((p) => p.property_type))).slice(0, 3);
+              const delay = 240 + idx * 160;
+              return (
+                <article
+                  key={project.id}
+                  className="kv-legacy group overflow-hidden rounded-lg border border-border bg-card shadow-card transition-transform duration-300 hover:-translate-y-1"
+                  style={{ animationDelay: `${delay}ms` }}
+                >
+                  <div className="relative aspect-[16/10] overflow-hidden">
+                    <img
+                      src={project.hero_image ?? "/images/project-mountain.jpg"}
+                      alt={project.name}
+                      loading="lazy"
+                      width={1920}
+                      height={1088}
+                      className="size-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
                   </div>
-                  <div className="mt-6 flex items-end justify-between gap-4">
-                    <div>
-                      <p className="eyebrow text-muted-foreground">Starting from</p>
-                      <p className="font-display text-2xl text-primary">{formatCompact(from)}</p>
+                  <div className="p-6">
+                    <p className="eyebrow flex items-center gap-1.5 text-muted-foreground">
+                      <MapPin className="size-3.5" aria-hidden /> {project.location}
+                    </p>
+                    <h3 className="mt-3 font-display text-2xl leading-tight">{project.name}</h3>
+                    <p className="mt-3 line-clamp-2 text-sm text-muted-foreground">{project.description}</p>
+                    <div className="mt-5 flex flex-wrap gap-2">
+                      {types.map((t) => (
+                        <span key={t} className="rounded-full border border-border bg-muted px-3 py-1 text-xs">
+                          {t}
+                        </span>
+                      ))}
                     </div>
-                    <Button asChild variant="outline" className="uppercase tracking-[0.12em]">
-                      <Link to="/projects/$projectId" params={{ projectId: project.id }}>
-                        View project <ArrowRight className="ml-2 size-4" />
-                      </Link>
-                    </Button>
+                    <div className="mt-6 flex items-end justify-between gap-4">
+                      <div>
+                        <p className="eyebrow text-muted-foreground">Starting from</p>
+                        <p className="font-display text-2xl text-primary">{formatCompact(from)}</p>
+                      </div>
+                      <Button asChild variant="outline" className="uppercase tracking-[0.12em]">
+                        <Link to="/projects/$projectId" params={{ projectId: project.id }}>
+                          View project <ArrowRight className="ml-2 size-4" />
+                        </Link>
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              </article>
-            );
-          })}
-        </div>
+                </article>
+              );
+            })}
+          </div>
+        </LegacyReveal>
       </section>
 
       <section className="border-t border-border bg-card">
