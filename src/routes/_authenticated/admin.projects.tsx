@@ -96,6 +96,8 @@ function ProjectManagement() {
 
   const [creating, setCreating] = useState(false);
   const [openProject, setOpenProject] = useState<string | null>(null);
+  const [editProject, setEditProject] = useState<string | null>(null);
+
   const [form, setForm] = useState({ name: "", location: "", description: "", hero_image: "" });
 
   const projects = useQuery({
