@@ -73,7 +73,16 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
   const { paid, outstanding } = totals(payments.data ?? [], totalValue);
   const docs = documents.data ?? [];
 
+  // A form with no project/property selection and no investment value is
+  // "empty" — block PDF download and guide the investor back to the wizard.
+  const isIncomplete =
+    record.status === "draft" || !record.project_id || !record.property_id || totalValue <= 0;
+
   async function handleDownload() {
+    if (isIncomplete) {
+      toast.error("Complete and submit your application before downloading the PDF.");
+      return;
+    }
     setDownloading(true);
     try {
       await downloadApplicationPdf({
@@ -102,7 +111,12 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
         </div>
         <div className="flex flex-wrap items-center gap-2 print:hidden">
           <StatusBadge status={record.status as ApplicationStatus} />
-          <Button variant="outline" onClick={() => void handleDownload()} disabled={downloading}>
+          <Button
+            variant="outline"
+            onClick={() => void handleDownload()}
+            disabled={downloading || isIncomplete}
+            title={isIncomplete ? "Complete and submit the application first" : undefined}
+          >
             {downloading ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Download className="mr-2 size-4" />}
             Download PDF
           </Button>
@@ -224,6 +238,9 @@ function ApplicationDetail() {
   const { appId } = Route.useParams();
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6">
+      <Button asChild variant="ghost" size="sm" className="mb-6 print:hidden">
+        <Link to="/applications">← All applications</Link>
+      </Button>
       <ApplicationDetailView appId={appId} />
     </div>
   );
