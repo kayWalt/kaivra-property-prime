@@ -33,12 +33,56 @@ function ProfilePage() {
   const navigate = useNavigate();
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setFullName(profile?.full_name ?? "");
     setPhone(profile?.phone ?? "");
+    setAvatarUrl((profile as { avatar_url?: string | null } | undefined)?.avatar_url ?? null);
   }, [profile]);
+
+  async function persistAvatar(url: string | null) {
+    if (!user) return;
+    const { error } = await supabase.from("profiles").update({ avatar_url: url }).eq("id", user.id);
+    if (error) throw new Error("Your picture could not be saved.");
+    setAvatarUrl(url);
+    void queryClient.invalidateQueries({ queryKey: ["profile", user.id] });
+  }
+
+  async function handleFile(file: File | undefined) {
+    if (!file || !user) return;
+    setUploading(true);
+    try {
+      const ticket = await createAvatarUploadTicket({ data: { fileName: file.name } });
+      const { error } = await supabase.storage.from(ticket.bucket).uploadToSignedUrl(ticket.path, ticket.token, file);
+      if (error) throw new Error("Your picture could not be uploaded.");
+      await persistAvatar(ticket.url);
+      toast.success("Profile picture updated.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Your picture could not be uploaded.");
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  }
+
+  async function removeAvatar() {
+    if (!avatarUrl) return;
+    setUploading(true);
+    try {
+      const path = avatarUrl.replace("/api/public/avatar/", "");
+      await persistAvatar(null);
+      await removeAvatarFile({ data: { path } });
+      toast.success("Profile picture removed.");
+    } catch {
+      toast.error("Your picture could not be removed.");
+    } finally {
+      setUploading(false);
+    }
+  }
 
   async function save() {
     if (!user) return;
@@ -52,6 +96,7 @@ function ProfilePage() {
     toast.success("Profile updated.");
     void queryClient.invalidateQueries({ queryKey: ["profile", user.id] });
   }
+
 
   async function signOut() {
     await queryClient.cancelQueries();
