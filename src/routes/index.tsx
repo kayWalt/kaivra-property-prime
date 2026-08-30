@@ -302,6 +302,7 @@ function Landing() {
               </Link>
             </Button>
           </div>
+          </LegacyReveal>
         </div>
       </section>
 
