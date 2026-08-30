@@ -250,21 +250,31 @@ function AdminDashboard() {
             const investment = (row.investment ?? {}) as { total_value?: number };
             const personal = (row.personal ?? {}) as Record<string, string>;
             return (
-              <Link
-                key={row.id}
-                to="/admin/applications/$appId"
-                params={{ appId: row.id }}
-                className="block rounded-lg border border-border bg-card p-4"
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <p className="eyebrow text-muted-foreground">{row.reference}</p>
-                  <StatusBadge status={row.status as ApplicationStatus} />
+              <div key={row.id} className="rounded-lg border border-border bg-card p-4">
+                <Link to="/admin/applications/$appId" params={{ appId: row.id }} className="block">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="eyebrow text-muted-foreground">{row.reference}</p>
+                    <StatusBadge status={row.status as ApplicationStatus} />
+                  </div>
+                  <p className="mt-2 text-sm font-semibold">{personal['full_name'] ?? "—"}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {row.projects?.name ?? "—"} · {formatNaira(investment.total_value ?? 0)}
+                  </p>
+                </Link>
+                <div className="mt-3">
+                  <StatusPicker
+                    applicationId={row.id}
+                    reference={row.reference}
+                    investorId={row.investor_id}
+                    current={row.status as ApplicationStatus}
+                    reviewerId={user?.id}
+                    onUpdated={() => {
+                      void apps.refetch();
+                      void stats.refetch();
+                    }}
+                  />
                 </div>
-                <p className="mt-2 text-sm font-semibold">{personal['full_name'] ?? "—"}</p>
-                <p className="text-xs text-muted-foreground">
-                  {row.projects?.name ?? "—"} · {formatNaira(investment.total_value ?? 0)}
-                </p>
-              </Link>
+              </div>
             );
           })}
         </div>
