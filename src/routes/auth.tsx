@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Brand } from "@/components/kaivra/Brand";
-import { Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -36,7 +36,9 @@ const schema = z.object({
 
 function AuthPage() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
+  const [showPassword, setShowPassword] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
@@ -51,6 +53,26 @@ function AuthPage() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (mode === "forgot") {
+      const parsedEmail = z.string().trim().email("Enter a valid email address").safeParse(email);
+      if (!parsedEmail.success) {
+        toast.error(parsedEmail.error.issues[0]?.message ?? "Enter a valid email address");
+        return;
+      }
+      setBusy(true);
+      try {
+        const { error } = await supabase.auth.resetPasswordForEmail(parsedEmail.data, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+        if (error) throw error;
+        setResetSent(true);
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Could not send the reset link. Please try again.");
+      } finally {
+        setBusy(false);
+      }
+      return;
+    }
     const parsed = schema.safeParse({ email, password, fullName });
     if (!parsed.success) {
       toast.error(parsed.error.issues[0]?.message ?? "Please check your details.");
@@ -137,12 +159,14 @@ function AuthPage() {
           ) : (
             <>
               <h1 className="mt-10 font-display text-3xl">
-                {mode === "signin" ? "Welcome back" : "Create your account"}
+                {mode === "signin" ? "Welcome back" : mode === "signup" ? "Create your account" : "Reset your password"}
               </h1>
               <p className="mt-2 text-sm text-muted-foreground">
                 {mode === "signin"
                   ? "Access your investments and applications."
-                  : "Start your investment application in minutes."}
+                  : mode === "signup"
+                    ? "Start your investment application in minutes."
+                    : "Enter your email and we will send you a secure link to set a new password."}
               </p>
 
               <form onSubmit={submit} className="mt-8 space-y-4" noValidate>
@@ -170,24 +194,71 @@ function AuthPage() {
                     className="h-12"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    autoComplete={mode === "signin" ? "current-password" : "new-password"}
-                    className="h-12"
-                  />
-                </div>
+                {mode !== "forgot" ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="password">Password</Label>
+                      {mode === "signin" ? (
+                        <button
+                          type="button"
+                          className="text-xs font-semibold text-primary underline-offset-4 hover:underline"
+                          onClick={() => {
+                            setResetSent(false);
+                            setMode("forgot");
+                          }}
+                        >
+                          Forgot password?
+                        </button>
+                      ) : null}
+                    </div>
+                    <div className="relative">
+                      <Input
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        required
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        autoComplete={mode === "signin" ? "current-password" : "new-password"}
+                        className="h-12 pr-12"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((v) => !v)}
+                        aria-label={showPassword ? "Hide password" : "Show password"}
+                        aria-pressed={showPassword}
+                        className="absolute inset-y-0 right-0 flex w-12 items-center justify-center rounded-r-md text-muted-foreground transition-colors hover:text-foreground"
+                      >
+                        {showPassword ? <EyeOff className="size-5" /> : <Eye className="size-5" />}
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
+                {mode === "forgot" && resetSent ? (
+                  <p className="rounded-md border border-border bg-muted/40 p-3 text-sm text-muted-foreground">
+                    If an account exists for {email}, a password reset link is on its way. Check your inbox and spam folder.
+                  </p>
+                ) : null}
                 <Button type="submit" className="h-12 w-full" disabled={busy}>
                   {busy ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
-                  {mode === "signin" ? "Sign in" : "Create account"}
+                  {mode === "signin" ? "Sign in" : mode === "signup" ? "Create account" : "Send reset link"}
                 </Button>
+                {mode === "forgot" ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-12 w-full"
+                    onClick={() => {
+                      setResetSent(false);
+                      setMode("signin");
+                    }}
+                  >
+                    Back to sign in
+                  </Button>
+                ) : null}
               </form>
 
+              {mode !== "forgot" ? (
+                <>
               <div className="my-6 flex items-center gap-3 text-xs text-muted-foreground">
                 <span className="h-px flex-1 bg-border" /> OR <span className="h-px flex-1 bg-border" />
               </div>
@@ -206,6 +277,8 @@ function AuthPage() {
                   {mode === "signin" ? "Create an account" : "Sign in"}
                 </button>
               </p>
+                </>
+              ) : null}
               <p className="mt-8 text-center text-xs text-muted-foreground">
                 <Link to="/" className="underline-offset-4 hover:underline">
                   Return to KAIVRA
