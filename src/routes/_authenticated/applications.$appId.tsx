@@ -11,6 +11,7 @@ import { openDocument } from "@/components/kaivra/FileUpload";
 import { PassportAvatar } from "@/components/kaivra/PassportAvatar";
 import { usePassportAvatars } from "@/hooks/usePassportAvatars";
 import { AddPaymentDialog } from "@/components/kaivra/AddPaymentDialog";
+import { ReferenceChip } from "@/components/kaivra/ReferenceChip";
 import {
   fetchApplication,
   fetchDocuments,
