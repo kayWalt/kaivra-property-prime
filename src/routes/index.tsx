@@ -173,7 +173,7 @@ function Landing() {
         </div>
       </section>
 
-      <section className="mx-auto w-full max-w-7xl px-5 py-20 sm:px-8">
+      <section id="projects" className="mx-auto w-full max-w-7xl px-5 py-20 sm:px-8">
         <LegacyReveal>
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
@@ -317,9 +317,9 @@ function Landing() {
           </p>
           <div className="mt-10 kv-legacy" style={{ animationDelay: "750ms" }}>
             <Button asChild size="lg" className="uppercase tracking-[0.14em]">
-              <Link to="/projects/$projectId" params={{ projectId: "11111111-1111-4111-8111-111111111111" }}>
-                Explore Hutu Prestige <ArrowRight className="ml-2 size-4" />
-              </Link>
+              <a href="#projects">
+                Explore projects <ArrowRight className="ml-2 size-4" />
+              </a>
             </Button>
           </div>
           </LegacyReveal>
