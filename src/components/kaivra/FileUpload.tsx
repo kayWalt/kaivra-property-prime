@@ -115,10 +115,18 @@ export function UploadCard({
 
   async function handleFiles(files: FileList | null) {
     if (!files || files.length === 0) return;
+    const list: File[] = multiple ? Array.from(files) : Array.from(files).slice(0, 1);
+    // Images shrink during compression, but PDFs and other files are sent as-is,
+    // so reject anything above the bucket limit up front with a clear message
+    // rather than letting the upload fail opaquely after a long wait.
+    const tooBig = list.find((f) => !f.type.startsWith("image/") && f.size > MAX_UPLOAD_BYTES);
+    if (tooBig) {
+      toast.error(`${tooBig.name} is larger than 25 MB. Please upload a smaller file.`);
+      return;
+    }
     setBusy(true);
     setProgress(20);
     try {
-      const list: File[] = multiple ? Array.from(files) : Array.from(files).slice(0, 1);
       // Uploads are independent — run them concurrently instead of queueing.
       await Promise.all(
         list.map(async (file) => {
