@@ -1087,6 +1087,7 @@ function StepInvestment(props: {
           <dd className="mt-1">
             <Input
               type="number"
+              inputMode="numeric"
               min={1}
               disabled={props.disabled}
               value={props.units}
@@ -1217,6 +1218,7 @@ function StepPayment({
             <Input
               id="deposit"
               type="number"
+              inputMode="numeric"
               min={0}
               disabled={disabled}
               value={info.initial_deposit ?? ""}
@@ -1227,6 +1229,7 @@ function StepPayment({
             <Input
               id="next_amount"
               type="number"
+              inputMode="numeric"
               min={0}
               disabled={disabled}
               value={info.next_payment_amount ?? ""}
@@ -1303,6 +1306,7 @@ function StepPayment({
                 <Input
                   id="amount"
                   type="number"
+                  inputMode="numeric"
                   min={0}
                   value={form.amount || ""}
                   onChange={(e) => setForm({ ...form, amount: Number(e.target.value) || 0 })}
