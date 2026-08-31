@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Download, Eye, Loader2, Printer } from "lucide-react";
+import { Download, Eye, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AsyncButton } from "@/components/kaivra/AsyncButton";
 import { Skeleton } from "@/components/ui/skeleton";

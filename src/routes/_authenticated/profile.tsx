@@ -6,6 +6,7 @@ import { Camera, Loader2, Trash2, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { createAvatarUploadTicket, removeAvatarFile } from "@/lib/avatar.functions";
 import { Button } from "@/components/ui/button";
+import { AsyncButton } from "@/components/kaivra/AsyncButton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useProfile, useRoles, useSession, primaryRole } from "@/hooks/useAuth";
@@ -98,11 +99,12 @@ function ProfilePage() {
   }
 
 
-  async function signOut() {
-    await queryClient.cancelQueries();
-    queryClient.clear();
-    await supabase.auth.signOut();
+  function signOut() {
+    // Instant transition; session teardown continues in the background.
     void navigate({ to: "/auth", replace: true });
+    void queryClient.cancelQueries();
+    queryClient.clear();
+    void supabase.auth.signOut();
   }
 
   return (
@@ -129,9 +131,9 @@ function ProfilePage() {
               {avatarUrl ? "Change picture" : "Upload picture"}
             </Button>
             {avatarUrl ? (
-              <Button type="button" variant="ghost" size="sm" disabled={uploading} onClick={() => void removeAvatar()}>
+              <AsyncButton type="button" variant="ghost" size="sm" disabled={uploading} pendingLabel="Removing…" onClick={() => removeAvatar()}>
                 <Trash2 className="mr-2 size-4" /> Remove
-              </Button>
+              </AsyncButton>
             ) : null}
           </div>
           <input
@@ -156,10 +158,9 @@ function ProfilePage() {
           <Label htmlFor="profile_email">Email address</Label>
           <Input id="profile_email" value={profile?.email ?? user?.email ?? ""} readOnly disabled />
         </div>
-        <Button onClick={() => void save()} disabled={saving}>
-          {saving ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
+        <AsyncButton onClick={() => save()} disabled={saving} pendingLabel="Saving…">
           Save changes
-        </Button>
+        </AsyncButton>
       </div>
 
       <Button variant="outline" className="mt-6" onClick={() => void signOut()}>
