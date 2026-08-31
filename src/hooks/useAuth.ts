@@ -59,7 +59,11 @@ export function useSession() {
     queryClient.invalidateQueries({ queryKey: ["roles"] });
   }, [queryClient, userId]);
 
-  return { session: snapshot.session, user: snapshot.session?.user ?? null, loading: snapshot.loading };
+  return {
+    session: snapshot.session,
+    user: snapshot.session?.user ?? null,
+    loading: snapshot.loading,
+  };
 }
 
 /** Session snapshot without subscribing (used by fast redirect checks). */
@@ -74,7 +78,10 @@ export function useRoles(userId?: string) {
     enabled: !!userId,
     staleTime: 60_000,
     queryFn: async () => {
-      const { data, error } = await supabase.from("user_roles").select("role").eq("user_id", userId!);
+      const { data, error } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId!);
       if (error) throw error;
       return (data ?? []).map((r) => r.role as AppRole);
     },

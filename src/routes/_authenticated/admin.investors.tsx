@@ -15,9 +15,15 @@ export const Route = createFileRoute("/_authenticated/admin/investors")({
   head: () => ({
     meta: [
       { title: "KAIVRA | Investors" },
-      { name: "description", content: "Review every investor and the applications they hold with KAIVRA." },
+      {
+        name: "description",
+        content: "Review every investor and the applications they hold with KAIVRA.",
+      },
       { property: "og:title", content: "KAIVRA | Investors" },
-      { property: "og:description", content: "Investor directory for KAIVRA advisers and administrators." },
+      {
+        property: "og:description",
+        content: "Investor directory for KAIVRA advisers and administrators.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -61,7 +67,9 @@ function InvestorsPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("applications")
-        .select("id, reference, status, submitted_at, created_at, investor_id, personal, contact, investment, projects(name)")
+        .select(
+          "id, reference, status, submitted_at, created_at, investor_id, personal, contact, investment, projects(name)",
+        )
         .neq("status", "draft")
         .order("submitted_at", { ascending: false, nullsFirst: false });
       if (error) throw error;
@@ -154,9 +162,9 @@ function InvestorsPage() {
                     className="size-12 sm:size-14"
                   />
                   <div className="min-w-0">
-                  <h2 className="truncate font-display text-xl">{investor.name}</h2>
-                  <p className="truncate text-sm text-muted-foreground">{investor.email}</p>
-                  <p className="text-sm text-muted-foreground">{investor.phone}</p>
+                    <h2 className="truncate font-display text-xl">{investor.name}</h2>
+                    <p className="truncate text-sm text-muted-foreground">{investor.email}</p>
+                    <p className="text-sm text-muted-foreground">{investor.phone}</p>
                   </div>
                 </div>
                 {investor.latest ? <StatusBadge status={investor.latest.status} /> : null}
@@ -164,11 +172,15 @@ function InvestorsPage() {
 
               <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
                 <div className="min-w-0">
-                  <dt className="text-xs uppercase tracking-widest text-muted-foreground">Applications</dt>
+                  <dt className="text-xs uppercase tracking-widest text-muted-foreground">
+                    Applications
+                  </dt>
                   <dd className="font-semibold">{investor.applications.length}</dd>
                 </div>
                 <div className="min-w-0">
-                  <dt className="text-xs uppercase tracking-widest text-muted-foreground">Total value</dt>
+                  <dt className="text-xs uppercase tracking-widest text-muted-foreground">
+                    Total value
+                  </dt>
                   <dd className="font-semibold break-words">{formatNaira(investor.value)}</dd>
                 </div>
               </dl>

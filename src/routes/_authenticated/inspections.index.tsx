@@ -100,7 +100,12 @@ function InspectionsPage() {
         "/admin/inspections",
       ),
       row.application_id
-        ? logEvent(row.application_id, "inspection_cancelled", row.reference ?? undefined, profile?.full_name ?? undefined)
+        ? logEvent(
+            row.application_id,
+            "inspection_cancelled",
+            row.reference ?? undefined,
+            profile?.full_name ?? undefined,
+          )
         : Promise.resolve(),
     ]);
     queryClient.invalidateQueries({ queryKey: ["my-inspections"] });
@@ -129,7 +134,9 @@ function InspectionsPage() {
       ) : null}
 
       {inspections.isError ? (
-        <p className="mt-8 text-sm text-destructive">Your inspections could not be loaded. Please refresh.</p>
+        <p className="mt-8 text-sm text-destructive">
+          Your inspections could not be loaded. Please refresh.
+        </p>
       ) : null}
 
       {inspections.data && inspections.data.length === 0 ? (
@@ -151,11 +158,18 @@ function InspectionsPage() {
           <h2 className="font-display text-2xl">Upcoming</h2>
           <div className="mt-4 grid gap-4 md:grid-cols-2">
             {upcoming.map((row) => (
-              <article key={row.id} className="rounded-lg border border-border bg-card p-5 shadow-card">
+              <article
+                key={row.id}
+                className="rounded-lg border border-border bg-card p-5 shadow-card"
+              >
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <h3 className="font-display text-xl leading-tight">{row.projects?.name ?? "Project"}</h3>
-                    <p className="mt-1 text-sm text-muted-foreground">{row.properties?.name ?? "Property"}</p>
+                    <h3 className="font-display text-xl leading-tight">
+                      {row.projects?.name ?? "Project"}
+                    </h3>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {row.properties?.name ?? "Property"}
+                    </p>
                   </div>
                   <InspectionBadge status={row.status} />
                 </div>
@@ -183,7 +197,9 @@ function InspectionsPage() {
                   </p>
                 ) : null}
                 {row.admin_note ? (
-                  <p className="mt-3 rounded-md border border-border bg-muted/60 p-3 text-xs">{row.admin_note}</p>
+                  <p className="mt-3 rounded-md border border-border bg-muted/60 p-3 text-xs">
+                    {row.admin_note}
+                  </p>
                 ) : null}
                 <div className="mt-5 flex flex-wrap gap-2">
                   {canInvestorChange(row.status, row.scheduled_date, row.scheduled_time) ? (
@@ -191,13 +207,19 @@ function InspectionsPage() {
                       <Button asChild variant="outline" size="sm">
                         <Link to="/inspections/new">Reschedule</Link>
                       </Button>
-                      <AsyncButton variant="ghost" size="sm" onClick={() => cancel(row)} pendingLabel="Cancelling…">
+                      <AsyncButton
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => cancel(row)}
+                        pendingLabel="Cancelling…"
+                      >
                         Cancel
                       </AsyncButton>
                     </>
                   ) : (
                     <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                      <Clock className="size-3.5" /> Changes close 24 hours before the visit. Contact your adviser.
+                      <Clock className="size-3.5" /> Changes close 24 hours before the visit.
+                      Contact your adviser.
                     </p>
                   )}
                 </div>
@@ -216,7 +238,8 @@ function InspectionsPage() {
                 <div>
                   <p className="text-sm font-semibold">{row.projects?.name ?? "Project"}</p>
                   <p className="text-xs text-muted-foreground">
-                    {row.reference} · {formatDate(row.scheduled_date)} · {formatSlot(row.scheduled_time)}
+                    {row.reference} · {formatDate(row.scheduled_date)} ·{" "}
+                    {formatSlot(row.scheduled_time)}
                   </p>
                 </div>
                 <InspectionBadge status={row.status} />

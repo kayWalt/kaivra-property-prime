@@ -11,7 +11,14 @@ import { openDocument } from "@/components/kaivra/FileUpload";
 import { PassportAvatar } from "@/components/kaivra/PassportAvatar";
 import { usePassportAvatars } from "@/hooks/usePassportAvatars";
 import { AddPaymentDialog } from "@/components/kaivra/AddPaymentDialog";
-import { fetchApplication, fetchDocuments, fetchEvents, fetchPayments, logEvent, totals } from "@/lib/applications";
+import {
+  fetchApplication,
+  fetchDocuments,
+  fetchEvents,
+  fetchPayments,
+  logEvent,
+  totals,
+} from "@/lib/applications";
 
 import { formatDate, formatNaira, type ApplicationStatus } from "@/lib/kaivra";
 
@@ -19,7 +26,10 @@ export const Route = createFileRoute("/_authenticated/applications/$appId")({
   head: () => ({
     meta: [
       { title: "KAIVRA | Application Details" },
-      { name: "description", content: "Review your investment application, payments and documents." },
+      {
+        name: "description",
+        content: "Review your investment application, payments and documents.",
+      },
       { property: "og:title", content: "KAIVRA | Application Details" },
       { property: "og:description", content: "Your investment application details." },
       { property: "og:type", content: "website" },
@@ -43,10 +53,20 @@ export const Route = createFileRoute("/_authenticated/applications/$appId")({
 export function ApplicationDetailView({ appId, manage }: { appId: string; manage?: boolean }) {
   const [downloading, setDownloading] = useState(false);
 
-  const app = useQuery({ queryKey: ["application", appId], queryFn: () => fetchApplication(appId) });
+  const app = useQuery({
+    queryKey: ["application", appId],
+    queryFn: () => fetchApplication(appId),
+  });
   const payments = useQuery({ queryKey: ["payments", appId], queryFn: () => fetchPayments(appId) });
-  const documents = useQuery({ queryKey: ["documents", appId], queryFn: () => fetchDocuments(appId) });
-  const events = useQuery({ queryKey: ["events", appId], queryFn: () => fetchEvents(appId), enabled: !!manage });
+  const documents = useQuery({
+    queryKey: ["documents", appId],
+    queryFn: () => fetchDocuments(appId),
+  });
+  const events = useQuery({
+    queryKey: ["events", appId],
+    queryFn: () => fetchEvents(appId),
+    enabled: !!manage,
+  });
   const investorId = app.data?.investor_id as string | undefined;
   const { avatars, isLoading: avatarsLoading } = usePassportAvatars(investorId ? [investorId] : []);
 
@@ -72,7 +92,11 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
   }
 
   const record = app.data;
-  const investment = (record.investment ?? {}) as { total_value?: number; units?: number; payment_plan?: string };
+  const investment = (record.investment ?? {}) as {
+    total_value?: number;
+    units?: number;
+    payment_plan?: string;
+  };
   const personal = (record.personal ?? {}) as Record<string, string>;
   const contact = (record.contact ?? {}) as Record<string, string>;
   const totalValue = Number(investment.total_value ?? 0);
@@ -96,7 +120,7 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
         application: record as never,
         payments: (payments.data ?? []) as never,
         documents: docs as never,
-        investorName: personal['full_name'] ?? "Investor",
+        investorName: personal["full_name"] ?? "Investor",
       });
       void logEvent(appId, "pdf_downloaded", `PDF downloaded for ${record.reference ?? "draft"}`);
     } catch {
@@ -111,9 +135,12 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
       <header className="flex flex-wrap items-start justify-between gap-4 print:block">
         <div>
           <p className="eyebrow text-primary">{record.reference ?? "Draft application"}</p>
-          <h1 className="mt-1 font-display text-3xl sm:text-4xl">{record.projects?.name ?? "Project pending"}</h1>
+          <h1 className="mt-1 font-display text-3xl sm:text-4xl">
+            {record.projects?.name ?? "Project pending"}
+          </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {record.properties?.name ?? "Property not selected"} · submitted {formatDate(record.submitted_at)}
+            {record.properties?.name ?? "Property not selected"} · submitted{" "}
+            {formatDate(record.submitted_at)}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2 print:hidden">
@@ -144,7 +171,9 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
         ].map(([label, value], index) => (
           <div key={label} className="rounded-lg border border-border bg-card p-4">
             <p className="eyebrow text-muted-foreground">{label}</p>
-            <p className={`mt-2 font-display text-2xl ${index === 1 ? "text-primary" : ""}`}>{value}</p>
+            <p className={`mt-2 font-display text-2xl ${index === 1 ? "text-primary" : ""}`}>
+              {value}
+            </p>
           </div>
         ))}
       </div>
@@ -153,7 +182,7 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
         <div className="flex items-center gap-4">
           <PassportAvatar
             url={avatars[record.investor_id]}
-            name={personal['full_name']}
+            name={personal["full_name"]}
             loading={avatarsLoading}
             zoomable
             className="size-16 sm:size-20"
@@ -161,17 +190,17 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
           />
           <div>
             <h2 className="font-display text-2xl">Investor</h2>
-            <p className="text-sm text-muted-foreground">{personal['full_name'] || "—"}</p>
+            <p className="text-sm text-muted-foreground">{personal["full_name"] || "—"}</p>
           </div>
         </div>
         <dl className="mt-4 grid gap-4 sm:grid-cols-3">
           {[
-            ["Full name", personal['full_name']],
-            ["Date of birth", formatDate(personal['date_of_birth'])],
-            ["Occupation", personal['occupation']],
-            ["Phone", contact['phone']],
-            ["Email", contact['email']],
-            ["Residential address", personal['residential_address']],
+            ["Full name", personal["full_name"]],
+            ["Date of birth", formatDate(personal["date_of_birth"])],
+            ["Occupation", personal["occupation"]],
+            ["Phone", contact["phone"]],
+            ["Email", contact["email"]],
+            ["Residential address", personal["residential_address"]],
           ].map(([label, value]) => (
             <div key={label}>
               <dt className="eyebrow text-muted-foreground">{label}</dt>
@@ -206,10 +235,13 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
                 className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border px-4 py-3"
               >
                 <div>
-                  <p className="eyebrow text-muted-foreground">Payment {String(index + 1).padStart(2, "0")}</p>
+                  <p className="eyebrow text-muted-foreground">
+                    Payment {String(index + 1).padStart(2, "0")}
+                  </p>
                   <p className="mt-1 text-sm font-semibold">{formatNaira(payment.amount)}</p>
                   <p className="text-xs text-muted-foreground">
-                    {formatDate(payment.paid_on)} · {payment.bank ?? "—"} · {payment.reference ?? "no reference"}
+                    {formatDate(payment.paid_on)} · {payment.bank ?? "—"} ·{" "}
+                    {payment.reference ?? "no reference"}
                   </p>
                   {payment.status === "rejected" && payment.rejection_reason ? (
                     <p className="mt-1 text-xs text-destructive">{payment.rejection_reason}</p>
@@ -234,7 +266,12 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
                   <span className="font-medium capitalize">{doc.kind.replace(/_/g, " ")}</span>
                   <span className="ml-2 text-muted-foreground">{doc.file_name}</span>
                 </span>
-                <AsyncButton variant="ghost" size="sm" pendingLabel="Opening…" onClick={() => openDocument(doc.id)}>
+                <AsyncButton
+                  variant="ghost"
+                  size="sm"
+                  pendingLabel="Opening…"
+                  onClick={() => openDocument(doc.id)}
+                >
                   <Eye className="mr-2 size-4" /> View
                 </AsyncButton>
               </li>
@@ -257,7 +294,9 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
                     {" "}
                     · {event.actor_name ?? "system"} · {formatDate(event.created_at)}
                   </span>
-                  {event.detail ? <p className="text-xs text-muted-foreground">{event.detail}</p> : null}
+                  {event.detail ? (
+                    <p className="text-xs text-muted-foreground">{event.detail}</p>
+                  ) : null}
                 </li>
               ))}
             </ul>

@@ -42,7 +42,11 @@ export function StatusPicker({
     setBusy(true);
     const { error } = await supabase
       .from("applications")
-      .update({ status: next, reviewed_by: reviewerId ?? null, reviewed_at: new Date().toISOString() })
+      .update({
+        status: next,
+        reviewed_by: reviewerId ?? null,
+        reviewed_at: new Date().toISOString(),
+      })
       .eq("id", applicationId);
     setBusy(false);
     if (error) {

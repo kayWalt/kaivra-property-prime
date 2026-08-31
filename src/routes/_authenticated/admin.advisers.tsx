@@ -18,7 +18,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,7 +44,10 @@ export const Route = createFileRoute("/_authenticated/admin/advisers")({
   head: () => ({
     meta: [
       { title: "KAIVRA | Advisers" },
-      { name: "description", content: "Assign KAIVRA advisers to the real estate projects they manage." },
+      {
+        name: "description",
+        content: "Assign KAIVRA advisers to the real estate projects they manage.",
+      },
       { property: "og:title", content: "KAIVRA | Advisers" },
       { property: "og:description", content: "Manage adviser access to KAIVRA projects." },
       { property: "og:type", content: "website" },
@@ -66,7 +75,13 @@ type LookupResult =
   | {
       kind: "found";
       email: string;
-      profile: { id: string; full_name: string | null; email: string | null; phone: string | null; avatar_url: string | null };
+      profile: {
+        id: string;
+        full_name: string | null;
+        email: string | null;
+        phone: string | null;
+        avatar_url: string | null;
+      };
       roles: string[];
     };
 
@@ -161,11 +176,13 @@ function AdvisersPage() {
       const ids = Array.from(new Set((roleRows ?? []).map((r) => r.user_id)));
       if (ids.length === 0) return [];
 
-      const [{ data: profileRows, error: profileError }, { data: assignments, error: assignError }] =
-        await Promise.all([
-          supabase.from("profiles").select("id, full_name, email, phone, avatar_url").in("id", ids),
-          supabase.from("project_advisers").select("project_id, adviser_id").in("adviser_id", ids),
-        ]);
+      const [
+        { data: profileRows, error: profileError },
+        { data: assignments, error: assignError },
+      ] = await Promise.all([
+        supabase.from("profiles").select("id, full_name, email, phone, avatar_url").in("id", ids),
+        supabase.from("project_advisers").select("project_id, adviser_id").in("adviser_id", ids),
+      ]);
       if (profileError) throw profileError;
       if (assignError) throw assignError;
 
@@ -177,7 +194,9 @@ function AdvisersPage() {
           email: profile?.email ?? null,
           phone: profile?.phone ?? null,
           avatar_url: profile?.avatar_url ?? null,
-          projectIds: (assignments ?? []).filter((a) => a.adviser_id === id).map((a) => a.project_id),
+          projectIds: (assignments ?? [])
+            .filter((a) => a.adviser_id === id)
+            .map((a) => a.project_id),
         };
       });
     },
@@ -204,7 +223,9 @@ function AdvisersPage() {
 
   const grantAdviser = useMutation({
     mutationFn: async (target: { id: string; email: string | null; name: string | null }) => {
-      const { error } = await supabase.from("user_roles").insert({ user_id: target.id, role: "adviser" });
+      const { error } = await supabase
+        .from("user_roles")
+        .insert({ user_id: target.id, role: "adviser" });
       if (error && error.code !== "23505") {
         throw new Error(
           error.code === "42501"
@@ -242,9 +263,17 @@ function AdvisersPage() {
             : "Unable to revoke adviser access. Please try again.",
         );
       }
-      const { error: linkError } = await supabase.from("project_advisers").delete().eq("adviser_id", adviser.id);
-      if (linkError) throw new Error("Adviser role removed, but project links could not be cleared.");
-      await logAudit({ action: AUDIT.revoked, subject_user: adviser.id, detail: { email: adviser.email } });
+      const { error: linkError } = await supabase
+        .from("project_advisers")
+        .delete()
+        .eq("adviser_id", adviser.id);
+      if (linkError)
+        throw new Error("Adviser role removed, but project links could not be cleared.");
+      await logAudit({
+        action: AUDIT.revoked,
+        subject_user: adviser.id,
+        detail: { email: adviser.email },
+      });
     },
     onSuccess: () => {
       toast.success("Adviser access revoked.");
@@ -284,7 +313,8 @@ function AdvisersPage() {
         .from("project_advisers")
         .insert({ adviser_id: adviser.id, project_id: project.id });
       if (error) {
-        if (error.code === "23505") throw new Error("This adviser is already assigned to this project.");
+        if (error.code === "23505")
+          throw new Error("This adviser is already assigned to this project.");
         throw new Error(
           error.code === "42501"
             ? "You do not have permission to perform this action."
@@ -326,7 +356,9 @@ function AdvisersPage() {
 
   if (rolesLoading || !roles) return <Skeleton className="h-64 w-full" />;
   if (!canManage) {
-    return <EmptyState title="Not available" body="Only KAIVRA administrators can manage advisers." />;
+    return (
+      <EmptyState title="Not available" body="Only KAIVRA administrators can manage advisers." />
+    );
   }
 
   return (
@@ -334,7 +366,9 @@ function AdvisersPage() {
       <header className="space-y-2">
         <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Administration</p>
         <h1 className="font-display text-3xl sm:text-4xl">Advisers</h1>
-        <p className="text-sm text-muted-foreground">Manage adviser access and project permissions.</p>
+        <p className="text-sm text-muted-foreground">
+          Manage adviser access and project permissions.
+        </p>
       </header>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -348,7 +382,10 @@ function AdvisersPage() {
             className="h-12 pl-9"
           />
         </div>
-        <Button className="h-12 transition-transform active:scale-[0.98]" onClick={() => setAddOpen(true)}>
+        <Button
+          className="h-12 transition-transform active:scale-[0.98]"
+          onClick={() => setAddOpen(true)}
+        >
           <UserPlus className="mr-2 size-4" /> Add adviser
         </Button>
       </div>
@@ -376,7 +413,10 @@ function AdvisersPage() {
           }
         />
       ) : filtered.length === 0 ? (
-        <EmptyState title="No advisers found" body="No adviser matches that name, email or phone number." />
+        <EmptyState
+          title="No advisers found"
+          body="No adviser matches that name, email or phone number."
+        />
       ) : (
         <>
           {/* Desktop table */}
@@ -394,16 +434,22 @@ function AdvisersPage() {
               </thead>
               <tbody>
                 {filtered.map((adviser) => (
-                  <tr key={adviser.id} className="border-b border-border/60 transition-colors last:border-0 hover:bg-muted/40">
+                  <tr
+                    key={adviser.id}
+                    className="border-b border-border/60 transition-colors last:border-0 hover:bg-muted/40"
+                  >
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
                         <UserAvatar url={adviser.avatar_url} name={adviser.full_name} />
-                        <span className="font-medium">{adviser.full_name ?? "Unnamed adviser"}</span>
+                        <span className="font-medium">
+                          {adviser.full_name ?? "Unnamed adviser"}
+                        </span>
                       </div>
                     </td>
                     <td className="px-5 py-4 text-muted-foreground">{adviser.email ?? "—"}</td>
                     <td className="px-5 py-4">
-                      {adviser.projectIds.length} {adviser.projectIds.length === 1 ? "Project" : "Projects"}
+                      {adviser.projectIds.length}{" "}
+                      {adviser.projectIds.length === 1 ? "Project" : "Projects"}
                     </td>
                     <td className="px-5 py-4">{appsFor(adviser.projectIds).length} Applications</td>
                     <td className="px-5 py-4">
@@ -428,25 +474,41 @@ function AdvisersPage() {
                 className="rounded-xl border border-border bg-card p-5 transition-transform hover:-translate-y-0.5"
               >
                 <div className="flex items-start gap-3">
-                  <UserAvatar url={adviser.avatar_url} name={adviser.full_name} className="size-11" />
+                  <UserAvatar
+                    url={adviser.avatar_url}
+                    name={adviser.full_name}
+                    className="size-11"
+                  />
                   <div className="min-w-0 flex-1">
-                    <h2 className="truncate font-display text-xl">{adviser.full_name ?? "Unnamed adviser"}</h2>
+                    <h2 className="truncate font-display text-xl">
+                      {adviser.full_name ?? "Unnamed adviser"}
+                    </h2>
                     <p className="truncate text-sm text-muted-foreground">{adviser.email ?? "—"}</p>
-                    {adviser.phone ? <p className="text-sm text-muted-foreground">{adviser.phone}</p> : null}
+                    {adviser.phone ? (
+                      <p className="text-sm text-muted-foreground">{adviser.phone}</p>
+                    ) : null}
                   </div>
                   <Badge variant="secondary">Active</Badge>
                 </div>
                 <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
                   <div>
-                    <dt className="text-xs uppercase tracking-widest text-muted-foreground">Projects</dt>
+                    <dt className="text-xs uppercase tracking-widest text-muted-foreground">
+                      Projects
+                    </dt>
                     <dd className="mt-1 font-medium">{adviser.projectIds.length}</dd>
                   </div>
                   <div>
-                    <dt className="text-xs uppercase tracking-widest text-muted-foreground">Applications</dt>
+                    <dt className="text-xs uppercase tracking-widest text-muted-foreground">
+                      Applications
+                    </dt>
                     <dd className="mt-1 font-medium">{appsFor(adviser.projectIds).length}</dd>
                   </div>
                 </dl>
-                <Button variant="outline" className="mt-4 h-11 w-full" onClick={() => setManageId(adviser.id)}>
+                <Button
+                  variant="outline"
+                  className="mt-4 h-11 w-full"
+                  onClick={() => setManageId(adviser.id)}
+                >
                   Manage
                 </Button>
               </article>
@@ -463,7 +525,9 @@ function AdvisersPage() {
               .filter((i) => i.status === "pending")
               .map((invite) => (
                 <li key={invite.id} className="flex flex-wrap items-center justify-between gap-2">
-                  <span>{invite.full_name ? `${invite.full_name} · ${invite.email}` : invite.email}</span>
+                  <span>
+                    {invite.full_name ? `${invite.full_name} · ${invite.email}` : invite.email}
+                  </span>
                   <Badge variant="outline">Invited</Badge>
                 </li>
               ))}
@@ -489,16 +553,28 @@ function AdvisersPage() {
             <>
               <SheetHeader>
                 <SheetTitle className="font-display text-2xl">Adviser profile</SheetTitle>
-                <SheetDescription>Project access and application visibility for this adviser.</SheetDescription>
+                <SheetDescription>
+                  Project access and application visibility for this adviser.
+                </SheetDescription>
               </SheetHeader>
 
               <div className="mt-6 space-y-8 pb-10">
                 <div className="flex items-center gap-4">
-                  <UserAvatar url={manageAdviser.avatar_url} name={manageAdviser.full_name} className="size-14" />
+                  <UserAvatar
+                    url={manageAdviser.avatar_url}
+                    name={manageAdviser.full_name}
+                    className="size-14"
+                  />
                   <div className="min-w-0">
-                    <p className="font-display text-xl">{manageAdviser.full_name ?? "Unnamed adviser"}</p>
-                    <p className="truncate text-sm text-muted-foreground">{manageAdviser.email ?? "—"}</p>
-                    <p className="text-sm text-muted-foreground">{manageAdviser.phone ?? "No phone on file"}</p>
+                    <p className="font-display text-xl">
+                      {manageAdviser.full_name ?? "Unnamed adviser"}
+                    </p>
+                    <p className="truncate text-sm text-muted-foreground">
+                      {manageAdviser.email ?? "—"}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {manageAdviser.phone ?? "No phone on file"}
+                    </p>
                   </div>
                   <Badge variant="secondary" className="ml-auto">
                     Active
@@ -506,7 +582,9 @@ function AdvisersPage() {
                 </div>
 
                 <section className="space-y-3">
-                  <h3 className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Project access</h3>
+                  <h3 className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
+                    Project access
+                  </h3>
                   {projectsQuery.isLoading ? (
                     <Skeleton className="h-24 w-full" />
                   ) : projects.length === 0 ? (
@@ -526,10 +604,12 @@ function AdvisersPage() {
                           >
                             <div className="min-w-0">
                               <p className="font-medium">{project.name}</p>
-                              <p className="text-sm text-muted-foreground">{project.location || "—"}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {project.location || "—"}
+                              </p>
                               <p className="text-xs text-muted-foreground">
-                                {applications.filter((a) => a.project_id === project.id).length} applications ·{" "}
-                                {project.is_active ? "Active" : "Inactive"}
+                                {applications.filter((a) => a.project_id === project.id).length}{" "}
+                                applications · {project.is_active ? "Active" : "Inactive"}
                               </p>
                             </div>
                             <Button
@@ -537,7 +617,11 @@ function AdvisersPage() {
                               variant={assigned ? "outline" : "default"}
                               disabled={busy}
                               onClick={() =>
-                                toggleAssignment.mutate({ adviser: manageAdviser, project, assigned })
+                                toggleAssignment.mutate({
+                                  adviser: manageAdviser,
+                                  project,
+                                  assigned,
+                                })
                               }
                             >
                               {busy ? (
@@ -561,12 +645,16 @@ function AdvisersPage() {
                 </section>
 
                 <section className="space-y-3">
-                  <h3 className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Application access</h3>
+                  <h3 className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
+                    Application access
+                  </h3>
                   <AccessStats rows={appsFor(manageAdviser.projectIds)} />
                 </section>
 
                 <section className="space-y-3">
-                  <h3 className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Account status</h3>
+                  <h3 className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
+                    Account status
+                  </h3>
                   <div className="flex items-center justify-between rounded-lg border border-border p-4">
                     <span className="flex items-center gap-2 text-sm">
                       <ShieldCheck className="size-4 text-primary" /> Adviser access
@@ -592,8 +680,8 @@ function AdvisersPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Revoke adviser access?</AlertDialogTitle>
             <AlertDialogDescription>
-              This adviser will no longer be able to access applications belonging to assigned projects. Their
-              investor account, if any, will remain intact.
+              This adviser will no longer be able to access applications belonging to assigned
+              projects. Their investor account, if any, will remain intact.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -688,7 +776,12 @@ function AddAdviserDialog({
         .select("role")
         .eq("user_id", profile.id);
       if (rolesError) throw new Error("Unable to read this account's permissions.");
-      return { kind: "found", email: target, profile, roles: (roleRows ?? []).map((r) => r.role as string) };
+      return {
+        kind: "found",
+        email: target,
+        profile,
+        roles: (roleRows ?? []).map((r) => r.role as string),
+      };
     },
     onSuccess: setResult,
     onError: (error: Error) => toast.error(error.message),
@@ -769,7 +862,11 @@ function AddAdviserDialog({
         {result?.kind === "found" ? (
           <div className="space-y-4 rounded-lg border border-border p-4">
             <div className="flex items-center gap-3">
-              <UserAvatar url={result.profile.avatar_url} name={result.profile.full_name} className="size-12" />
+              <UserAvatar
+                url={result.profile.avatar_url}
+                name={result.profile.full_name}
+                className="size-12"
+              />
               <div className="min-w-0">
                 <p className="font-medium">{result.profile.full_name ?? "Unnamed user"}</p>
                 <p className="truncate text-sm text-muted-foreground">{result.profile.email}</p>
@@ -784,13 +881,14 @@ function AddAdviserDialog({
 
             {isAdviser ? (
               <p className="text-sm text-muted-foreground">
-                This user is already an adviser. Close this dialog and use Manage to review their projects.
+                This user is already an adviser. Close this dialog and use Manage to review their
+                projects.
               </p>
             ) : (
               <>
                 <div className="rounded-md border border-border bg-muted/40 p-3 text-sm text-muted-foreground">
-                  This will give this user adviser access to KAIVRA. You can choose the real estate projects they
-                  are permitted to review next.
+                  This will give this user adviser access to KAIVRA. You can choose the real estate
+                  projects they are permitted to review next.
                 </div>
                 <DialogFooter className="gap-2">
                   <Button variant="outline" onClick={() => onOpenChange(false)} disabled={granting}>
@@ -822,16 +920,28 @@ function AddAdviserDialog({
 
         {result?.kind === "none" ? (
           <div className="space-y-4 rounded-lg border border-border p-4">
-            <p className="text-sm text-muted-foreground">No KAIVRA account found for {result.email}.</p>
+            <p className="text-sm text-muted-foreground">
+              No KAIVRA account found for {result.email}.
+            </p>
             <h3 className="font-display text-xl">Invite adviser</h3>
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="invite-name">Full name (optional)</Label>
-                <Input id="invite-name" value={fullName} onChange={(e) => setFullName(e.target.value)} className="h-12" />
+                <Input
+                  id="invite-name"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  className="h-12"
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="invite-phone">Phone number (optional)</Label>
-                <Input id="invite-phone" value={phone} onChange={(e) => setPhone(e.target.value)} className="h-12" />
+                <Input
+                  id="invite-phone"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="h-12"
+                />
               </div>
             </div>
             {projects.length > 0 ? (
@@ -848,7 +958,9 @@ function AddAdviserDialog({
                         variant={selected ? "default" : "outline"}
                         onClick={() =>
                           setInviteProjects((prev) =>
-                            selected ? prev.filter((id) => id !== project.id) : [...prev, project.id],
+                            selected
+                              ? prev.filter((id) => id !== project.id)
+                              : [...prev, project.id],
                           )
                         }
                       >
@@ -860,7 +972,11 @@ function AddAdviserDialog({
               </div>
             ) : null}
             <DialogFooter className="gap-2">
-              <Button variant="outline" onClick={() => onOpenChange(false)} disabled={invite.isPending}>
+              <Button
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                disabled={invite.isPending}
+              >
                 Cancel
               </Button>
               <Button onClick={() => invite.mutate()} disabled={invite.isPending}>

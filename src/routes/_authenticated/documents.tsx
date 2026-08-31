@@ -14,7 +14,10 @@ export const Route = createFileRoute("/_authenticated/documents")({
   head: () => ({
     meta: [
       { title: "KAIVRA | My Documents" },
-      { name: "description", content: "Securely access the documents attached to your investment applications." },
+      {
+        name: "description",
+        content: "Securely access the documents attached to your investment applications.",
+      },
       { property: "og:title", content: "KAIVRA | My Documents" },
       { property: "og:description", content: "Your securely stored investment documents." },
       { property: "og:type", content: "website" },
@@ -45,7 +48,10 @@ function DocumentsPage() {
         .order("created_at", { ascending: false });
       if (error) throw error;
       const refByApp = new Map((apps ?? []).map((a) => [a.id, a.reference]));
-      return (data ?? []).map((d) => ({ ...d, reference: refByApp.get(d.application_id) ?? "Draft" }));
+      return (data ?? []).map((d) => ({
+        ...d,
+        reference: refByApp.get(d.application_id) ?? "Draft",
+      }));
     },
   });
 
@@ -53,11 +59,14 @@ function DocumentsPage() {
     <div className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6">
       <h1 className="font-display text-4xl">My documents</h1>
       <p className="mt-2 text-sm text-muted-foreground">
-        Your documents are stored privately and can only be opened by you and authorised KAIVRA staff.
+        Your documents are stored privately and can only be opened by you and authorised KAIVRA
+        staff.
       </p>
 
       <div className="mt-8 space-y-2">
-        {docs.isLoading ? [0, 1, 2].map((i) => <Skeleton key={i} className="h-16 rounded-lg" />) : null}
+        {docs.isLoading
+          ? [0, 1, 2].map((i) => <Skeleton key={i} className="h-16 rounded-lg" />)
+          : null}
         {docs.data?.length === 0 ? (
           <EmptyState
             title="No documents yet."
@@ -80,7 +89,12 @@ function DocumentsPage() {
                 {doc.file_name} · {doc.reference} · {formatDate(doc.created_at)}
               </p>
             </div>
-            <AsyncButton variant="ghost" size="sm" pendingLabel="Opening…" onClick={() => openDocument(doc.id)}>
+            <AsyncButton
+              variant="ghost"
+              size="sm"
+              pendingLabel="Opening…"
+              onClick={() => openDocument(doc.id)}
+            >
               <Eye className="mr-2 size-4" /> View
             </AsyncButton>
           </div>

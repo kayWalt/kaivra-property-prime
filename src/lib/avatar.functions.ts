@@ -25,7 +25,8 @@ export const removeAvatarFile = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) => z.object({ path: z.string().min(1).max(300) }).parse(data))
   .handler(async ({ data, context }) => {
-    if (!data.path.startsWith(`${context.userId}/`)) throw new Error("You can only remove your own picture.");
+    if (!data.path.startsWith(`${context.userId}/`))
+      throw new Error("You can only remove your own picture.");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     await supabaseAdmin.storage.from(AVATARS_BUCKET).remove([data.path]);
     return { ok: true };

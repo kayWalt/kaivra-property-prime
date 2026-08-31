@@ -17,7 +17,10 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
       { title: "KAIVRA | Investor Dashboard" },
-      { name: "description", content: "View your real-estate investments, payments and application status." },
+      {
+        name: "description",
+        content: "View your real-estate investments, payments and application status.",
+      },
       { property: "og:title", content: "KAIVRA | Investor Dashboard" },
       { property: "og:description", content: "Your investments at a glance." },
       { property: "og:type", content: "website" },
@@ -76,19 +79,24 @@ function Dashboard() {
   const progress = portfolio.value > 0 ? Math.round((portfolio.paid / portfolio.value) * 100) : 0;
   const nextInspection = (inspections.data ?? [])
     .filter((i) => isUpcoming(i.status, i.scheduled_date, i.scheduled_time))
-    .sort((a, b) => (a.scheduled_date + a.scheduled_time > b.scheduled_date + b.scheduled_time ? 1 : -1))[0];
+    .sort((a, b) =>
+      a.scheduled_date + a.scheduled_time > b.scheduled_date + b.scheduled_time ? 1 : -1,
+    )[0];
 
   const firstName = (profile?.full_name || user?.email || "Investor").split(" ")[0];
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6">
-      <p className="eyebrow text-primary">{role === "investor" ? "Investor" : role.replace("_", " ")}</p>
+      <p className="eyebrow text-primary">
+        {role === "investor" ? "Investor" : role.replace("_", " ")}
+      </p>
       <h1 className="mt-2 font-display text-4xl">Welcome back, {firstName}</h1>
 
       {role !== "investor" ? (
         <div className="mt-6 rounded-lg border border-border bg-card p-5">
           <p className="text-sm text-muted-foreground">
-            You have management access. Open the management workspace to review applications and verify payments.
+            You have management access. Open the management workspace to review applications and
+            verify payments.
           </p>
           <Button asChild className="mt-4">
             <Link to="/admin">Open management workspace</Link>
@@ -130,7 +138,10 @@ function Dashboard() {
             <p className="font-semibold">{progress}%</p>
           </div>
           <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
-            <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${progress}%` }} />
+            <div
+              className="h-full rounded-full bg-primary transition-all"
+              style={{ width: `${progress}%` }}
+            />
           </div>
         </div>
       </section>
@@ -153,11 +164,15 @@ function Dashboard() {
                 </div>
                 <div>
                   <dt className="eyebrow text-muted-foreground">Date</dt>
-                  <dd className="mt-1 font-semibold">{formatDate(nextInspection.scheduled_date)}</dd>
+                  <dd className="mt-1 font-semibold">
+                    {formatDate(nextInspection.scheduled_date)}
+                  </dd>
                 </div>
                 <div>
                   <dt className="eyebrow text-muted-foreground">Time</dt>
-                  <dd className="mt-1 font-semibold">{formatSlot(nextInspection.scheduled_time)}</dd>
+                  <dd className="mt-1 font-semibold">
+                    {formatSlot(nextInspection.scheduled_time)}
+                  </dd>
                 </div>
               </dl>
               <div className="mt-4 flex items-center gap-3">
@@ -195,7 +210,8 @@ function Dashboard() {
                   <div>
                     <p className="font-semibold">{formatNaira(t.amount)}</p>
                     <p className="text-xs text-muted-foreground">
-                      {formatDate(t.paid_on ?? t.created_at)} · {t.applications?.projects?.name ?? "—"}
+                      {formatDate(t.paid_on ?? t.created_at)} ·{" "}
+                      {t.applications?.projects?.name ?? "—"}
                     </p>
                   </div>
                   <PaymentBadge status={t.status} />
@@ -214,10 +230,14 @@ function Dashboard() {
       </div>
 
       <div className="mt-6 space-y-4">
-        {apps.isLoading ? [0, 1].map((i) => <Skeleton key={i} className="h-44 w-full rounded-lg" />) : null}
+        {apps.isLoading
+          ? [0, 1].map((i) => <Skeleton key={i} className="h-44 w-full rounded-lg" />)
+          : null}
 
         {apps.isError ? (
-          <p className="text-sm text-destructive">Your investments could not be loaded. Please refresh the page.</p>
+          <p className="text-sm text-destructive">
+            Your investments could not be loaded. Please refresh the page.
+          </p>
         ) : null}
 
         {apps.data?.length === 0 ? (
@@ -252,7 +272,9 @@ function Dashboard() {
               <div className="p-5">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <h3 className="font-display text-2xl leading-tight">{app.projects?.name ?? "Project pending"}</h3>
+                    <h3 className="font-display text-2xl leading-tight">
+                      {app.projects?.name ?? "Project pending"}
+                    </h3>
                     <p className="mt-1 text-sm text-muted-foreground">
                       {app.properties?.name ?? "Property not selected"}
                       {app.properties?.size_label ? ` · ${app.properties.size_label}` : ""}

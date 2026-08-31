@@ -37,7 +37,10 @@ export const Route = createFileRoute("/_authenticated/admin/inspections")({
   head: () => ({
     meta: [
       { title: "KAIVRA | Inspection Management" },
-      { name: "description", content: "Confirm, reschedule and complete investor property inspections." },
+      {
+        name: "description",
+        content: "Confirm, reschedule and complete investor property inspections.",
+      },
       { property: "og:title", content: "KAIVRA | Inspection Management" },
       { property: "og:description", content: "Manage every KAIVRA inspection request." },
       { property: "og:type", content: "website" },
@@ -121,11 +124,18 @@ function AdminInspections() {
     enabled: isAdmin,
     staleTime: 5 * 60_000,
     queryFn: async () => {
-      const { data, error } = await supabase.from("user_roles").select("user_id").eq("role", "adviser");
+      const { data, error } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "adviser");
       if (error) throw error;
       const ids = (data ?? []).map((r) => r.user_id);
-      if (ids.length === 0) return [] as { id: string; full_name: string | null; email: string | null }[];
-      const { data: p, error: pe } = await supabase.from("profiles").select("id, full_name, email").in("id", ids);
+      if (ids.length === 0)
+        return [] as { id: string; full_name: string | null; email: string | null }[];
+      const { data: p, error: pe } = await supabase
+        .from("profiles")
+        .select("id, full_name, email")
+        .in("id", ids);
       if (pe) throw pe;
       return p ?? [];
     },
@@ -161,7 +171,12 @@ function AdminInspections() {
     setAdviser(row.assigned_adviser ?? "");
   }
 
-  async function apply(row: Row, patch: TablesUpdate<"inspection_appointments">, message: string, action: string) {
+  async function apply(
+    row: Row,
+    patch: TablesUpdate<"inspection_appointments">,
+    message: string,
+    action: string,
+  ) {
     const { error } = await supabase.from("inspection_appointments").update(patch).eq("id", row.id);
     if (error) {
       toast.error(
@@ -174,7 +189,12 @@ function AdminInspections() {
     await Promise.all([
       notify(row.investor_id, "Inspection update", message, "/inspections"),
       row.application_id
-        ? logEvent(row.application_id, action, `${row.reference} · ${message}`, profile?.full_name ?? undefined)
+        ? logEvent(
+            row.application_id,
+            action,
+            `${row.reference} · ${message}`,
+            profile?.full_name ?? undefined,
+          )
         : Promise.resolve(),
     ]);
     queryClient.invalidateQueries({ queryKey: ["admin-inspections"] });
@@ -185,7 +205,12 @@ function AdminInspections() {
 
   if (rolesLoading) return <Skeleton className="mx-auto mt-10 h-40 w-full max-w-6xl" />;
   if (!staff) {
-    return <EmptyState title="Not available" body="This workspace is for KAIVRA advisers and administrators." />;
+    return (
+      <EmptyState
+        title="Not available"
+        body="This workspace is for KAIVRA advisers and administrators."
+      />
+    );
   }
 
   return (
@@ -208,7 +233,11 @@ function AdminInspections() {
       </div>
 
       <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Input value={term} onChange={(e) => setTerm(e.target.value)} placeholder="Search reference, project, contact" />
+        <Input
+          value={term}
+          onChange={(e) => setTerm(e.target.value)}
+          placeholder="Search reference, project, contact"
+        />
         <Select value={status} onValueChange={setStatus}>
           <SelectTrigger>
             <SelectValue placeholder="Status" />
@@ -245,7 +274,10 @@ function AdminInspections() {
         </div>
       ) : rows.length === 0 ? (
         <div className="mt-8">
-          <EmptyState title="No inspections found" body="Adjust your filters or wait for new investor requests." />
+          <EmptyState
+            title="No inspections found"
+            body="Adjust your filters or wait for new investor requests."
+          />
         </div>
       ) : (
         <div className="mt-6 divide-y divide-border rounded-lg border border-border bg-card">
@@ -261,7 +293,8 @@ function AdminInspections() {
                   {row.projects?.name ?? "Project"} · {row.properties?.name ?? "Property"}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {row.reference} · {formatDate(row.scheduled_date)} · {formatSlot(row.scheduled_time)}
+                  {row.reference} · {formatDate(row.scheduled_date)} ·{" "}
+                  {formatSlot(row.scheduled_time)}
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {row.email ?? "—"} · {row.phone ?? "—"} · {row.attendee_count} visitor(s)
@@ -295,7 +328,12 @@ function AdminInspections() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label htmlFor="reschedule-date">Date</Label>
-                  <Input id="reschedule-date" type="date" value={newDate} onChange={(e) => setNewDate(e.target.value)} />
+                  <Input
+                    id="reschedule-date"
+                    type="date"
+                    value={newDate}
+                    onChange={(e) => setNewDate(e.target.value)}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="reschedule-time">Time</Label>
@@ -317,7 +355,10 @@ function AdminInspections() {
               {isAdmin ? (
                 <div>
                   <Label htmlFor="adviser">Assigned adviser</Label>
-                  <Select value={adviser || "none"} onValueChange={(v) => setAdviser(v === "none" ? "" : v)}>
+                  <Select
+                    value={adviser || "none"}
+                    onValueChange={(v) => setAdviser(v === "none" ? "" : v)}
+                  >
                     <SelectTrigger id="adviser">
                       <SelectValue placeholder="Unassigned" />
                     </SelectTrigger>
@@ -335,7 +376,12 @@ function AdminInspections() {
 
               <div>
                 <Label htmlFor="admin-note">Internal note</Label>
-                <Textarea id="admin-note" rows={3} value={note} onChange={(e) => setNote(e.target.value)} />
+                <Textarea
+                  id="admin-note"
+                  rows={3}
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                />
               </div>
 
               <div className="flex flex-wrap gap-2">
@@ -383,7 +429,11 @@ function AdminInspections() {
                   onClick={() =>
                     apply(
                       open,
-                      { status: "completed", completed_at: new Date().toISOString(), admin_note: note || null },
+                      {
+                        status: "completed",
+                        completed_at: new Date().toISOString(),
+                        admin_note: note || null,
+                      },
                       `Your inspection ${open.reference} has been marked completed. Thank you for visiting.`,
                       "inspection_completed",
                     )
@@ -411,7 +461,11 @@ function AdminInspections() {
                   onClick={() =>
                     apply(
                       open,
-                      { status: "cancelled", cancelled_at: new Date().toISOString(), admin_note: note || null },
+                      {
+                        status: "cancelled",
+                        cancelled_at: new Date().toISOString(),
+                        admin_note: note || null,
+                      },
                       `Your inspection ${open.reference} has been cancelled. Please book a new visit.`,
                       "inspection_cancelled",
                     )

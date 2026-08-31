@@ -91,7 +91,11 @@ export function AddPaymentDialog({
         paymentId: payment.id,
       });
 
-      void logEvent(applicationId, "payment_proof_uploaded", `Payment of ${value} submitted for verification`);
+      void logEvent(
+        applicationId,
+        "payment_proof_uploaded",
+        `Payment of ${value} submitted for verification`,
+      );
       void notifyStaffForProject(
         projectId ?? null,
         "New payment proof uploaded",
@@ -125,7 +129,8 @@ export function AddPaymentDialog({
         <DialogHeader>
           <DialogTitle>Upload proof of payment</DialogTitle>
           <DialogDescription>
-            Record what you paid and attach the bank receipt. Our team will verify it and update your balance.
+            Record what you paid and attach the bank receipt. Our team will verify it and update
+            your balance.
           </DialogDescription>
         </DialogHeader>
 
@@ -144,7 +149,12 @@ export function AddPaymentDialog({
             </div>
             <div>
               <Label htmlFor="pay-date">Payment date</Label>
-              <Input id="pay-date" type="date" value={paidOn} onChange={(e) => setPaidOn(e.target.value)} />
+              <Input
+                id="pay-date"
+                type="date"
+                value={paidOn}
+                onChange={(e) => setPaidOn(e.target.value)}
+              />
             </div>
           </div>
 
@@ -183,7 +193,12 @@ export function AddPaymentDialog({
 
           <div>
             <Label htmlFor="pay-note">Note (optional)</Label>
-            <Textarea id="pay-note" rows={2} value={note} onChange={(e) => setNote(e.target.value)} />
+            <Textarea
+              id="pay-note"
+              rows={2}
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+            />
           </div>
 
           <div>

@@ -17,7 +17,12 @@ import {
 import { useProfile, useRoles, useSession, primaryRole } from "@/hooks/useAuth";
 import { UserAvatar } from "./UserAvatar";
 import { ShareQrButton } from "./ShareQrButton";
-import { clearPushExternalUserId, isMedianApp, requestPushPermission, setPushExternalUserId } from "@/lib/median";
+import {
+  clearPushExternalUserId,
+  isMedianApp,
+  requestPushPermission,
+  setPushExternalUserId,
+} from "@/lib/median";
 import { cn } from "@/lib/utils";
 import type { AppRole } from "@/lib/kaivra";
 
@@ -124,7 +129,13 @@ export function AppShell({ children }: { children: ReactNode }) {
           </nav>
           <div className="ml-auto flex items-center gap-1">
             {role === "admin" || role === "super_admin" ? <ShareQrButton /> : null}
-            <Button asChild variant="ghost" size="icon" aria-label="Notifications" className="relative">
+            <Button
+              asChild
+              variant="ghost"
+              size="icon"
+              aria-label="Notifications"
+              className="relative"
+            >
               <Link to="/notifications">
                 <Bell className="size-5" />
                 {unread.data ? (
@@ -143,7 +154,9 @@ export function AppShell({ children }: { children: ReactNode }) {
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel className="truncate">
                   {profile?.full_name || user?.email}
-                  <span className="eyebrow mt-1 block text-muted-foreground">{role.replace("_", " ")}</span>
+                  <span className="eyebrow mt-1 block text-muted-foreground">
+                    {role.replace("_", " ")}
+                  </span>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>

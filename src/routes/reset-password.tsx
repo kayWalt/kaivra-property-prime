@@ -16,10 +16,14 @@ export const Route = createFileRoute("/reset-password")({
       { title: "KAIVRA | Set a New Password" },
       {
         name: "description",
-        content: "Choose a new password for your KAIVRA investor account and regain secure access to your investments.",
+        content:
+          "Choose a new password for your KAIVRA investor account and regain secure access to your investments.",
       },
       { property: "og:title", content: "KAIVRA | Set a New Password" },
-      { property: "og:description", content: "Securely reset the password for your KAIVRA investor account." },
+      {
+        property: "og:description",
+        content: "Securely reset the password for your KAIVRA investor account.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -78,7 +82,9 @@ function ResetPasswordPage() {
       toast.success("Your password has been updated.");
       void navigate({ to: "/dashboard", replace: true });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not update your password. Please try again.");
+      toast.error(
+        err instanceof Error ? err.message : "Could not update your password. Please try again.",
+      );
     } finally {
       setBusy(false);
     }
@@ -97,14 +103,17 @@ function ResetPasswordPage() {
         ) : !valid ? (
           <div className="mt-4 space-y-6">
             <p className="text-sm text-muted-foreground">
-              This password reset link is invalid or has expired. Request a new link from the sign-in page.
+              This password reset link is invalid or has expired. Request a new link from the
+              sign-in page.
             </p>
             <Button className="h-12 w-full" onClick={() => navigate({ to: "/auth" })}>
               Back to sign in
             </Button>
           </div>
         ) : done ? (
-          <p className="mt-4 text-sm text-muted-foreground">Password updated. Redirecting to your dashboard…</p>
+          <p className="mt-4 text-sm text-muted-foreground">
+            Password updated. Redirecting to your dashboard…
+          </p>
         ) : (
           <form onSubmit={submit} className="mt-8 space-y-4" noValidate>
             <div className="space-y-2">

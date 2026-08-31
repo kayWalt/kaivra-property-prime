@@ -2,7 +2,16 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Check, ChevronLeft, ChevronRight, CloudOff, Loader2, Plus, Save, Trash2 } from "lucide-react";
+import {
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  CloudOff,
+  Loader2,
+  Plus,
+  Save,
+  Trash2,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { AsyncButton } from "@/components/kaivra/AsyncButton";
@@ -23,7 +32,13 @@ import { UploadCard, uploadDocument, type UploadedDoc } from "@/components/kaivr
 import { SignaturePad } from "@/components/kaivra/SignaturePad";
 import { PaymentBadge } from "@/components/kaivra/StatusBadge";
 import { useProfile, useSession } from "@/hooks/useAuth";
-import { fetchDocuments, fetchPayments, logEvent, notifyStaffForProject, totals } from "@/lib/applications";
+import {
+  fetchDocuments,
+  fetchPayments,
+  logEvent,
+  notifyStaffForProject,
+  totals,
+} from "@/lib/applications";
 import {
   APPLICATION_STEPS,
   PAYMENT_METHODS,
@@ -39,16 +54,23 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/application")({
   validateSearch: (search: Record<string, unknown>) => {
-    const out: { id?: string | undefined; project?: string | undefined; property?: string | undefined } = {};
-    if (typeof search['id'] === "string") out.id = search['id'];
-    if (typeof search['project'] === "string") out.project = search['project'];
-    if (typeof search['property'] === "string") out.property = search['property'];
+    const out: {
+      id?: string | undefined;
+      project?: string | undefined;
+      property?: string | undefined;
+    } = {};
+    if (typeof search["id"] === "string") out.id = search["id"];
+    if (typeof search["project"] === "string") out.project = search["project"];
+    if (typeof search["property"] === "string") out.property = search["property"];
     return out;
   },
   head: () => ({
     meta: [
       { title: "KAIVRA | Investor Application" },
-      { name: "description", content: "Complete your real-estate investment subscription in a few simple steps." },
+      {
+        name: "description",
+        content: "Complete your real-estate investment subscription in a few simple steps.",
+      },
       { property: "og:title", content: "KAIVRA | Investor Application" },
       { property: "og:description", content: "Complete your investment subscription." },
       { property: "og:type", content: "website" },
@@ -150,7 +172,11 @@ function ApplicationWizard() {
     queryKey: ["application", applicationId],
     enabled: !!applicationId,
     queryFn: async () => {
-      const { data, error } = await supabase.from("applications").select("*").eq("id", applicationId!).maybeSingle();
+      const { data, error } = await supabase
+        .from("applications")
+        .select("*")
+        .eq("id", applicationId!)
+        .maybeSingle();
       if (error) throw error;
       return data;
     },
@@ -166,9 +192,14 @@ function ApplicationWizard() {
 
     async function boot() {
       if (search.id) {
-        const { data } = await supabase.from("applications").select("*").eq("id", search.id!).maybeSingle();
+        const { data } = await supabase
+          .from("applications")
+          .select("*")
+          .eq("id", search.id!)
+          .maybeSingle();
         if (data) {
-          const cached = typeof window !== "undefined" ? window.localStorage.getItem(localKey(data.id)) : null;
+          const cached =
+            typeof window !== "undefined" ? window.localStorage.getItem(localKey(data.id)) : null;
           const base: DraftState = {
             project_id: data.project_id,
             property_id: data.property_id,
@@ -236,7 +267,6 @@ function ApplicationWizard() {
         return;
       }
 
-
       // create a fresh draft
 
       const seed: DraftState = {
@@ -276,13 +306,15 @@ function ApplicationWizard() {
     void boot();
   }, [user, profile, search.id, search.project, search.property, initialised, navigate]);
 
-
   // ---------- autosave ----------
   const persist = useCallback(
     async (next: DraftState) => {
       if (!applicationId) return;
       if (typeof window !== "undefined") {
-        window.localStorage.setItem(localKey(applicationId), JSON.stringify({ savedAt: Date.now(), draft: next }));
+        window.localStorage.setItem(
+          localKey(applicationId),
+          JSON.stringify({ savedAt: Date.now(), draft: next }),
+        );
       }
       if (typeof navigator !== "undefined" && !navigator.onLine) {
         pendingRef.current = next;
@@ -358,7 +390,8 @@ function ApplicationWizard() {
   const proofDocs = docs.filter((d) => d.kind === "proof_of_payment");
   const additionalDocs = docs.filter((d) => d.kind === "additional");
 
-  const readOnly = existing.data?.status && !["draft", "requires_correction"].includes(existing.data.status);
+  const readOnly =
+    existing.data?.status && !["draft", "requires_correction"].includes(existing.data.status);
 
   function set<K extends keyof DraftState>(key: K, value: DraftState[K]) {
     setDraft((prev) => ({ ...prev, [key]: value }));
@@ -367,24 +400,25 @@ function ApplicationWizard() {
   function validateStep(target: number): boolean {
     const next: Record<string, string> = {};
     if (target === 1) {
-      if (!draft.project_id) next['project'] = "Select a project to continue.";
-      if (!draft.property_id) next['property'] = "Select a property to continue.";
+      if (!draft.project_id) next["project"] = "Select a project to continue.";
+      if (!draft.property_id) next["property"] = "Select a property to continue.";
     }
     if (target === 2) {
-      if (!draft.personal.full_name?.trim()) next['full_name'] = "Full name is required.";
-      if (!draft.personal.date_of_birth) next['date_of_birth'] = "Date of birth is required.";
+      if (!draft.personal.full_name?.trim()) next["full_name"] = "Full name is required.";
+      if (!draft.personal.date_of_birth) next["date_of_birth"] = "Date of birth is required.";
       if (!draft.personal.residential_address?.trim())
-        next['residential_address'] = "Residential address is required.";
+        next["residential_address"] = "Residential address is required.";
     }
     if (target === 3) {
-      if (!draft.contact.phone?.trim()) next['phone'] = "Phone number is required.";
+      if (!draft.contact.phone?.trim()) next["phone"] = "Phone number is required.";
       const email = draft.contact.email?.trim() ?? "";
-      if (!email) next['email'] = "Email address is required.";
-      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) next['email'] = "Enter a valid email address.";
+      if (!email) next["email"] = "Email address is required.";
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+        next["email"] = "Enter a valid email address.";
     }
     if (target === 6) {
-      if (passportDocs.length === 0) next['passport'] = "Upload your passport photograph.";
-      if (signatureDocs.length === 0) next['signature'] = "Provide your signature.";
+      if (passportDocs.length === 0) next["passport"] = "Upload your passport photograph.";
+      if (signatureDocs.length === 0) next["signature"] = "Provide your signature.";
     }
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -435,7 +469,11 @@ function ApplicationWizard() {
       await persist({ ...draft, current_step: 7 });
       const { data, error } = await supabase
         .from("applications")
-        .update({ status: "submitted", submitted_at: new Date().toISOString(), declaration_accepted: true })
+        .update({
+          status: "submitted",
+          submitted_at: new Date().toISOString(),
+          declaration_accepted: true,
+        })
         .eq("id", applicationId)
         .select("reference, project_id")
         .single();
@@ -582,9 +620,14 @@ function ApplicationWizard() {
             plan={draft.investment.payment_plan ?? "Outright"}
             disabled={!!readOnly}
             onUnits={(value) =>
-              setDraft((p) => ({ ...p, investment: { ...p.investment, units: value, total_value: unitPrice * value } }))
+              setDraft((p) => ({
+                ...p,
+                investment: { ...p.investment, units: value, total_value: unitPrice * value },
+              }))
             }
-            onPlan={(plan) => setDraft((p) => ({ ...p, investment: { ...p.investment, payment_plan: plan } }))}
+            onPlan={(plan) =>
+              setDraft((p) => ({ ...p, investment: { ...p.investment, payment_plan: plan } }))
+            }
           />
         ) : null}
 
@@ -673,8 +716,8 @@ function ApplicationWizard() {
           <DialogHeader>
             <DialogTitle className="font-display text-2xl">Submit application?</DialogTitle>
             <DialogDescription>
-              Please review your information carefully before submitting. You will not be able to edit the application
-              once submitted unless a correction is requested.
+              Please review your information carefully before submitting. You will not be able to
+              edit the application once submitted unless a correction is requested.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -700,7 +743,10 @@ function SaveIndicator({ state }: { state: SaveState }) {
   } as const;
   const item = map[state];
   return (
-    <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground" aria-live="polite">
+    <span
+      className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground"
+      aria-live="polite"
+    >
       {item.icon}
       {item.text}
     </span>
@@ -747,7 +793,13 @@ function StepProject({
   onProject,
   onProperty,
 }: {
-  projects: { id: string; name: string; location: string | null; hero_image: string | null; gallery_images?: unknown }[];
+  projects: {
+    id: string;
+    name: string;
+    location: string | null;
+    hero_image: string | null;
+    gallery_images?: unknown;
+  }[];
   properties: {
     id: string;
     name: string;
@@ -781,9 +833,13 @@ function StepProject({
     <div className="space-y-10">
       <section>
         <h2 className="font-display text-2xl">Select your investment</h2>
-        {errors['project'] ? <p className="mt-1 text-xs text-destructive">{errors['project']}</p> : null}
+        {errors["project"] ? (
+          <p className="mt-1 text-xs text-destructive">{errors["project"]}</p>
+        ) : null}
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          {loadingProjects ? [0, 1].map((i) => <Skeleton key={i} className="h-48 rounded-lg" />) : null}
+          {loadingProjects
+            ? [0, 1].map((i) => <Skeleton key={i} className="h-48 rounded-lg" />)
+            : null}
           {projects.map((project) => (
             <button
               key={project.id}
@@ -792,7 +848,9 @@ function StepProject({
               onClick={() => onProject(project.id)}
               className={cn(
                 "overflow-hidden rounded-lg border text-left transition-shadow hover:shadow-card",
-                draft.project_id === project.id ? "border-primary ring-1 ring-primary" : "border-border",
+                draft.project_id === project.id
+                  ? "border-primary ring-1 ring-primary"
+                  : "border-border",
               )}
             >
               <img
@@ -815,9 +873,13 @@ function StepProject({
       {draft.project_id ? (
         <section>
           <h2 className="font-display text-2xl">Choose your property</h2>
-          {errors['property'] ? <p className="mt-1 text-xs text-destructive">{errors['property']}</p> : null}
+          {errors["property"] ? (
+            <p className="mt-1 text-xs text-destructive">{errors["property"]}</p>
+          ) : null}
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
-            {loadingProperties ? [0, 1].map((i) => <Skeleton key={i} className="h-40 rounded-lg" />) : null}
+            {loadingProperties
+              ? [0, 1].map((i) => <Skeleton key={i} className="h-40 rounded-lg" />)
+              : null}
             {properties.map((property) => (
               <PropertyCard
                 key={property.id}
@@ -829,7 +891,9 @@ function StepProject({
               />
             ))}
             {!loadingProperties && properties.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No properties are currently available for this project.</p>
+              <p className="text-sm text-muted-foreground">
+                No properties are currently available for this project.
+              </p>
             ) : null}
           </div>
         </section>
@@ -867,12 +931,15 @@ function PropertyCard({
   onSelect: () => void;
 }) {
   const ownImages = Array.isArray(property.image_urls)
-    ? (property.image_urls as unknown[]).filter((u): u is string => typeof u === "string" && u.length > 0)
+    ? (property.image_urls as unknown[]).filter(
+        (u): u is string => typeof u === "string" && u.length > 0,
+      )
     : [];
   const images = ownImages.length > 0 ? ownImages : fallbackImages;
   const shown = images.slice(0, 4);
   const [index, setIndex] = useState(0);
-  const current = shown[Math.min(index, Math.max(shown.length - 1, 0))] ?? "/images/property-terrace.jpg";
+  const current =
+    shown[Math.min(index, Math.max(shown.length - 1, 0))] ?? "/images/property-terrace.jpg";
 
   return (
     <div
@@ -931,7 +998,12 @@ function PropertyCard({
           </>
         ) : null}
       </div>
-      <button type="button" disabled={disabled} onClick={onSelect} className="block w-full p-4 text-left">
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={onSelect}
+        className="block w-full p-4 text-left"
+      >
         <span className="eyebrow text-primary">{property.property_type || "Property"}</span>
         <span className="mt-1 block text-sm font-semibold">{property.name}</span>
         {property.size_label ? (
@@ -960,7 +1032,7 @@ function StepPersonal({
   const update = (patch: Partial<PersonalDetails>) => onChange({ ...value, ...patch });
   return (
     <div className="grid gap-5 sm:grid-cols-2">
-      <Field label="Full name" required error={errors['full_name']} htmlFor="full_name">
+      <Field label="Full name" required error={errors["full_name"]} htmlFor="full_name">
         <Input
           id="full_name"
           disabled={disabled}
@@ -968,7 +1040,7 @@ function StepPersonal({
           onChange={(e) => update({ full_name: e.target.value })}
         />
       </Field>
-      <Field label="Date of birth" required error={errors['date_of_birth']} htmlFor="dob">
+      <Field label="Date of birth" required error={errors["date_of_birth"]} htmlFor="dob">
         <Input
           id="dob"
           type="date"
@@ -1047,7 +1119,12 @@ function StepPersonal({
         />
       </Field>
       <div className="sm:col-span-2">
-        <Field label="Residential address" required error={errors['residential_address']} htmlFor="address">
+        <Field
+          label="Residential address"
+          required
+          error={errors["residential_address"]}
+          htmlFor="address"
+        >
           <Textarea
             id="address"
             rows={3}
@@ -1077,7 +1154,7 @@ function StepContact({
   const update = (patch: Partial<ContactDetails>) => onChange({ ...value, ...patch });
   return (
     <div className="grid gap-5 sm:grid-cols-2">
-      <Field label="Phone number" required error={errors['phone']} htmlFor="phone">
+      <Field label="Phone number" required error={errors["phone"]} htmlFor="phone">
         <Input
           id="phone"
           type="tel"
@@ -1088,7 +1165,7 @@ function StepContact({
           onChange={(e) => update({ phone: e.target.value })}
         />
       </Field>
-      <Field label="Email address" required error={errors['email']} htmlFor="email">
+      <Field label="Email address" required error={errors["email"]} htmlFor="email">
         <Input
           id="email"
           type="email"
@@ -1135,7 +1212,9 @@ function StepContact({
             onCheckedChange={(checked) =>
               update({
                 mailing_same_as_residential: !!checked,
-                mailing_address: checked ? (value.residential_address ?? residential) : (value.mailing_address ?? ""),
+                mailing_address: checked
+                  ? (value.residential_address ?? residential)
+                  : (value.mailing_address ?? ""),
               })
             }
           />
@@ -1159,7 +1238,9 @@ function SummaryTile({ label, value, tone }: { label: string; value: string; ton
   return (
     <div className="rounded-lg border border-border bg-card p-4">
       <p className="eyebrow text-muted-foreground">{label}</p>
-      <p className={cn("mt-2 font-display text-2xl", tone === "primary" && "text-primary")}>{value}</p>
+      <p className={cn("mt-2 font-display text-2xl", tone === "primary" && "text-primary")}>
+        {value}
+      </p>
     </div>
   );
 }
@@ -1392,16 +1473,24 @@ function StepPayment({
               className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border px-4 py-3"
             >
               <div>
-                <p className="eyebrow text-muted-foreground">Payment {String(index + 1).padStart(2, "0")}</p>
+                <p className="eyebrow text-muted-foreground">
+                  Payment {String(index + 1).padStart(2, "0")}
+                </p>
                 <p className="mt-1 text-sm font-semibold">{formatNaira(payment.amount)}</p>
                 <p className="text-xs text-muted-foreground">
-                  {formatDate(payment.paid_on)} · {payment.bank ?? "—"} · {payment.reference ?? "no reference"}
+                  {formatDate(payment.paid_on)} · {payment.bank ?? "—"} ·{" "}
+                  {payment.reference ?? "no reference"}
                 </p>
               </div>
               <div className="flex items-center gap-2">
                 <PaymentBadge status={payment.status as "pending" | "verified" | "rejected"} />
                 {!disabled && payment.status !== "verified" ? (
-                  <AsyncButton variant="ghost" size="icon" aria-label="Remove payment" onClick={() => onRemove(payment.id)}>
+                  <AsyncButton
+                    variant="ghost"
+                    size="icon"
+                    aria-label="Remove payment"
+                    onClick={() => onRemove(payment.id)}
+                  >
                     <Trash2 className="size-4" />
                   </AsyncButton>
                 ) : null}
@@ -1433,10 +1522,18 @@ function StepPayment({
                 />
               </Field>
               <Field label="Bank" htmlFor="bank">
-                <Input id="bank" value={form.bank} onChange={(e) => setForm({ ...form, bank: e.target.value })} />
+                <Input
+                  id="bank"
+                  value={form.bank}
+                  onChange={(e) => setForm({ ...form, bank: e.target.value })}
+                />
               </Field>
               <Field label="Sender" htmlFor="sender">
-                <Input id="sender" value={form.sender} onChange={(e) => setForm({ ...form, sender: e.target.value })} />
+                <Input
+                  id="sender"
+                  value={form.sender}
+                  onChange={(e) => setForm({ ...form, sender: e.target.value })}
+                />
               </Field>
               <Field label="Transaction reference" htmlFor="reference">
                 <Input
@@ -1532,7 +1629,7 @@ function StepDocuments({
         onChanged={onChanged}
         disabled={disabled}
       />
-      {errors['passport'] ? <p className="text-xs text-destructive">{errors['passport']}</p> : null}
+      {errors["passport"] ? <p className="text-xs text-destructive">{errors["passport"]}</p> : null}
 
       <div className="space-y-3">
         <UploadCard
@@ -1577,7 +1674,9 @@ function StepDocuments({
             ) : null}
           </div>
         ) : null}
-        {errors['signature'] ? <p className="text-xs text-destructive">{errors['signature']}</p> : null}
+        {errors["signature"] ? (
+          <p className="text-xs text-destructive">{errors["signature"]}</p>
+        ) : null}
       </div>
 
       <UploadCard
@@ -1723,7 +1822,8 @@ function StepReview({
             {payments.map((p, i) => (
               <li key={p.id} className="flex items-center justify-between text-sm">
                 <span>
-                  Payment {String(i + 1).padStart(2, "0")} · {formatNaira(p.amount)} · {formatDate(p.paid_on)}
+                  Payment {String(i + 1).padStart(2, "0")} · {formatNaira(p.amount)} ·{" "}
+                  {formatDate(p.paid_on)}
                 </span>
                 <PaymentBadge status={p.status as "pending" | "verified" | "rejected"} />
               </li>
@@ -1750,8 +1850,9 @@ function StepReview({
       <section className="rounded-lg border border-border bg-muted/40 p-5">
         <h3 className="font-display text-xl">Investor declaration</h3>
         <p className="mt-2 text-sm text-muted-foreground">
-          I confirm that the information provided in this application is true and accurate to the best of my knowledge.
-          I confirm that the payment information and documents submitted relate to my investment/application.
+          I confirm that the information provided in this application is true and accurate to the
+          best of my knowledge. I confirm that the payment information and documents submitted
+          relate to my investment/application.
         </p>
         <label className="mt-4 flex items-start gap-3 text-sm font-medium">
           <Checkbox
@@ -1779,7 +1880,9 @@ function SuccessScreen({ reference, applicationId }: { reference: string; applic
       <div className="mt-8 w-full rounded-lg border border-border bg-card p-5">
         <p className="eyebrow text-muted-foreground">Application reference</p>
         <p className="mt-2 font-display text-3xl">{reference}</p>
-        <p className="mt-3 text-xs font-semibold uppercase tracking-widest text-primary">Submitted</p>
+        <p className="mt-3 text-xs font-semibold uppercase tracking-widest text-primary">
+          Submitted
+        </p>
       </div>
       <div className="mt-8 flex flex-wrap justify-center gap-3">
         <Button asChild>

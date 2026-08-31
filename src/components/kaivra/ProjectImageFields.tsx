@@ -58,7 +58,9 @@ async function compress(file: File): Promise<File> {
     if (!ctx) return file;
     ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
     bitmap.close?.();
-    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.85));
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, "image/jpeg", 0.85),
+    );
     if (!blob || blob.size >= file.size) return file;
     return new File([blob], file.name.replace(/\.[^.]+$/, "") + ".jpg", { type: "image/jpeg" });
   } catch {
@@ -70,7 +72,9 @@ async function uploadImage(file: File, scope: "project" | "property") {
   validate(file);
   const prepared = await compress(file);
   const ticket = await createProjectImageUploadTicket({ data: { scope, fileName: prepared.name } });
-  const { error } = await supabase.storage.from(ticket.bucket).uploadToSignedUrl(ticket.path, ticket.token, prepared);
+  const { error } = await supabase.storage
+    .from(ticket.bucket)
+    .uploadToSignedUrl(ticket.path, ticket.token, prepared);
   if (error) throw error;
   return ticket.url;
 }
@@ -149,8 +153,18 @@ export function ImageUploadField({
           Drag an image here, or use the button below. JPG, PNG or WEBP, up to 12MB.
         </p>
         <div className="flex flex-wrap items-center justify-center gap-2">
-          <Button type="button" variant="outline" size="sm" disabled={busy} onClick={() => inputRef.current?.click()}>
-            {busy ? <Loader2 className="mr-2 size-4 animate-spin" /> : <ImagePlus className="mr-2 size-4" />}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={busy}
+            onClick={() => inputRef.current?.click()}
+          >
+            {busy ? (
+              <Loader2 className="mr-2 size-4 animate-spin" />
+            ) : (
+              <ImagePlus className="mr-2 size-4" />
+            )}
             {value ? "Replace image" : "Upload image"}
           </Button>
           {value ? (
@@ -242,8 +256,18 @@ export function GalleryUploadField({
           over && "border-primary bg-accent",
         )}
       >
-        <Button type="button" variant="outline" size="sm" disabled={busy} onClick={() => inputRef.current?.click()}>
-          {busy ? <Loader2 className="mr-2 size-4 animate-spin" /> : <ImagePlus className="mr-2 size-4" />}
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={busy}
+          onClick={() => inputRef.current?.click()}
+        >
+          {busy ? (
+            <Loader2 className="mr-2 size-4 animate-spin" />
+          ) : (
+            <ImagePlus className="mr-2 size-4" />
+          )}
           {busy ? `Uploading ${progress.done}/${progress.total}…` : "Upload images"}
         </Button>
         <p className="text-xs text-muted-foreground">
@@ -282,7 +306,11 @@ export function GalleryUploadField({
                   value={image.caption}
                   placeholder="e.g. Terrace frontage at dusk"
                   onChange={(e) =>
-                    onChange(images.map((item, i) => (i === index ? { ...item, caption: e.target.value } : item)))
+                    onChange(
+                      images.map((item, i) =>
+                        i === index ? { ...item, caption: e.target.value } : item,
+                      ),
+                    )
                   }
                 />
               </div>

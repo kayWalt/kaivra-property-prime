@@ -9,7 +9,13 @@ const toneClass = {
   red: "border-destructive/30 bg-destructive/10 text-destructive",
 };
 
-export function StatusBadge({ status, className }: { status: ApplicationStatus; className?: string }) {
+export function StatusBadge({
+  status,
+  className,
+}: {
+  status: ApplicationStatus;
+  className?: string;
+}) {
   return (
     <span
       className={cn(
@@ -26,9 +32,19 @@ export function StatusBadge({ status, className }: { status: ApplicationStatus; 
 
 export function PaymentBadge({ status }: { status: PaymentStatus }) {
   const tone = status === "verified" ? "emerald" : status === "rejected" ? "red" : "gold";
-  const label = status === "verified" ? "Verified" : status === "rejected" ? "Rejected" : "Pending Verification";
+  const label =
+    status === "verified"
+      ? "Verified"
+      : status === "rejected"
+        ? "Rejected"
+        : "Pending Verification";
   return (
-    <span className={cn("eyebrow inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1", toneClass[tone])}>
+    <span
+      className={cn(
+        "eyebrow inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1",
+        toneClass[tone],
+      )}
+    >
       <span aria-hidden className="size-1.5 rounded-full bg-current" />
       {label}
     </span>

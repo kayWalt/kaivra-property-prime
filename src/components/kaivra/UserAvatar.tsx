@@ -14,7 +14,9 @@ export function UserAvatar({
 }) {
   if (url) {
     return (
-      <img loading="lazy" decoding="async"
+      <img
+        loading="lazy"
+        decoding="async"
         src={url}
         alt={name ? `${name}'s profile picture` : "Profile picture"}
         className={cn("size-9 rounded-full border border-border object-cover", className)}
