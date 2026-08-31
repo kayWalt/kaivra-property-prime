@@ -162,7 +162,15 @@ function ProjectDetail() {
               onOpenChange={setLightboxIndex}
             />
           </>
-        ) : null}
+        ) : (
+          <Lightbox
+            images={allImages}
+            projectName={project.name}
+            openIndex={lightboxIndex}
+            onOpenChange={setLightboxIndex}
+            hideGrid
+          />
+        )}
 
 
         <h2 className="mt-16 font-display text-4xl">Property options</h2>
