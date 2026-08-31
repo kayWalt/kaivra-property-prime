@@ -182,6 +182,25 @@ function ApplicationWizard() {
     },
   });
 
+  // Assisted mode: a member of staff is completing an application that belongs
+  // to an investor. Ownership (investor_id) always stays with the investor.
+  const ownerId = (existing.data?.investor_id as string | undefined) ?? null;
+  const assisted = !!ownerId && !!user && ownerId !== user.id;
+  const investor = useQuery({
+    queryKey: ["assisted-investor", ownerId],
+    enabled: assisted,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, full_name, email, phone, investor_code")
+        .eq("id", ownerId!)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+
   // ---------- bootstrap: load or create the draft ----------
   useEffect(() => {
     if (initialised || bootRef.current || !user) return;
@@ -225,7 +244,14 @@ function ApplicationWizard() {
           setInitialised(true);
           return;
         }
+        // An explicit application id that cannot be loaded means it was deleted
+        // or the caller has no access — never silently start a personal draft
+        // instead (that would hijack an assisted application).
+        bootRef.current = false;
+        toast.error("That application could not be opened. It may have been removed.");
+        return;
       }
+
 
       // Reuse the investor's most recent unsubmitted draft instead of creating a
       // new application row every time the wizard is opened. Only drafts that were
@@ -479,11 +505,25 @@ function ApplicationWizard() {
         .single();
       if (error || !data) throw error ?? new Error("submit failed");
 
-      await logEvent(applicationId, "application_submitted", `Reference ${data.reference}`);
+      const actorName = assisted
+        ? (profile?.full_name ?? user.email ?? "KAIVRA staff")
+        : undefined;
+      await logEvent(
+        applicationId,
+        "application_submitted",
+        assisted
+          ? `Reference ${data.reference} — submitted on behalf of ${investor.data?.full_name ?? "the investor"}`
+          : `Reference ${data.reference}`,
+        actorName,
+      );
+      // The notification always goes to the investor who owns the application,
+      // never to the staff member completing it on their behalf.
       await supabase.from("notifications").insert({
-        user_id: user.id,
+        user_id: ownerId ?? user.id,
         title: "Application submitted",
-        body: `Your application ${data.reference} has been submitted and is now under review.`,
+        body: assisted
+          ? `Your application ${data.reference} was submitted by ${actorName} on your behalf and is now under review.`
+          : `Your application ${data.reference} has been submitted and is now under review.`,
         link: `/applications/${applicationId}`,
       });
       await notifyStaffForProject(
@@ -494,6 +534,7 @@ function ApplicationWizard() {
       );
       if (typeof window !== "undefined") window.localStorage.removeItem(localKey(applicationId));
       void queryClient.invalidateQueries({ queryKey: ["my-applications"] });
+      void queryClient.invalidateQueries({ queryKey: ["admin-applications"] });
       setSubmitted({ reference: data.reference ?? "", id: applicationId });
       setConfirmOpen(false);
     } catch {
@@ -504,8 +545,15 @@ function ApplicationWizard() {
   }
 
   if (submitted) {
-    return <SuccessScreen reference={submitted.reference} applicationId={submitted.id} />;
+    return (
+      <SuccessScreen
+        reference={submitted.reference}
+        applicationId={submitted.id}
+        assistedFor={assisted ? (investor.data?.full_name ?? "the investor") : null}
+      />
+    );
   }
+
 
   if (!initialised) {
     return (
@@ -521,7 +569,9 @@ function ApplicationWizard() {
     <div className="mx-auto w-full max-w-4xl px-4 pb-32 pt-8 sm:px-6">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <p className="eyebrow text-primary">Investment application</p>
+          <p className="eyebrow text-primary">
+            {assisted ? "Assisted investment application" : "Investment application"}
+          </p>
           <h1 className="mt-1 font-display text-3xl sm:text-4xl">
             {APPLICATION_STEPS[step - 1]?.label ?? "Application"}
           </h1>
@@ -529,11 +579,26 @@ function ApplicationWizard() {
         <SaveIndicator state={saveState} />
       </div>
 
+      {assisted ? (
+        <div className="mt-4 rounded-md border border-primary/30 bg-primary/5 px-4 py-3 text-sm">
+          <p className="font-medium">
+            You are completing this application on behalf of{" "}
+            {investor.data?.full_name ?? "an investor"}
+            {investor.data?.investor_code ? ` · ${investor.data.investor_code}` : ""}
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Documents, payments and history are saved to the investor&apos;s own record. They are
+            notified as soon as you submit.
+          </p>
+        </div>
+      ) : null}
+
       {readOnly ? (
         <p className="mt-4 rounded-md border border-border bg-muted/60 px-4 py-3 text-sm text-muted-foreground">
           This application has been submitted and can no longer be edited.
         </p>
       ) : null}
+
 
       <ol className="mt-6 flex gap-1 overflow-x-auto pb-2" aria-label="Application progress">
         {APPLICATION_STEPS.map((s) => (
@@ -1867,7 +1932,15 @@ function StepReview({
   );
 }
 
-function SuccessScreen({ reference, applicationId }: { reference: string; applicationId: string }) {
+function SuccessScreen({
+  reference,
+  applicationId,
+  assistedFor,
+}: {
+  reference: string;
+  applicationId: string;
+  assistedFor?: string | null;
+}) {
   return (
     <div className="mx-auto flex min-h-[70vh] w-full max-w-xl flex-col items-center justify-center px-4 text-center">
       <span className="flex size-20 items-center justify-center rounded-full bg-primary/10 text-primary animate-success">
@@ -1875,7 +1948,9 @@ function SuccessScreen({ reference, applicationId }: { reference: string; applic
       </span>
       <h1 className="mt-8 font-display text-4xl">Application submitted</h1>
       <p className="mt-3 text-sm text-muted-foreground">
-        Your investment application has been successfully submitted and is now under review.
+        {assistedFor
+          ? `The application for ${assistedFor} has been submitted and is now under review. They have been notified.`
+          : "Your investment application has been successfully submitted and is now under review."}
       </p>
       <div className="mt-8 w-full rounded-lg border border-border bg-card p-5">
         <p className="eyebrow text-muted-foreground">Application reference</p>
@@ -1885,15 +1960,31 @@ function SuccessScreen({ reference, applicationId }: { reference: string; applic
         </p>
       </div>
       <div className="mt-8 flex flex-wrap justify-center gap-3">
-        <Button asChild>
-          <Link to="/applications/$appId" params={{ appId: applicationId }}>
-            View application
-          </Link>
-        </Button>
-        <Button asChild variant="outline">
-          <Link to="/dashboard">Return to dashboard</Link>
-        </Button>
+        {assistedFor ? (
+          <>
+            <Button asChild>
+              <Link to="/admin/applications/$appId" params={{ appId: applicationId }}>
+                Open in admin
+              </Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link to="/admin/investors">Back to investors</Link>
+            </Button>
+          </>
+        ) : (
+          <>
+            <Button asChild>
+              <Link to="/applications/$appId" params={{ appId: applicationId }}>
+                View application
+              </Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link to="/dashboard">Return to dashboard</Link>
+            </Button>
+          </>
+        )}
       </div>
+
       <p className="mt-4 flex items-center gap-1.5 text-xs text-muted-foreground">
         <Save className="size-3.5" aria-hidden /> Download your PDF from the application page.
       </p>
