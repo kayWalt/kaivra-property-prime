@@ -249,6 +249,42 @@ function PropertyManager({
     units_available: 0,
   });
   const [saving, setSaving] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({ unit_price: 0, units_available: 0, size_label: "" });
+  const [editSaving, setEditSaving] = useState(false);
+
+  function startEdit(property: { id: string; unit_price: number; units_available: number | null; size_label: string | null }) {
+    setEditingId(property.id);
+    setEditForm({
+      unit_price: property.unit_price,
+      units_available: property.units_available ?? 0,
+      size_label: property.size_label ?? "",
+    });
+  }
+
+  async function saveEdit(id: string) {
+    if (editForm.unit_price <= 0) {
+      toast.error("Enter a valid unit price (full naira amount, e.g. 22500000 for ₦22.5m).");
+      return;
+    }
+    setEditSaving(true);
+    const { error } = await supabase
+      .from("properties")
+      .update({
+        unit_price: editForm.unit_price,
+        units_available: editForm.units_available,
+        size_label: editForm.size_label.trim(),
+      })
+      .eq("id", id);
+    setEditSaving(false);
+    if (error) {
+      toast.error("The property could not be updated. Please try again.");
+      return;
+    }
+    toast.success("Property updated.");
+    setEditingId(null);
+    onChanged();
+  }
 
   async function addProperty() {
     if (!form.name.trim() || form.unit_price <= 0) {
