@@ -30,14 +30,14 @@ import {
 import { useRoles, useSession, primaryRole } from "@/hooks/useAuth";
 import { formatNaira } from "@/lib/kaivra";
 
-
-
-
 export const Route = createFileRoute("/_authenticated/admin/projects")({
   head: () => ({
     meta: [
       { title: "KAIVRA | Project Management" },
-      { name: "description", content: "Create and manage real-estate projects, properties, prices and availability." },
+      {
+        name: "description",
+        content: "Create and manage real-estate projects, properties, prices and availability.",
+      },
       { property: "og:title", content: "KAIVRA | Project Management" },
       { property: "og:description", content: "Manage projects and properties." },
       { property: "og:type", content: "website" },
@@ -82,8 +82,6 @@ function ProjectManagement() {
     void queryClient.invalidateQueries({ queryKey: ["project"] });
   }, [queryClient]);
 
-
-
   if (isLoading) {
     return (
       <div className="mx-auto w-full max-w-5xl space-y-4 px-4 py-10">
@@ -97,7 +95,9 @@ function ProjectManagement() {
     return (
       <div className="mx-auto max-w-lg px-4 py-24 text-center">
         <h1 className="font-display text-3xl">Restricted area</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Only administrators can manage projects.</p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Only administrators can manage projects.
+        </p>
         <Button asChild className="mt-6">
           <Link to="/dashboard">Return to dashboard</Link>
         </Button>
@@ -139,7 +139,9 @@ function ProjectManagement() {
       setGallery([]);
       await refresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "The project could not be created. Please try again.");
+      toast.error(
+        err instanceof Error ? err.message : "The project could not be created. Please try again.",
+      );
     } finally {
       setCreating(false);
     }
@@ -151,7 +153,11 @@ function ProjectManagement() {
       toast.error(error.message || "This project could not be updated.");
       return;
     }
-    toast.success(isActive ? "Project deactivated — hidden from investors." : "Project activated and visible to investors.");
+    toast.success(
+      isActive
+        ? "Project deactivated — hidden from investors."
+        : "Project activated and visible to investors.",
+    );
     await refresh();
   }
 
@@ -167,13 +173,16 @@ function ProjectManagement() {
         </Button>
       </div>
 
-
       <section className="mt-8 rounded-lg border border-border bg-card p-5">
         <h2 className="font-display text-2xl">Create project</h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
             <Label htmlFor="project_name">Project name</Label>
-            <Input id="project_name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+            <Input
+              id="project_name"
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+            />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="project_location">Location</Label>
@@ -207,14 +216,21 @@ function ProjectManagement() {
             />
           </div>
         </div>
-        <AsyncButton className="mt-4" onClick={() => createProject()} disabled={creating} pendingLabel="Creating…">
+        <AsyncButton
+          className="mt-4"
+          onClick={() => createProject()}
+          disabled={creating}
+          pendingLabel="Creating…"
+        >
           <Plus className="mr-2 size-4" />
           Create project
         </AsyncButton>
       </section>
 
       <div className="mt-10 space-y-4">
-        {projects.isLoading ? [0, 1].map((i) => <Skeleton key={i} className="h-40 rounded-lg" />) : null}
+        {projects.isLoading
+          ? [0, 1].map((i) => <Skeleton key={i} className="h-40 rounded-lg" />)
+          : null}
         {projects.isError ? (
           <p className="text-sm text-destructive">
             Projects could not be loaded.{" "}
@@ -224,13 +240,20 @@ function ProjectManagement() {
           </p>
         ) : null}
         {!projects.isLoading && projects.data?.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No projects yet. Create your first project above.</p>
+          <p className="text-sm text-muted-foreground">
+            No projects yet. Create your first project above.
+          </p>
         ) : null}
         {projects.data?.map((project) => (
-          <section key={project.id} className="overflow-hidden rounded-lg border border-border bg-card p-4 sm:p-5">
+          <section
+            key={project.id}
+            className="overflow-hidden rounded-lg border border-border bg-card p-4 sm:p-5"
+          >
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0">
-                <h2 className="break-words font-display text-xl leading-tight sm:text-2xl">{project.name}</h2>
+                <h2 className="break-words font-display text-xl leading-tight sm:text-2xl">
+                  {project.name}
+                </h2>
                 <p className="text-sm text-muted-foreground">{project.location}</p>
                 <span className="mt-1 inline-block text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                   {project.is_active ? "Active" : "Inactive"}
@@ -248,7 +271,8 @@ function ProjectManagement() {
                       <AlertDialogHeader>
                         <AlertDialogTitle>Deactivate {project.name}?</AlertDialogTitle>
                         <AlertDialogDescription>
-                          The project will be hidden from the investor directory. You can activate it again at any time.
+                          The project will be hidden from the investor directory. You can activate
+                          it again at any time.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
@@ -272,14 +296,18 @@ function ProjectManagement() {
                 <Button
                   size="sm"
                   variant="ghost"
-                  onClick={() => setEditProject((current) => (current === project.id ? null : project.id))}
+                  onClick={() =>
+                    setEditProject((current) => (current === project.id ? null : project.id))
+                  }
                 >
                   {editProject === project.id ? "Close editor" : "Edit"}
                 </Button>
                 <Button
                   size="sm"
                   variant="ghost"
-                  onClick={() => setOpenProject((current) => (current === project.id ? null : project.id))}
+                  onClick={() =>
+                    setOpenProject((current) => (current === project.id ? null : project.id))
+                  }
                 >
                   {openProject === project.id ? "Hide properties" : "Properties"}
                 </Button>
@@ -292,16 +320,22 @@ function ProjectManagement() {
             </div>
 
             {editProject === project.id ? (
-              <ProjectEditor project={project} onClose={() => setEditProject(null)} onSaved={refresh} />
+              <ProjectEditor
+                project={project}
+                onClose={() => setEditProject(null)}
+                onSaved={refresh}
+              />
             ) : null}
 
             {openProject === project.id ? (
-              <PropertyManager projectId={project.id} onChanged={refresh} properties={project.properties ?? []} />
+              <PropertyManager
+                projectId={project.id}
+                onChanged={refresh}
+                properties={project.properties ?? []}
+              />
             ) : null}
-
           </section>
         ))}
-
       </div>
     </div>
   );
@@ -391,12 +425,17 @@ function PropertyManager({
   }
 
   async function togglePropertyActive(id: string, isActive: boolean) {
-    const { error } = await supabase.from("properties").update({ is_active: !isActive }).eq("id", id);
+    const { error } = await supabase
+      .from("properties")
+      .update({ is_active: !isActive })
+      .eq("id", id);
     if (error) {
       toast.error(error.message || "The property could not be updated.");
       return;
     }
-    toast.success(isActive ? "Property hidden from investors." : "Property is now visible to investors.");
+    toast.success(
+      isActive ? "Property hidden from investors." : "Property is now visible to investors.",
+    );
     onChanged();
   }
 
@@ -413,7 +452,6 @@ function PropertyManager({
     toast.success("Property deleted.");
     onChanged();
   }
-
 
   async function addProperty() {
     if (!form.name.trim() || form.unit_price <= 0) {
@@ -446,7 +484,10 @@ function PropertyManager({
           <li className="text-sm text-muted-foreground">No properties yet for this project.</li>
         ) : null}
         {properties.map((property) => (
-          <li key={property.id} className="rounded-md border border-border px-3 py-3 text-sm sm:px-4">
+          <li
+            key={property.id}
+            className="rounded-md border border-border px-3 py-3 text-sm sm:px-4"
+          >
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-w-0">
                 <strong className="break-words">{property.name}</strong>
@@ -460,7 +501,9 @@ function PropertyManager({
                 <Button
                   size="sm"
                   variant="ghost"
-                  onClick={() => (editingId === property.id ? setEditingId(null) : startEdit(property))}
+                  onClick={() =>
+                    editingId === property.id ? setEditingId(null) : startEdit(property)
+                  }
                 >
                   {editingId === property.id ? "Close" : "Edit"}
                 </Button>
@@ -482,13 +525,15 @@ function PropertyManager({
                     <AlertDialogHeader>
                       <AlertDialogTitle>Delete {property.name}?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        This permanently removes the property. If investors have already applied for it, deactivate it
-                        instead.
+                        This permanently removes the property. If investors have already applied for
+                        it, deactivate it instead.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => void removeProperty(property.id)}>Delete</AlertDialogAction>
+                      <AlertDialogAction onClick={() => void removeProperty(property.id)}>
+                        Delete
+                      </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
@@ -528,7 +573,9 @@ function PropertyManager({
                     inputMode="numeric"
                     min={0}
                     value={editForm.unit_price || ""}
-                    onChange={(e) => setEditForm({ ...editForm, unit_price: Number(e.target.value) || 0 })}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, unit_price: Number(e.target.value) || 0 })
+                    }
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -539,16 +586,22 @@ function PropertyManager({
                     inputMode="numeric"
                     min={0}
                     value={editForm.units_available || ""}
-                    onChange={(e) => setEditForm({ ...editForm, units_available: Number(e.target.value) || 0 })}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, units_available: Number(e.target.value) || 0 })
+                    }
                   />
                 </div>
                 <div className="sm:col-span-2 lg:col-span-3">
-                  <AsyncButton size="sm" onClick={() => saveEdit(property.id)} disabled={editSaving} pendingLabel="Saving…">
+                  <AsyncButton
+                    size="sm"
+                    onClick={() => saveEdit(property.id)}
+                    disabled={editSaving}
+                    pendingLabel="Saving…"
+                  >
                     <Save className="mr-2 size-4" />
                     Save changes
                   </AsyncButton>
                 </div>
-
               </div>
             ) : null}
           </li>
@@ -558,7 +611,11 @@ function PropertyManager({
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
         <div className="space-y-1.5">
           <Label htmlFor={`p-name-${projectId}`}>Property name</Label>
-          <Input id={`p-name-${projectId}`} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+          <Input
+            id={`p-name-${projectId}`}
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+          />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor={`p-type-${projectId}`}>Property type</Label>
@@ -598,7 +655,13 @@ function PropertyManager({
           />
         </div>
       </div>
-      <AsyncButton className="mt-4" size="sm" onClick={() => addProperty()} disabled={saving} pendingLabel="Saving…">
+      <AsyncButton
+        className="mt-4"
+        size="sm"
+        onClick={() => addProperty()}
+        disabled={saving}
+        pendingLabel="Saving…"
+      >
         <Plus className="mr-2 size-4" />
         Add property
       </AsyncButton>
@@ -628,7 +691,9 @@ function ProjectEditor({
     description: project.description ?? "",
     hero_image: project.hero_image ?? "",
   });
-  const [gallery, setGallery] = useState<GalleryImage[]>(() => parseGallery(project.gallery_images));
+  const [gallery, setGallery] = useState<GalleryImage[]>(() =>
+    parseGallery(project.gallery_images),
+  );
   const [saving, setSaving] = useState(false);
 
   async function save() {
@@ -685,7 +750,11 @@ function ProjectEditor({
       </div>
       <div className="space-y-1.5 sm:col-span-2">
         <Label>Gallery images & captions</Label>
-        <GalleryUploadField idPrefix={`edit-gallery-${project.id}`} images={gallery} onChange={setGallery} />
+        <GalleryUploadField
+          idPrefix={`edit-gallery-${project.id}`}
+          images={gallery}
+          onChange={setGallery}
+        />
       </div>
       <div className="space-y-1.5 sm:col-span-2">
         <Label htmlFor={`edit-desc-${project.id}`}>Description</Label>

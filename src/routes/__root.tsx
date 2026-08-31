@@ -109,7 +109,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://www.gstatic.com", crossOrigin: "anonymous" },
       { rel: "preconnect", href: "https://oauth.lovable.app", crossOrigin: "anonymous" },
       { rel: "dns-prefetch", href: "https://oauth.lovable.app" },
-      { rel: "preconnect", href: "https://sxkecuurtefhscomvqdy.supabase.co", crossOrigin: "anonymous" },
+      {
+        rel: "preconnect",
+        href: "https://sxkecuurtefhscomvqdy.supabase.co",
+        crossOrigin: "anonymous",
+      },
     ],
   }),
   shellComponent: RootShell,
@@ -147,5 +151,4 @@ function RootComponent() {
       <Toaster richColors position="top-center" />
     </QueryClientProvider>
   );
-
 }

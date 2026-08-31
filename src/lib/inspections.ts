@@ -1,12 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export type InspectionStatus =
-  | "requested"
-  | "confirmed"
-  | "rescheduled"
-  | "completed"
-  | "cancelled"
-  | "no_show";
+  "requested" | "confirmed" | "rescheduled" | "completed" | "cancelled" | "no_show";
 
 export const INSPECTION_STATUS_LABEL: Record<InspectionStatus, string> = {
   requested: "Requested",
@@ -19,7 +14,11 @@ export const INSPECTION_STATUS_LABEL: Record<InspectionStatus, string> = {
 
 export const INSPECTION_STATUSES = Object.keys(INSPECTION_STATUS_LABEL) as InspectionStatus[];
 
-export const ACTIVE_INSPECTION_STATUSES: InspectionStatus[] = ["requested", "confirmed", "rescheduled"];
+export const ACTIVE_INSPECTION_STATUSES: InspectionStatus[] = [
+  "requested",
+  "confirmed",
+  "rescheduled",
+];
 
 /** Inspections run hourly between 09:00 and 16:00, project local time. */
 export const INSPECTION_SLOTS = [
@@ -62,7 +61,8 @@ export function inspectionDateTime(date: string, time: string) {
 
 export function isUpcoming(status: InspectionStatus, date: string, time: string) {
   return (
-    ACTIVE_INSPECTION_STATUSES.includes(status) && inspectionDateTime(date, time).getTime() >= Date.now()
+    ACTIVE_INSPECTION_STATUSES.includes(status) &&
+    inspectionDateTime(date, time).getTime() >= Date.now()
   );
 }
 

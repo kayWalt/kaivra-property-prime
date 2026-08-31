@@ -18,6 +18,9 @@ export interface UploadedDoc {
   payment_id?: string | null;
 }
 
+/** Matches the private kaivra-docs bucket limit so oversized files fail fast, client-side. */
+export const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
+
 export async function compressImage(file: File, maxSize = 1600, quality = 0.82): Promise<File> {
   if (!file.type.startsWith("image/") || file.type === "image/gif") return file;
   try {
@@ -30,7 +33,9 @@ export async function compressImage(file: File, maxSize = 1600, quality = 0.82):
     const ctx = canvas.getContext("2d");
     if (!ctx) return file;
     ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/jpeg", quality));
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, "image/jpeg", quality),
+    );
     if (!blob) return file;
     return new File([blob], file.name.replace(/\.[^.]+$/, "") + ".jpg", { type: "image/jpeg" });
   } catch {
@@ -49,7 +54,9 @@ export async function uploadDocument(options: {
   const raw =
     options.file instanceof File
       ? options.file
-      : new File([options.file], options.fileName ?? "upload.png", { type: options.file.type || "image/png" });
+      : new File([options.file], options.fileName ?? "upload.png", {
+          type: options.file.type || "image/png",
+        });
   const file = await compressImage(raw);
   const ticket = await createUploadTicket({
     data: { applicationId: options.applicationId, kind: options.kind, fileName: file.name },
@@ -73,7 +80,8 @@ export async function uploadDocument(options: {
     })
     .select()
     .single();
-  if (error) throw new Error("Your document was uploaded but could not be saved. Please try again.");
+  if (error)
+    throw new Error("Your document was uploaded but could not be saved. Please try again.");
   return data;
 }
 
@@ -115,14 +123,28 @@ export function UploadCard({
 
   async function handleFiles(files: FileList | null) {
     if (!files || files.length === 0) return;
+    const list: File[] = multiple ? Array.from(files) : Array.from(files).slice(0, 1);
+    // Images shrink during compression, but PDFs and other files are sent as-is,
+    // so reject anything above the bucket limit up front with a clear message
+    // rather than letting the upload fail opaquely after a long wait.
+    const tooBig = list.find((f) => !f.type.startsWith("image/") && f.size > MAX_UPLOAD_BYTES);
+    if (tooBig) {
+      toast.error(`${tooBig.name} is larger than 25 MB. Please upload a smaller file.`);
+      return;
+    }
     setBusy(true);
     setProgress(20);
     try {
-      const list: File[] = multiple ? Array.from(files) : Array.from(files).slice(0, 1);
       // Uploads are independent — run them concurrently instead of queueing.
       await Promise.all(
         list.map(async (file) => {
-          await uploadDocument({ applicationId, kind, file, paymentId: paymentId ?? null, label: title });
+          await uploadDocument({
+            applicationId,
+            kind,
+            file,
+            paymentId: paymentId ?? null,
+            label: title,
+          });
           setProgress((p) => Math.min(90, p + 60 / list.length));
         }),
       );
@@ -181,7 +203,10 @@ export function UploadCard({
       {existing.length > 0 ? (
         <ul className="mt-4 space-y-2">
           {existing.map((doc) => (
-            <li key={doc.id} className="flex items-center gap-2 rounded-md border border-border bg-muted/50 px-3 py-2">
+            <li
+              key={doc.id}
+              className="flex items-center gap-2 rounded-md border border-border bg-muted/50 px-3 py-2"
+            >
               <span className="truncate text-xs">{doc.file_name}</span>
               <div className="ml-auto flex gap-1">
                 <AsyncButton
@@ -214,12 +239,28 @@ export function UploadCard({
 
       {!disabled ? (
         <div className="mt-4 flex flex-wrap gap-2">
-          <Button type="button" variant="outline" size="sm" onClick={() => inputRef.current?.click()} disabled={busy}>
-            {busy ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Upload className="mr-2 size-4" />}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => inputRef.current?.click()}
+            disabled={busy}
+          >
+            {busy ? (
+              <Loader2 className="mr-2 size-4 animate-spin" />
+            ) : (
+              <Upload className="mr-2 size-4" />
+            )}
             {existing.length > 0 && !multiple ? "Replace" : "Upload"}
           </Button>
           {capture !== false ? (
-            <Button type="button" variant="ghost" size="sm" onClick={() => cameraRef.current?.click()} disabled={busy}>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => cameraRef.current?.click()}
+              disabled={busy}
+            >
               <Camera className="mr-2 size-4" /> Take photo
             </Button>
           ) : null}

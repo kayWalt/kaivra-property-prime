@@ -17,7 +17,12 @@ import {
 import { useProfile, useRoles, useSession, primaryRole } from "@/hooks/useAuth";
 import { UserAvatar } from "./UserAvatar";
 import { ShareQrButton } from "./ShareQrButton";
-import { clearPushExternalUserId, isMedianApp, requestPushPermission, setPushExternalUserId } from "@/lib/median";
+import {
+  clearPushExternalUserId,
+  isMedianApp,
+  requestPushPermission,
+  setPushExternalUserId,
+} from "@/lib/median";
 import { cn } from "@/lib/utils";
 import type { AppRole } from "@/lib/kaivra";
 
@@ -108,7 +113,9 @@ export function AppShell({ children }: { children: ReactNode }) {
       <header className="no-print sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
         <div className="mx-auto flex h-16 w-full max-w-7xl items-center gap-4 px-4 sm:px-6">
           <Brand />
-          <nav className="ml-6 hidden items-center gap-1 md:flex">
+          {/* Admin roles carry six links; below lg they overflow the bar, so the
+              sheet menu stays in charge until there is room for the full nav. */}
+          <nav className="ml-6 hidden min-w-0 items-center gap-1 lg:flex">
             {items.map((item) => (
               <Link
                 key={item.to}
@@ -122,7 +129,13 @@ export function AppShell({ children }: { children: ReactNode }) {
           </nav>
           <div className="ml-auto flex items-center gap-1">
             {role === "admin" || role === "super_admin" ? <ShareQrButton /> : null}
-            <Button asChild variant="ghost" size="icon" aria-label="Notifications" className="relative">
+            <Button
+              asChild
+              variant="ghost"
+              size="icon"
+              aria-label="Notifications"
+              className="relative"
+            >
               <Link to="/notifications">
                 <Bell className="size-5" />
                 {unread.data ? (
@@ -141,7 +154,9 @@ export function AppShell({ children }: { children: ReactNode }) {
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel className="truncate">
                   {profile?.full_name || user?.email}
-                  <span className="eyebrow mt-1 block text-muted-foreground">{role.replace("_", " ")}</span>
+                  <span className="eyebrow mt-1 block text-muted-foreground">
+                    {role.replace("_", " ")}
+                  </span>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
@@ -154,7 +169,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </DropdownMenu>
             <Sheet open={open} onOpenChange={setOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="md:hidden" aria-label="Open menu">
+                <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open menu">
                   <Menu className="size-5" />
                 </Button>
               </SheetTrigger>

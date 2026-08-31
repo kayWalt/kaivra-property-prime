@@ -23,7 +23,10 @@ export const Route = createFileRoute("/_authenticated/inspections/new")({
   head: () => ({
     meta: [
       { title: "KAIVRA | Schedule an Inspection" },
-      { name: "description", content: "Book a guided inspection of the property behind your KAIVRA investment." },
+      {
+        name: "description",
+        content: "Book a guided inspection of the property behind your KAIVRA investment.",
+      },
       { property: "og:title", content: "KAIVRA | Schedule an Inspection" },
       { property: "og:description", content: "Choose a date and time to inspect your property." },
       { property: "og:type", content: "website" },
@@ -81,7 +84,10 @@ function ScheduleInspection() {
     },
   });
 
-  const selected = useMemo(() => apps.data?.find((a) => a.id === appId) ?? null, [apps.data, appId]);
+  const selected = useMemo(
+    () => apps.data?.find((a) => a.id === appId) ?? null,
+    [apps.data, appId],
+  );
   const dateKey = date ? toDateKey(date) : null;
 
   const taken = useQuery({
@@ -147,7 +153,12 @@ function ScheduleInspection() {
         `${profile?.full_name ?? user.email} requested an inspection for ${when} (${data.reference}).`,
         "/admin/inspections",
       ),
-      logEvent(selected.id, "inspection_requested", `${data.reference} · ${when}`, profile?.full_name ?? undefined),
+      logEvent(
+        selected.id,
+        "inspection_requested",
+        `${data.reference} · ${when}`,
+        profile?.full_name ?? undefined,
+      ),
     ]);
 
     queryClient.invalidateQueries({ queryKey: ["my-inspections"] });
@@ -215,12 +226,16 @@ function ScheduleInspection() {
                   }}
                   className={cn(
                     "w-full rounded-lg border p-4 text-left transition-colors",
-                    appId === app.id ? "border-primary bg-primary/5" : "border-border hover:border-primary/40",
+                    appId === app.id
+                      ? "border-primary bg-primary/5"
+                      : "border-border hover:border-primary/40",
                   )}
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                      <p className="font-display text-xl leading-tight">{app.projects?.name ?? "Project"}</p>
+                      <p className="font-display text-xl leading-tight">
+                        {app.projects?.name ?? "Project"}
+                      </p>
                       <p className="mt-1 text-sm text-muted-foreground">
                         {app.properties?.name ?? "Property not selected"}
                         {app.properties?.size_label ? ` · ${app.properties.size_label}` : ""}
@@ -281,7 +296,9 @@ function ScheduleInspection() {
               })}
             </div>
             {taken.data && taken.data.size > 0 ? (
-              <p className="mt-3 text-xs text-muted-foreground">Greyed-out times are already booked.</p>
+              <p className="mt-3 text-xs text-muted-foreground">
+                Greyed-out times are already booked.
+              </p>
             ) : null}
           </div>
         ) : null}
@@ -329,7 +346,12 @@ function ScheduleInspection() {
             </div>
             <div className="sm:col-span-2">
               <Label htmlFor="notes">Special request or notes (optional)</Label>
-              <Textarea id="notes" rows={4} value={notes} onChange={(e) => setNotes(e.target.value)} />
+              <Textarea
+                id="notes"
+                rows={4}
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+              />
             </div>
           </div>
         ) : null}
@@ -358,7 +380,11 @@ function ScheduleInspection() {
       </div>
 
       <div className="kv-safe-bottom mt-6 flex flex-wrap items-center justify-between gap-3">
-        <Button variant="outline" disabled={step === 0} onClick={() => setStep((s) => Math.max(0, s - 1))}>
+        <Button
+          variant="outline"
+          disabled={step === 0}
+          onClick={() => setStep((s) => Math.max(0, s - 1))}
+        >
           Back
         </Button>
         {step < 4 ? (

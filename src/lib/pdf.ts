@@ -1,6 +1,11 @@
 import { jsPDF } from "jspdf";
 import { getDocumentUrl } from "@/lib/storage.functions";
-import { formatMoneyPdf as formatNaira, formatDate, STATUS_LABEL, type ApplicationStatus } from "@/lib/kaivra";
+import {
+  formatMoneyPdf as formatNaira,
+  formatDate,
+  STATUS_LABEL,
+  type ApplicationStatus,
+} from "@/lib/kaivra";
 
 interface DocRow {
   id: string;
@@ -34,7 +39,12 @@ export interface PdfInput {
     payment_info: Record<string, unknown>;
     declaration_accepted: boolean;
     projects?: { name?: string; location?: string; currency?: string } | null;
-    properties?: { name?: string; property_type?: string; size_label?: string; unit_price?: number } | null;
+    properties?: {
+      name?: string;
+      property_type?: string;
+      size_label?: string;
+      unit_price?: number;
+    } | null;
   };
   payments: PaymentRow[];
   documents: DocRow[];
@@ -136,7 +146,9 @@ export async function generateApplicationPdf(input: PdfInput): Promise<jsPDF> {
       doc.setFontSize(7.5);
       doc.setTextColor(...GREY);
       doc.text(`Application Reference: ${app.reference ?? "DRAFT"}`, M, H - 30);
-      doc.text(`Generated ${formatDate(new Date().toISOString())}`, W / 2, H - 30, { align: "center" });
+      doc.text(`Generated ${formatDate(new Date().toISOString())}`, W / 2, H - 30, {
+        align: "center",
+      });
       doc.text(`Page ${i} of ${pages}`, W - M, H - 30, { align: "right" });
     }
   }
@@ -197,7 +209,9 @@ export async function generateApplicationPdf(input: PdfInput): Promise<jsPDF> {
   doc.text("INVESTMENT SUBSCRIPTION APPLICATION", W - M, 62, { align: "right" });
   doc.setFontSize(8);
   doc.text(`Reference  ${app.reference ?? "DRAFT"}`, W - M, 78, { align: "right" });
-  doc.text(`Status  ${STATUS_LABEL[app.status as ApplicationStatus]}`, W - M, 92, { align: "right" });
+  doc.text(`Status  ${STATUS_LABEL[app.status as ApplicationStatus]}`, W - M, 92, {
+    align: "right",
+  });
 
   y = 168;
 
@@ -314,7 +328,11 @@ export async function generateApplicationPdf(input: PdfInput): Promise<jsPDF> {
       doc.setTextColor(...ONYX);
       doc.text(formatNaira(p.amount, currency), cols[0]!, y);
       doc.text(formatDate(p.paid_on), cols[1]!, y);
-      doc.text(doc.splitTextToSize(`${p.bank ?? "—"} / ${p.sender ?? "—"}`, 104)[0] ?? "", cols[2]!, y);
+      doc.text(
+        doc.splitTextToSize(`${p.bank ?? "—"} / ${p.sender ?? "—"}`, 104)[0] ?? "",
+        cols[2]!,
+        y,
+      );
       doc.text(doc.splitTextToSize(p.reference ?? "—", 90)[0] ?? "", cols[3]!, y);
       doc.text(p.method.replace(/_/g, " "), cols[4]!, y);
       doc.setTextColor(...(p.status === "verified" ? EMERALD : GREY));
@@ -333,7 +351,10 @@ export async function generateApplicationPdf(input: PdfInput): Promise<jsPDF> {
     ["Initial deposit", formatNaira(paymentInfo.initial_deposit ?? 0, currency)],
     ["Total payment made", formatNaira(paid, currency)],
     ["Next payment amount", formatNaira(paymentInfo.next_payment_amount ?? 0, currency)],
-    ["Next payment date", paymentInfo.next_payment_date ? formatDate(String(paymentInfo.next_payment_date)) : "—"],
+    [
+      "Next payment date",
+      paymentInfo.next_payment_date ? formatDate(String(paymentInfo.next_payment_date)) : "—",
+    ],
     ["Payment description", String(paymentInfo.description ?? "—")],
     ["Investment adviser", input.adviserName ?? "—"],
   ]);
@@ -366,7 +387,13 @@ export async function generateApplicationPdf(input: PdfInput): Promise<jsPDF> {
   doc.text(lines, M, y);
   y += lines.length * 12 + 10;
   doc.setFont("helvetica", "bold");
-  doc.text(app.declaration_accepted ? "Declaration accepted by the investor." : "Declaration not yet accepted.", M, y);
+  doc.text(
+    app.declaration_accepted
+      ? "Declaration accepted by the investor."
+      : "Declaration not yet accepted.",
+    M,
+    y,
+  );
   y += 26;
 
   if (signatureImg) {

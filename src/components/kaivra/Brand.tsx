@@ -11,7 +11,11 @@ export function Brand({
   withTagline?: boolean;
 }) {
   return (
-    <Link to="/" className={cn("inline-flex flex-col leading-none", className)} aria-label="KAIVRA home">
+    <Link
+      to="/"
+      className={cn("inline-flex flex-col leading-none", className)}
+      aria-label="KAIVRA home"
+    >
       <span
         className={cn(
           "font-display text-2xl tracking-[0.22em]",

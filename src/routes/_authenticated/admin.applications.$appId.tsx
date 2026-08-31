@@ -25,13 +25,21 @@ import { PaymentBadge } from "@/components/kaivra/StatusBadge";
 import { ApplicationDetailView } from "./applications.$appId";
 import { useRoles, useSession, primaryRole, isStaffRole } from "@/hooks/useAuth";
 import { fetchPayments, logEvent, notify } from "@/lib/applications";
-import { APPLICATION_STATUSES, STATUS_LABEL, formatNaira, type ApplicationStatus } from "@/lib/kaivra";
+import {
+  APPLICATION_STATUSES,
+  STATUS_LABEL,
+  formatNaira,
+  type ApplicationStatus,
+} from "@/lib/kaivra";
 
 export const Route = createFileRoute("/_authenticated/admin/applications/$appId")({
   head: () => ({
     meta: [
       { title: "KAIVRA | Review Application" },
-      { name: "description", content: "Review an investor application, verify payments and update its status." },
+      {
+        name: "description",
+        content: "Review an investor application, verify payments and update its status.",
+      },
       { property: "og:title", content: "KAIVRA | Review Application" },
       { property: "og:description", content: "Review an investor application." },
       { property: "og:type", content: "website" },
@@ -87,7 +95,9 @@ function ManageApplication() {
     return (
       <div className="mx-auto max-w-lg px-4 py-24 text-center">
         <h1 className="font-display text-3xl">Restricted area</h1>
-        <p className="mt-2 text-sm text-muted-foreground">You do not have permission to view this application.</p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          You do not have permission to view this application.
+        </p>
         <Button asChild className="mt-6">
           <Link to="/dashboard">Return to dashboard</Link>
         </Button>
@@ -99,7 +109,11 @@ function ManageApplication() {
     setBusy(true);
     const { error } = await supabase
       .from("applications")
-      .update({ status: next, reviewed_by: user?.id ?? null, reviewed_at: new Date().toISOString() })
+      .update({
+        status: next,
+        reviewed_by: user?.id ?? null,
+        reviewed_at: new Date().toISOString(),
+      })
       .eq("id", appId);
     setBusy(false);
     if (error) {
@@ -126,7 +140,11 @@ function ManageApplication() {
   async function verifyPayment(paymentId: string, amount: number | string) {
     const { error } = await supabase
       .from("application_payments")
-      .update({ status: "verified", verified_by: user?.id ?? null, verified_at: new Date().toISOString() })
+      .update({
+        status: "verified",
+        verified_by: user?.id ?? null,
+        verified_at: new Date().toISOString(),
+      })
       .eq("id", paymentId);
     if (error) {
       toast.error("This payment could not be verified. Please try again.");
@@ -216,7 +234,11 @@ function ManageApplication() {
                 <div className="flex items-center gap-2">
                   <PaymentBadge status={payment.status as "pending" | "verified" | "rejected"} />
                   {payment.status !== "verified" ? (
-                    <AsyncButton size="sm" pendingLabel="Verifying…" onClick={() => verifyPayment(payment.id, payment.amount)}>
+                    <AsyncButton
+                      size="sm"
+                      pendingLabel="Verifying…"
+                      onClick={() => verifyPayment(payment.id, payment.amount)}
+                    >
                       <Check className="mr-1.5 size-4" /> Verify
                     </AsyncButton>
                   ) : null}
@@ -236,7 +258,12 @@ function ManageApplication() {
                     className="max-w-md"
                     aria-label="Rejection reason"
                   />
-                  <AsyncButton size="sm" variant="destructive" pendingLabel="Rejecting…" onClick={() => rejectPayment(payment.id)}>
+                  <AsyncButton
+                    size="sm"
+                    variant="destructive"
+                    pendingLabel="Rejecting…"
+                    onClick={() => rejectPayment(payment.id)}
+                  >
                     Confirm rejection
                   </AsyncButton>
                   <Button size="sm" variant="ghost" onClick={() => setRejecting(null)}>

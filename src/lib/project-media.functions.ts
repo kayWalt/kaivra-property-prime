@@ -33,5 +33,10 @@ export const createProjectImageUploadTicket = createServerFn({ method: "POST" })
       .from(PROJECT_IMAGES_BUCKET)
       .createSignedUploadUrl(path);
     if (error || !ticket) throw new Error("Upload could not be prepared. Please try again.");
-    return { path, token: ticket.token, bucket: PROJECT_IMAGES_BUCKET, url: `/api/public/project-image/${path}` };
+    return {
+      path,
+      token: ticket.token,
+      bucket: PROJECT_IMAGES_BUCKET,
+      url: `/api/public/project-image/${path}`,
+    };
   });

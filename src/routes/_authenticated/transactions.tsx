@@ -19,7 +19,10 @@ export const Route = createFileRoute("/_authenticated/transactions")({
   head: () => ({
     meta: [
       { title: "KAIVRA | Payment History" },
-      { name: "description", content: "Every payment you have made towards your KAIVRA investments." },
+      {
+        name: "description",
+        content: "Every payment you have made towards your KAIVRA investments.",
+      },
       { property: "og:title", content: "KAIVRA | Payment History" },
       { property: "og:description", content: "Your complete KAIVRA transaction history." },
       { property: "og:type", content: "website" },
@@ -93,8 +96,12 @@ function TransactionsPage() {
 
   const summary = useMemo(() => {
     const rows = tx.data ?? [];
-    const paid = rows.filter((r) => r.status !== "rejected").reduce((s, r) => s + Number(r.amount ?? 0), 0);
-    const pending = rows.filter((r) => r.status === "pending").reduce((s, r) => s + Number(r.amount ?? 0), 0);
+    const paid = rows
+      .filter((r) => r.status !== "rejected")
+      .reduce((s, r) => s + Number(r.amount ?? 0), 0);
+    const pending = rows
+      .filter((r) => r.status === "pending")
+      .reduce((s, r) => s + Number(r.amount ?? 0), 0);
     return { paid, pending, count: rows.length };
   }, [tx.data]);
 
@@ -124,7 +131,9 @@ function TransactionsPage() {
     <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6">
       <p className="eyebrow text-primary">Finance</p>
       <h1 className="mt-2 font-display text-4xl">Payment history</h1>
-      <p className="mt-2 text-sm text-muted-foreground">Every transaction recorded against your investments.</p>
+      <p className="mt-2 text-sm text-muted-foreground">
+        Every transaction recorded against your investments.
+      </p>
 
       <div className="mt-8 grid gap-3 sm:grid-cols-3">
         {[
@@ -148,7 +157,9 @@ function TransactionsPage() {
       ) : null}
 
       {tx.isError ? (
-        <p className="mt-8 text-sm text-destructive">Your transactions could not be loaded. Please refresh.</p>
+        <p className="mt-8 text-sm text-destructive">
+          Your transactions could not be loaded. Please refresh.
+        </p>
       ) : null}
 
       {tx.data && tx.data.length === 0 ? (
@@ -257,7 +268,9 @@ function TransactionsPage() {
                   </div>
                 ))}
               </dl>
-              {open.description ? <p className="text-sm text-muted-foreground">{open.description}</p> : null}
+              {open.description ? (
+                <p className="text-sm text-muted-foreground">{open.description}</p>
+              ) : null}
               <PaymentBadge status={open.status} />
               {open.status === "rejected" && open.rejection_reason ? (
                 <p className="rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm">
@@ -267,7 +280,12 @@ function TransactionsPage() {
 
               <div className="flex flex-wrap gap-2 pt-2">
                 {(proofs.data ?? []).map((doc) => (
-                  <AsyncButton key={doc.id} variant="outline" size="sm" onClick={() => openDocument(doc.id)}>
+                  <AsyncButton
+                    key={doc.id}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => openDocument(doc.id)}
+                  >
                     <Eye className="mr-2 size-4" /> View proof of payment
                   </AsyncButton>
                 ))}

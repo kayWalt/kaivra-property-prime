@@ -13,7 +13,10 @@ export const Route = createFileRoute("/_authenticated/applications/")({
   head: () => ({
     meta: [
       { title: "KAIVRA | My Applications" },
-      { name: "description", content: "Track every investment application you have started or submitted." },
+      {
+        name: "description",
+        content: "Track every investment application you have started or submitted.",
+      },
       { property: "og:title", content: "KAIVRA | My Applications" },
       { property: "og:description", content: "Track your investment applications." },
       { property: "og:type", content: "website" },
@@ -43,10 +46,14 @@ function MyApplications() {
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6">
       <h1 className="font-display text-4xl">My applications</h1>
-      <p className="mt-2 text-sm text-muted-foreground">Every application you have started, submitted or completed.</p>
+      <p className="mt-2 text-sm text-muted-foreground">
+        Every application you have started, submitted or completed.
+      </p>
 
       <div className="mt-8 space-y-3">
-        {apps.isLoading ? [0, 1, 2].map((i) => <Skeleton key={i} className="h-24 rounded-lg" />) : null}
+        {apps.isLoading
+          ? [0, 1, 2].map((i) => <Skeleton key={i} className="h-24 rounded-lg" />)
+          : null}
         {apps.data?.length === 0 ? (
           <EmptyState
             title="No applications yet."
@@ -60,7 +67,10 @@ function MyApplications() {
         ) : null}
         {apps.data?.map((app) => {
           const investment = (app.investment ?? {}) as { total_value?: number };
-          const { paid } = totals(app.application_payments ?? [], Number(investment.total_value ?? 0));
+          const { paid } = totals(
+            app.application_payments ?? [],
+            Number(investment.total_value ?? 0),
+          );
           return (
             <Link
               key={app.id}
@@ -70,14 +80,19 @@ function MyApplications() {
             >
               <div>
                 <p className="eyebrow text-muted-foreground">{app.reference ?? "Draft"}</p>
-                <p className="mt-1 font-display text-xl leading-tight">{app.projects?.name ?? "Project pending"}</p>
+                <p className="mt-1 font-display text-xl leading-tight">
+                  {app.projects?.name ?? "Project pending"}
+                </p>
                 <p className="text-xs text-muted-foreground">
-                  {app.properties?.name ?? "Property not selected"} · created {formatDate(app.created_at)}
+                  {app.properties?.name ?? "Property not selected"} · created{" "}
+                  {formatDate(app.created_at)}
                 </p>
               </div>
               <div className="flex items-center gap-6">
                 <div className="text-right">
-                  <p className="text-sm font-semibold">{formatNaira(investment.total_value ?? 0)}</p>
+                  <p className="text-sm font-semibold">
+                    {formatNaira(investment.total_value ?? 0)}
+                  </p>
                   <p className="text-xs text-muted-foreground">Paid {formatNaira(paid)}</p>
                 </div>
                 <StatusBadge status={app.status as ApplicationStatus} />

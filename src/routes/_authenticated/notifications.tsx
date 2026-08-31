@@ -55,9 +55,14 @@ function Notifications() {
       <h1 className="font-display text-4xl">Notifications</h1>
 
       <div className="mt-8 space-y-2">
-        {list.isLoading ? [0, 1, 2].map((i) => <Skeleton key={i} className="h-20 rounded-lg" />) : null}
+        {list.isLoading
+          ? [0, 1, 2].map((i) => <Skeleton key={i} className="h-20 rounded-lg" />)
+          : null}
         {list.data?.length === 0 ? (
-          <EmptyState title="No notifications yet." body="We will let you know when there is an update." />
+          <EmptyState
+            title="No notifications yet."
+            body="We will let you know when there is an update."
+          />
         ) : null}
         {list.data?.map((item) => {
           const card = (

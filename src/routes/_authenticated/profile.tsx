@@ -12,7 +12,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useProfile, useRoles, useSession, primaryRole } from "@/hooks/useAuth";
 
-
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({
     meta: [
@@ -94,7 +93,10 @@ function ProfilePage() {
   async function save() {
     if (!user) return;
     setSaving(true);
-    const { error } = await supabase.from("profiles").update({ full_name: fullName, phone }).eq("id", user.id);
+    const { error } = await supabase
+      .from("profiles")
+      .update({ full_name: fullName, phone })
+      .eq("id", user.id);
     setSaving(false);
     if (error) {
       toast.error("Your profile could not be saved. Please try again.");
@@ -103,7 +105,6 @@ function ProfilePage() {
     toast.success("Profile updated.");
     void queryClient.invalidateQueries({ queryKey: ["profile", user.id] });
   }
-
 
   function signOut() {
     // Instant transition; session teardown continues in the background.
@@ -121,7 +122,9 @@ function ProfilePage() {
       <div className="mt-8 space-y-5 rounded-lg border border-border bg-card p-5">
         <div className="flex flex-wrap items-center gap-4">
           {avatarUrl ? (
-            <img loading="lazy" decoding="async"
+            <img
+              loading="lazy"
+              decoding="async"
               src={avatarUrl}
               alt={fullName ? `${fullName}'s profile picture` : "Profile picture"}
               className="size-20 rounded-full border border-border object-cover"
@@ -132,12 +135,29 @@ function ProfilePage() {
             </div>
           )}
           <div className="flex flex-wrap gap-2">
-            <Button type="button" variant="outline" size="sm" disabled={uploading} onClick={() => fileRef.current?.click()}>
-              {uploading ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Camera className="mr-2 size-4" />}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={uploading}
+              onClick={() => fileRef.current?.click()}
+            >
+              {uploading ? (
+                <Loader2 className="mr-2 size-4 animate-spin" />
+              ) : (
+                <Camera className="mr-2 size-4" />
+              )}
               {avatarUrl ? "Change picture" : "Upload picture"}
             </Button>
             {avatarUrl ? (
-              <AsyncButton type="button" variant="ghost" size="sm" disabled={uploading} pendingLabel="Removing…" onClick={() => removeAvatar()}>
+              <AsyncButton
+                type="button"
+                variant="ghost"
+                size="sm"
+                disabled={uploading}
+                pendingLabel="Removing…"
+                onClick={() => removeAvatar()}
+              >
                 <Trash2 className="mr-2 size-4" /> Remove
               </AsyncButton>
             ) : null}

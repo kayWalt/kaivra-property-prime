@@ -11,7 +11,13 @@ import { Button } from "@/components/ui/button";
 import { AsyncButton } from "@/components/kaivra/AsyncButton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { EmptyState } from "@/components/kaivra/EmptyState";
 import { PaymentBadge } from "@/components/kaivra/StatusBadge";
 import { openDocument } from "@/components/kaivra/FileUpload";
@@ -23,7 +29,10 @@ export const Route = createFileRoute("/_authenticated/admin/transactions")({
   head: () => ({
     meta: [
       { title: "KAIVRA | Transactions" },
-      { name: "description", content: "Review, verify and export every investor payment recorded on KAIVRA." },
+      {
+        name: "description",
+        content: "Review, verify and export every investor payment recorded on KAIVRA.",
+      },
       { property: "og:title", content: "KAIVRA | Transactions" },
       { property: "og:description", content: "Complete investor transaction history." },
       { property: "og:type", content: "website" },
@@ -110,7 +119,8 @@ function AdminTransactions() {
   const projectOptions = useMemo(() => {
     const map = new Map<string, string>();
     (list.data ?? []).forEach((r) => {
-      if (r.applications?.projects) map.set(r.applications.projects.id, r.applications.projects.name);
+      if (r.applications?.projects)
+        map.set(r.applications.projects.id, r.applications.projects.name);
     });
     return [...map.entries()];
   }, [list.data]);
@@ -127,8 +137,12 @@ function AdminTransactions() {
   }, [list.data, term, project]);
 
   const totals = useMemo(() => {
-    const verified = rows.filter((r) => r.status === "verified").reduce((s, r) => s + Number(r.amount ?? 0), 0);
-    const pending = rows.filter((r) => r.status === "pending").reduce((s, r) => s + Number(r.amount ?? 0), 0);
+    const verified = rows
+      .filter((r) => r.status === "verified")
+      .reduce((s, r) => s + Number(r.amount ?? 0), 0);
+    const pending = rows
+      .filter((r) => r.status === "pending")
+      .reduce((s, r) => s + Number(r.amount ?? 0), 0);
     return { verified, pending, count: rows.length };
   }, [rows]);
 
@@ -213,7 +227,12 @@ function AdminTransactions() {
 
   if (rolesLoading) return <Skeleton className="mx-auto mt-10 h-40 w-full max-w-6xl" />;
   if (!staff) {
-    return <EmptyState title="Not available" body="This workspace is for KAIVRA advisers and administrators." />;
+    return (
+      <EmptyState
+        title="Not available"
+        body="This workspace is for KAIVRA advisers and administrators."
+      />
+    );
   }
 
   return (
@@ -273,8 +292,18 @@ function AdminTransactions() {
           </SelectContent>
         </Select>
         <div className="grid grid-cols-2 gap-2">
-          <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} aria-label="From date" />
-          <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} aria-label="To date" />
+          <Input
+            type="date"
+            value={from}
+            onChange={(e) => setFrom(e.target.value)}
+            aria-label="From date"
+          />
+          <Input
+            type="date"
+            value={to}
+            onChange={(e) => setTo(e.target.value)}
+            aria-label="To date"
+          />
         </div>
       </div>
 
@@ -285,7 +314,10 @@ function AdminTransactions() {
         </div>
       ) : rows.length === 0 ? (
         <div className="mt-8">
-          <EmptyState title="No transactions found" body="Adjust your filters to see recorded payments." />
+          <EmptyState
+            title="No transactions found"
+            body="Adjust your filters to see recorded payments."
+          />
         </div>
       ) : (
         <div className="mt-6 overflow-hidden rounded-lg border border-border bg-card">
@@ -342,9 +374,12 @@ function AdminTransactions() {
                   <div>
                     <p className="font-semibold">{formatNaira(r.amount)}</p>
                     <p className="text-xs text-muted-foreground">
-                      {r.applications?.personal?.full_name ?? "—"} · {formatDate(r.paid_on ?? r.created_at)}
+                      {r.applications?.personal?.full_name ?? "—"} ·{" "}
+                      {formatDate(r.paid_on ?? r.created_at)}
                     </p>
-                    <p className="text-xs text-muted-foreground">{r.applications?.projects?.name ?? "—"}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {r.applications?.projects?.name ?? "—"}
+                    </p>
                   </div>
                   <PaymentBadge status={r.status} />
                 </div>
@@ -381,20 +416,36 @@ function AdminTransactions() {
                   </div>
                 ))}
               </dl>
-              {open.description ? <p className="text-sm text-muted-foreground">{open.description}</p> : null}
+              {open.description ? (
+                <p className="text-sm text-muted-foreground">{open.description}</p>
+              ) : null}
               <div className="flex flex-wrap gap-2">
                 {(proofs.data ?? []).map((doc) => (
-                  <AsyncButton key={doc.id} size="sm" variant="outline" onClick={() => openDocument(doc.id)}>
+                  <AsyncButton
+                    key={doc.id}
+                    size="sm"
+                    variant="outline"
+                    onClick={() => openDocument(doc.id)}
+                  >
                     <Eye className="mr-2 size-4" /> View proof of payment
                   </AsyncButton>
                 ))}
               </div>
               <div>
                 <Label htmlFor="verification-note">Verification note</Label>
-                <Textarea id="verification-note" rows={3} value={note} onChange={(e) => setNote(e.target.value)} />
+                <Textarea
+                  id="verification-note"
+                  rows={3}
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                />
               </div>
               <div className="flex flex-wrap gap-2">
-                <AsyncButton size="sm" onClick={() => decide(open, "verified")} pendingLabel="Verifying…">
+                <AsyncButton
+                  size="sm"
+                  onClick={() => decide(open, "verified")}
+                  pendingLabel="Verifying…"
+                >
                   Verify payment
                 </AsyncButton>
                 <AsyncButton size="sm" variant="outline" onClick={() => decide(open, "rejected")}>

@@ -7,7 +7,11 @@ export const APPLICATION_SELECT =
 export type ApplicationRow = Awaited<ReturnType<typeof fetchApplication>>;
 
 export async function fetchApplication(id: string) {
-  const { data, error } = await supabase.from("applications").select(APPLICATION_SELECT).eq("id", id).maybeSingle();
+  const { data, error } = await supabase
+    .from("applications")
+    .select(APPLICATION_SELECT)
+    .eq("id", id)
+    .maybeSingle();
   if (error) throw error;
   return data;
 }
@@ -42,7 +46,12 @@ export async function fetchEvents(applicationId: string) {
   return data ?? [];
 }
 
-export async function logEvent(applicationId: string, action: string, detail?: string, actorName?: string) {
+export async function logEvent(
+  applicationId: string,
+  action: string,
+  detail?: string,
+  actorName?: string,
+) {
   const { data: auth } = await supabase.auth.getUser();
   await supabase.from("application_events").insert({
     application_id: applicationId,
@@ -57,18 +66,29 @@ export async function notify(userId: string, title: string, body: string, link?:
   await supabase.from("notifications").insert({ user_id: userId, title, body, link: link ?? null });
 }
 
-export async function notifyStaffForProject(projectId: string | null, title: string, body: string, link: string) {
+export async function notifyStaffForProject(
+  projectId: string | null,
+  title: string,
+  body: string,
+  link: string,
+) {
   const targets = new Set<string>();
-  const { data: admins } = await supabase.from("user_roles").select("user_id, role").in("role", ["admin", "super_admin"]);
+  const { data: admins } = await supabase
+    .from("user_roles")
+    .select("user_id, role")
+    .in("role", ["admin", "super_admin"]);
   admins?.forEach((a) => targets.add(a.user_id));
   if (projectId) {
-    const { data: advisers } = await supabase.from("project_advisers").select("adviser_id").eq("project_id", projectId);
+    const { data: advisers } = await supabase
+      .from("project_advisers")
+      .select("adviser_id")
+      .eq("project_id", projectId);
     advisers?.forEach((a) => targets.add(a.adviser_id));
   }
   if (targets.size === 0) return;
-  await supabase.from("notifications").insert(
-    Array.from(targets).map((user_id) => ({ user_id, title, body, link })),
-  );
+  await supabase
+    .from("notifications")
+    .insert(Array.from(targets).map((user_id) => ({ user_id, title, body, link })));
 }
 
 export function totals(
