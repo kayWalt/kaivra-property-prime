@@ -25,6 +25,7 @@ import { Route as AuthenticatedAdminAdvisersRouteImport } from './routes/_authen
 import { Route as AuthenticatedAdminInspectionsRouteImport } from './routes/_authenticated/admin.inspections'
 import { Route as AuthenticatedAdminInvestorsRouteImport } from './routes/_authenticated/admin.investors'
 import { Route as AuthenticatedAdminProjectsRouteImport } from './routes/_authenticated/admin.projects'
+import { Route as AuthenticatedAdminTransactionsRouteImport } from './routes/_authenticated/admin.transactions'
 import { Route as AuthenticatedApplicationsIndexRouteImport } from './routes/_authenticated/applications.index'
 import { Route as AuthenticatedApplicationsAppIdRouteImport } from './routes/_authenticated/applications.$appId'
 import { Route as AuthenticatedInspectionsIndexRouteImport } from './routes/_authenticated/inspections.index'
@@ -119,6 +120,12 @@ const AuthenticatedAdminProjectsRoute =
     path: '/admin/projects',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminTransactionsRoute =
+  AuthenticatedAdminTransactionsRouteImport.update({
+    id: '/admin/transactions',
+    path: '/admin/transactions',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedApplicationsIndexRoute =
   AuthenticatedApplicationsIndexRouteImport.update({
     id: '/applications/',
@@ -176,6 +183,7 @@ export interface FileRoutesByFullPath {
   '/admin/inspections': typeof AuthenticatedAdminInspectionsRoute
   '/admin/investors': typeof AuthenticatedAdminInvestorsRoute
   '/admin/projects': typeof AuthenticatedAdminProjectsRoute
+  '/admin/transactions': typeof AuthenticatedAdminTransactionsRoute
   '/applications/$appId': typeof AuthenticatedApplicationsAppIdRoute
   '/inspections/new': typeof AuthenticatedInspectionsNewRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
@@ -200,6 +208,7 @@ export interface FileRoutesByTo {
   '/admin/inspections': typeof AuthenticatedAdminInspectionsRoute
   '/admin/investors': typeof AuthenticatedAdminInvestorsRoute
   '/admin/projects': typeof AuthenticatedAdminProjectsRoute
+  '/admin/transactions': typeof AuthenticatedAdminTransactionsRoute
   '/applications/$appId': typeof AuthenticatedApplicationsAppIdRoute
   '/inspections/new': typeof AuthenticatedInspectionsNewRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
@@ -226,6 +235,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/inspections': typeof AuthenticatedAdminInspectionsRoute
   '/_authenticated/admin/investors': typeof AuthenticatedAdminInvestorsRoute
   '/_authenticated/admin/projects': typeof AuthenticatedAdminProjectsRoute
+  '/_authenticated/admin/transactions': typeof AuthenticatedAdminTransactionsRoute
   '/_authenticated/applications/$appId': typeof AuthenticatedApplicationsAppIdRoute
   '/_authenticated/inspections/new': typeof AuthenticatedInspectionsNewRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
@@ -252,6 +262,7 @@ export interface FileRouteTypes {
     | '/admin/inspections'
     | '/admin/investors'
     | '/admin/projects'
+    | '/admin/transactions'
     | '/applications/$appId'
     | '/inspections/new'
     | '/admin/'
@@ -276,6 +287,7 @@ export interface FileRouteTypes {
     | '/admin/inspections'
     | '/admin/investors'
     | '/admin/projects'
+    | '/admin/transactions'
     | '/applications/$appId'
     | '/inspections/new'
     | '/admin'
@@ -301,6 +313,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/inspections'
     | '/_authenticated/admin/investors'
     | '/_authenticated/admin/projects'
+    | '/_authenticated/admin/transactions'
     | '/_authenticated/applications/$appId'
     | '/_authenticated/inspections/new'
     | '/_authenticated/admin/'
@@ -435,6 +448,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminProjectsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/transactions': {
+      id: '/_authenticated/admin/transactions'
+      path: '/admin/transactions'
+      fullPath: '/admin/transactions'
+      preLoaderRoute: typeof AuthenticatedAdminTransactionsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/applications/': {
       id: '/_authenticated/applications/'
       path: '/applications'
@@ -498,6 +518,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminInspectionsRoute: typeof AuthenticatedAdminInspectionsRoute
   AuthenticatedAdminInvestorsRoute: typeof AuthenticatedAdminInvestorsRoute
   AuthenticatedAdminProjectsRoute: typeof AuthenticatedAdminProjectsRoute
+  AuthenticatedAdminTransactionsRoute: typeof AuthenticatedAdminTransactionsRoute
   AuthenticatedApplicationsAppIdRoute: typeof AuthenticatedApplicationsAppIdRoute
   AuthenticatedInspectionsNewRoute: typeof AuthenticatedInspectionsNewRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
@@ -517,6 +538,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminInspectionsRoute: AuthenticatedAdminInspectionsRoute,
   AuthenticatedAdminInvestorsRoute: AuthenticatedAdminInvestorsRoute,
   AuthenticatedAdminProjectsRoute: AuthenticatedAdminProjectsRoute,
+  AuthenticatedAdminTransactionsRoute: AuthenticatedAdminTransactionsRoute,
   AuthenticatedApplicationsAppIdRoute: AuthenticatedApplicationsAppIdRoute,
   AuthenticatedInspectionsNewRoute: AuthenticatedInspectionsNewRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
