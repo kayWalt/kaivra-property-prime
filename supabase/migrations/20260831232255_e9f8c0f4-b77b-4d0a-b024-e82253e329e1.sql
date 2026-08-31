@@ -1,0 +1,1 @@
+DELETE FROM public.inspection_appointments WHERE id = '9e7d266a-b3ea-42e9-8e71-b497b74eb6a7';
