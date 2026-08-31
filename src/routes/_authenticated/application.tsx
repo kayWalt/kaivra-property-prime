@@ -182,6 +182,25 @@ function ApplicationWizard() {
     },
   });
 
+  // Assisted mode: a member of staff is completing an application that belongs
+  // to an investor. Ownership (investor_id) always stays with the investor.
+  const ownerId = (existing.data?.investor_id as string | undefined) ?? null;
+  const assisted = !!ownerId && !!user && ownerId !== user.id;
+  const investor = useQuery({
+    queryKey: ["assisted-investor", ownerId],
+    enabled: assisted,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, full_name, email, phone, investor_code")
+        .eq("id", ownerId!)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+
   // ---------- bootstrap: load or create the draft ----------
   useEffect(() => {
     if (initialised || bootRef.current || !user) return;
