@@ -77,6 +77,12 @@ function Dashboard() {
     { value: 0, paid: 0, outstanding: 0, count: 0 },
   );
   const progress = portfolio.value > 0 ? Math.round((portfolio.paid / portfolio.value) * 100) : 0;
+  const projectCount = new Set(
+    (apps.data ?? []).map((a) => a.project_id).filter(Boolean) as string[],
+  ).size;
+  const propertyCount = new Set(
+    (apps.data ?? []).map((a) => a.property_id).filter(Boolean) as string[],
+  ).size;
   const nextInspection = (inspections.data ?? [])
     .filter((i) => isUpcoming(i.status, i.scheduled_date, i.scheduled_time))
     .sort((a, b) =>
