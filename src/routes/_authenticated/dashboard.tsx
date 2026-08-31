@@ -1,5 +1,6 @@
+import { useEffect } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowRight, CalendarDays, CreditCard, FileText, Layers } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -60,29 +61,77 @@ function Dashboard() {
     },
   });
 
+  // Portfolio figures are derived from every non-draft application the investor
+  // owns (not just the 50 most recent shown below), so the numbers stay correct
+  // as investments and payments are added.
+  const portfolioQuery = useQuery({
+    queryKey: ["portfolio-totals", user?.id],
+    enabled: !!user?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("applications")
+        .select("id, status, project_id, property_id, investment, application_payments(amount, status)")
+        .eq("investor_id", user!.id)
+        .neq("status", "draft");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
   const inspections = useMyInspections(user?.id);
   const recentTx = useMyTransactions(user?.id, 5);
 
-  const portfolio = (apps.data ?? []).reduce(
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    if (!user?.id) return;
+    const recalculate = () => {
+      queryClient.invalidateQueries({ queryKey: ["portfolio-totals", user.id] });
+      queryClient.invalidateQueries({ queryKey: ["my-applications", user.id] });
+      queryClient.invalidateQueries({ queryKey: ["my-transactions", user.id] });
+    };
+    const channel = supabase
+      .channel(`portfolio-${user.id}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "application_payments" }, recalculate)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "applications", filter: `investor_id=eq.${user.id}` },
+        recalculate,
+      )
+      .subscribe();
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [queryClient, user?.id]);
+
+  const portfolioRows = portfolioQuery.data ?? [];
+  const portfolio = portfolioRows.reduce(
     (acc, app) => {
       const investment = (app.investment ?? {}) as { total_value?: number };
       const totalValue = Number(investment.total_value ?? 0);
-      const { paid, outstanding } = totals(app.application_payments ?? [], totalValue);
+      const payments = app.application_payments ?? [];
+      const verified = payments
+        .filter((p) => p.status === "verified")
+        .reduce((sum, p) => sum + Number(p.amount ?? 0), 0);
+      const pending = payments
+        .filter((p) => p.status === "pending")
+        .reduce((sum, p) => sum + Number(p.amount ?? 0), 0);
       acc.value += totalValue;
-      acc.paid += paid;
-      acc.outstanding += outstanding;
+      acc.paid += verified;
+      acc.pending += pending;
+      acc.outstanding += Math.max(0, totalValue - verified);
       acc.count += 1;
       return acc;
     },
-    { value: 0, paid: 0, outstanding: 0, count: 0 },
+    { value: 0, paid: 0, pending: 0, outstanding: 0, count: 0 },
   );
   const progress = portfolio.value > 0 ? Math.round((portfolio.paid / portfolio.value) * 100) : 0;
   const projectCount = new Set(
-    (apps.data ?? []).map((a) => a.project_id).filter(Boolean) as string[],
+    portfolioRows.map((a) => a.project_id).filter(Boolean) as string[],
   ).size;
   const propertyCount = new Set(
-    (apps.data ?? []).map((a) => a.property_id).filter(Boolean) as string[],
+    portfolioRows.map((a) => a.property_id).filter(Boolean) as string[],
   ).size;
+
   const nextInspection = (inspections.data ?? [])
     .filter((i) => isUpcoming(i.status, i.scheduled_date, i.scheduled_time))
     .sort((a, b) =>
@@ -135,18 +184,22 @@ function Dashboard() {
         <h2 className="font-display text-3xl">Portfolio overview</h2>
         <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
           {[
-            ["Total investment", formatNaira(portfolio.value)],
-            ["Total paid", formatNaira(portfolio.paid)],
-            ["Outstanding", formatNaira(portfolio.outstanding)],
+            ["Total invested", formatNaira(portfolio.value)],
+            ["Total paid (verified)", formatNaira(portfolio.paid)],
+            ["Outstanding balance", formatNaira(portfolio.outstanding)],
+            ["Awaiting verification", formatNaira(portfolio.pending)],
             ["Investments", String(portfolio.count)],
             ["Projects", String(projectCount)],
             ["Properties", String(propertyCount)],
           ].map(([label, value]) => (
             <div key={label} className="rounded-lg border border-border bg-card p-4">
               <p className="eyebrow text-muted-foreground">{label}</p>
-              <p className="mt-2 font-display text-2xl">{apps.isLoading ? "—" : value}</p>
+              <p className="mt-2 font-display text-2xl">
+                {portfolioQuery.isLoading ? "—" : value}
+              </p>
             </div>
           ))}
+
         </div>
         <div className="mt-4 rounded-lg border border-border bg-card p-5">
           <div className="flex items-center justify-between text-sm">
