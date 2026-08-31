@@ -18,7 +18,7 @@ export interface UploadedDoc {
   payment_id?: string | null;
 }
 
-async function compressImage(file: File, maxSize = 1600, quality = 0.85): Promise<File> {
+export async function compressImage(file: File, maxSize = 1600, quality = 0.82): Promise<File> {
   if (!file.type.startsWith("image/") || file.type === "image/gif") return file;
   try {
     const bitmap = await createImageBitmap(file);
@@ -85,7 +85,7 @@ export async function openDocument(documentId: string) {
 export function UploadCard({
   title,
   hint,
-  accept = "image/jpeg,image/png,image/webp",
+  accept = "image/*",
   capture,
   applicationId,
   kind,

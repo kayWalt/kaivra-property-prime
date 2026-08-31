@@ -9,7 +9,14 @@ export const getRouter = () => {
         staleTime: 30_000,
         gcTime: 5 * 60_000,
         refetchOnWindowFocus: false,
-        retry: 1,
+        // Mobile networks drop requests: retry twice with backoff, but never
+        // retry a request the user has already navigated away from.
+        retry: 2,
+        retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 4000),
+        refetchOnReconnect: true,
+      },
+      mutations: {
+        retry: 0,
       },
     },
   });

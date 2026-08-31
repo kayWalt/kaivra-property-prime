@@ -619,7 +619,7 @@ function ApplicationWizard() {
         ) : null}
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 px-4 py-3 backdrop-blur">
+      <div className="kv-safe-bottom fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 px-4 py-3 backdrop-blur">
         <div className="mx-auto flex w-full max-w-4xl items-center justify-between gap-3">
           <Button
             variant="ghost"
@@ -1087,6 +1087,7 @@ function StepInvestment(props: {
           <dd className="mt-1">
             <Input
               type="number"
+              inputMode="numeric"
               min={1}
               disabled={props.disabled}
               value={props.units}
@@ -1217,6 +1218,7 @@ function StepPayment({
             <Input
               id="deposit"
               type="number"
+              inputMode="numeric"
               min={0}
               disabled={disabled}
               value={info.initial_deposit ?? ""}
@@ -1227,6 +1229,7 @@ function StepPayment({
             <Input
               id="next_amount"
               type="number"
+              inputMode="numeric"
               min={0}
               disabled={disabled}
               value={info.next_payment_amount ?? ""}
@@ -1303,6 +1306,7 @@ function StepPayment({
                 <Input
                   id="amount"
                   type="number"
+                  inputMode="numeric"
                   min={0}
                   value={form.amount || ""}
                   onChange={(e) => setForm({ ...form, amount: Number(e.target.value) || 0 })}
@@ -1467,7 +1471,7 @@ function StepDocuments({
       <UploadCard
         title="Proof of payment"
         hint="Photos, scans or PDF receipts. You can upload more than one."
-        accept="image/jpeg,image/png,image/webp,application/pdf"
+        accept="image/*,application/pdf"
         capture
         multiple
         applicationId={applicationId}
@@ -1480,7 +1484,7 @@ function StepDocuments({
       <UploadCard
         title="Additional documents"
         hint="Optional: National ID, international passport, driver's licence, voter's card, agreements."
-        accept="image/jpeg,image/png,image/webp,application/pdf"
+        accept="image/*,application/pdf"
         multiple
         applicationId={applicationId}
         kind="additional"

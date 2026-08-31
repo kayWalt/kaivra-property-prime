@@ -33,7 +33,8 @@ function MyApplications() {
         .from("applications")
         .select(`${APPLICATION_SELECT}, application_payments(amount, status)`)
         .eq("investor_id", user!.id)
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .limit(50);
       if (error) throw error;
       return data ?? [];
     },

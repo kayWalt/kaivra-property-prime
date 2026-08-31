@@ -77,14 +77,14 @@ export function ImageUploadField({
         <input
           ref={inputRef}
           type="file"
-          accept="image/jpeg,image/png,image/webp"
+          accept="image/*"
           className="sr-only"
           aria-label="Upload project image"
           onChange={(e) => void handleFile(e.target.files?.[0])}
         />
       </div>
       {value ? (
-        <img src={value} alt="Project cover preview" className="h-28 w-full rounded-md object-cover sm:w-64" />
+        <img loading="lazy" decoding="async" src={value} alt="Project cover preview" className="h-28 w-full rounded-md object-cover sm:w-64" />
       ) : null}
     </div>
   );
@@ -137,7 +137,7 @@ export function GalleryUploadField({
           ref={inputRef}
           type="file"
           multiple
-          accept="image/jpeg,image/png,image/webp"
+          accept="image/*"
           className="sr-only"
           aria-label="Upload gallery images"
           onChange={(e) => void handleFiles(e.target.files)}
@@ -150,7 +150,7 @@ export function GalleryUploadField({
         <ul className="grid gap-3 sm:grid-cols-2">
           {images.map((image, index) => (
             <li key={`${image.url}-${index}`} className="rounded-md border border-border p-3">
-              <img src={image.url} alt={image.caption || "Gallery image"} className="h-28 w-full rounded object-cover" />
+              <img loading="lazy" decoding="async" src={image.url} alt={image.caption || "Gallery image"} className="h-28 w-full rounded object-cover" />
               <div className="mt-2 space-y-1.5">
                 <Label htmlFor={`${idPrefix}-caption-${index}`} className="text-xs">
                   Caption

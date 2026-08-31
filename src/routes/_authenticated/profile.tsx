@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { createAvatarUploadTicket, removeAvatarFile } from "@/lib/avatar.functions";
 import { Button } from "@/components/ui/button";
 import { AsyncButton } from "@/components/kaivra/AsyncButton";
+import { compressImage } from "@/components/kaivra/FileUpload";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useProfile, useRoles, useSession, primaryRole } from "@/hooks/useAuth";
@@ -57,8 +58,13 @@ function ProfilePage() {
     if (!file || !user) return;
     setUploading(true);
     try {
-      const ticket = await createAvatarUploadTicket({ data: { fileName: file.name } });
-      const { error } = await supabase.storage.from(ticket.bucket).uploadToSignedUrl(ticket.path, ticket.token, file);
+      // Phone cameras produce multi-megabyte photos: downscale before the
+      // upload so it completes quickly on 3G/4G.
+      const optimised = await compressImage(file, 640, 0.8);
+      const ticket = await createAvatarUploadTicket({ data: { fileName: optimised.name } });
+      const { error } = await supabase.storage
+        .from(ticket.bucket)
+        .uploadToSignedUrl(ticket.path, ticket.token, optimised);
       if (error) throw new Error("Your picture could not be uploaded.");
       await persistAvatar(ticket.url);
       toast.success("Profile picture updated.");
@@ -115,7 +121,7 @@ function ProfilePage() {
       <div className="mt-8 space-y-5 rounded-lg border border-border bg-card p-5">
         <div className="flex flex-wrap items-center gap-4">
           {avatarUrl ? (
-            <img
+            <img loading="lazy" decoding="async"
               src={avatarUrl}
               alt={fullName ? `${fullName}'s profile picture` : "Profile picture"}
               className="size-20 rounded-full border border-border object-cover"
@@ -139,7 +145,7 @@ function ProfilePage() {
           <input
             ref={fileRef}
             type="file"
-            accept="image/jpeg,image/png,image/webp"
+            accept="image/*"
             className="sr-only"
             aria-label="Upload profile picture"
             onChange={(e) => void handleFile(e.target.files?.[0])}
@@ -148,11 +154,26 @@ function ProfilePage() {
 
         <div className="space-y-1.5">
           <Label htmlFor="name">Full name</Label>
-          <Input id="name" value={fullName} onChange={(e) => setFullName(e.target.value)} maxLength={120} />
+          <Input
+            id="name"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            maxLength={120}
+            autoComplete="name"
+            autoCapitalize="words"
+          />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="profile_phone">Phone number</Label>
-          <Input id="profile_phone" value={phone} onChange={(e) => setPhone(e.target.value)} maxLength={32} />
+          <Input
+            id="profile_phone"
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            maxLength={32}
+          />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="profile_email">Email address</Label>

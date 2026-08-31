@@ -1,6 +1,7 @@
 import { forwardRef, useCallback, useEffect, useRef, useState, type MouseEvent, type ReactNode } from "react";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { haptic } from "@/lib/median";
 import { cn } from "@/lib/utils";
 
 type ButtonProps = React.ComponentProps<typeof Button>;
@@ -45,6 +46,7 @@ export const AsyncButton = forwardRef<HTMLButtonElement, AsyncButtonProps>(funct
         return;
       }
       if (!onClick) return;
+      haptic(); // native-only tap feedback; no-op in the browser
       lock.current = true;
       setPending(true); // synchronous: visible within the same frame
       void (async () => {
