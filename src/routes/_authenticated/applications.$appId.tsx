@@ -47,6 +47,8 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
   const payments = useQuery({ queryKey: ["payments", appId], queryFn: () => fetchPayments(appId) });
   const documents = useQuery({ queryKey: ["documents", appId], queryFn: () => fetchDocuments(appId) });
   const events = useQuery({ queryKey: ["events", appId], queryFn: () => fetchEvents(appId), enabled: !!manage });
+  const investorId = app.data?.investor_id as string | undefined;
+  const { avatars, isLoading: avatarsLoading } = usePassportAvatars(investorId ? [investorId] : []);
 
   if (app.isLoading) {
     return (
