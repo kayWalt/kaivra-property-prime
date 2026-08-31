@@ -1,14 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, CreditCard, FileText, FolderOpen, Layers } from "lucide-react";
+import { ArrowRight, CalendarDays, CreditCard, FileText, Layers } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { StatusBadge } from "@/components/kaivra/StatusBadge";
+import { InspectionBadge, PaymentBadge, StatusBadge } from "@/components/kaivra/StatusBadge";
 import { EmptyState } from "@/components/kaivra/EmptyState";
 import { useProfile, useRoles, useSession, primaryRole } from "@/hooks/useAuth";
 import { APPLICATION_SELECT, totals } from "@/lib/applications";
-import { formatNaira, type ApplicationStatus } from "@/lib/kaivra";
+import { formatDate, formatNaira, type ApplicationStatus } from "@/lib/kaivra";
+import { useMyInspections } from "./inspections.index";
+import { useMyTransactions } from "./transactions";
+import { formatSlot, isUpcoming } from "@/lib/inspections";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -27,9 +30,9 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 const QUICK_ACTIONS = [
   { to: "/application", label: "Complete application", icon: FileText },
   { to: "/applications", label: "My investments", icon: Layers },
-  { to: "/documents", label: "My documents", icon: FolderOpen },
-  { to: "/applications", label: "Submit payment", icon: CreditCard },
-];
+  { to: "/transactions", label: "Payment history", icon: CreditCard },
+  { to: "/inspections", label: "Inspections", icon: CalendarDays },
+] as const;
 
 function Dashboard() {
   const { user } = useSession();
@@ -53,6 +56,27 @@ function Dashboard() {
       return data ?? [];
     },
   });
+
+  const inspections = useMyInspections(user?.id);
+  const recentTx = useMyTransactions(user?.id, 5);
+
+  const portfolio = (apps.data ?? []).reduce(
+    (acc, app) => {
+      const investment = (app.investment ?? {}) as { total_value?: number };
+      const totalValue = Number(investment.total_value ?? 0);
+      const { paid, outstanding } = totals(app.application_payments ?? [], totalValue);
+      acc.value += totalValue;
+      acc.paid += paid;
+      acc.outstanding += outstanding;
+      acc.count += 1;
+      return acc;
+    },
+    { value: 0, paid: 0, outstanding: 0, count: 0 },
+  );
+  const progress = portfolio.value > 0 ? Math.round((portfolio.paid / portfolio.value) * 100) : 0;
+  const nextInspection = (inspections.data ?? [])
+    .filter((i) => isUpcoming(i.status, i.scheduled_date, i.scheduled_time))
+    .sort((a, b) => (a.scheduled_date + a.scheduled_time > b.scheduled_date + b.scheduled_time ? 1 : -1))[0];
 
   const firstName = (profile?.full_name || user?.email || "Investor").split(" ")[0];
 
@@ -84,6 +108,103 @@ function Dashboard() {
           </Link>
         ))}
       </div>
+
+      <section className="mt-10">
+        <h2 className="font-display text-3xl">Portfolio overview</h2>
+        <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {[
+            ["Total investment", formatNaira(portfolio.value)],
+            ["Total paid", formatNaira(portfolio.paid)],
+            ["Outstanding", formatNaira(portfolio.outstanding)],
+            ["Properties", String(portfolio.count)],
+          ].map(([label, value]) => (
+            <div key={label} className="rounded-lg border border-border bg-card p-4">
+              <p className="eyebrow text-muted-foreground">{label}</p>
+              <p className="mt-2 font-display text-2xl">{apps.isLoading ? "—" : value}</p>
+            </div>
+          ))}
+        </div>
+        <div className="mt-4 rounded-lg border border-border bg-card p-5">
+          <div className="flex items-center justify-between text-sm">
+            <p className="eyebrow text-muted-foreground">Payment progress</p>
+            <p className="font-semibold">{progress}%</p>
+          </div>
+          <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
+            <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${progress}%` }} />
+          </div>
+        </div>
+      </section>
+
+      <section className="mt-10 grid gap-4 lg:grid-cols-2">
+        <div className="rounded-lg border border-border bg-card p-5">
+          <h2 className="font-display text-2xl">Upcoming inspection</h2>
+          {inspections.isLoading ? (
+            <Skeleton className="mt-4 h-24 w-full rounded-lg" />
+          ) : nextInspection ? (
+            <>
+              <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <dt className="eyebrow text-muted-foreground">Project</dt>
+                  <dd className="mt-1 font-semibold">{nextInspection.projects?.name ?? "—"}</dd>
+                </div>
+                <div>
+                  <dt className="eyebrow text-muted-foreground">Property</dt>
+                  <dd className="mt-1 font-semibold">{nextInspection.properties?.name ?? "—"}</dd>
+                </div>
+                <div>
+                  <dt className="eyebrow text-muted-foreground">Date</dt>
+                  <dd className="mt-1 font-semibold">{formatDate(nextInspection.scheduled_date)}</dd>
+                </div>
+                <div>
+                  <dt className="eyebrow text-muted-foreground">Time</dt>
+                  <dd className="mt-1 font-semibold">{formatSlot(nextInspection.scheduled_time)}</dd>
+                </div>
+              </dl>
+              <div className="mt-4 flex items-center gap-3">
+                <InspectionBadge status={nextInspection.status} />
+                <Button asChild size="sm" variant="outline">
+                  <Link to="/inspections">View inspection</Link>
+                </Button>
+              </div>
+            </>
+          ) : (
+            <div className="mt-4">
+              <p className="text-sm text-muted-foreground">No inspection scheduled</p>
+              <Button asChild className="mt-4" size="sm">
+                <Link to="/inspections/new">Schedule inspection</Link>
+              </Button>
+            </div>
+          )}
+        </div>
+
+        <div className="rounded-lg border border-border bg-card p-5">
+          <div className="flex items-center justify-between">
+            <h2 className="font-display text-2xl">Recent transactions</h2>
+            <Button asChild size="sm" variant="ghost">
+              <Link to="/transactions">View all</Link>
+            </Button>
+          </div>
+          {recentTx.isLoading ? (
+            <Skeleton className="mt-4 h-24 w-full rounded-lg" />
+          ) : (recentTx.data?.length ?? 0) === 0 ? (
+            <p className="mt-4 text-sm text-muted-foreground">No payments recorded yet.</p>
+          ) : (
+            <ul className="mt-4 divide-y divide-border">
+              {recentTx.data?.map((t) => (
+                <li key={t.id} className="flex items-center justify-between gap-3 py-3 text-sm">
+                  <div>
+                    <p className="font-semibold">{formatNaira(t.amount)}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {formatDate(t.paid_on ?? t.created_at)} · {t.applications?.projects?.name ?? "—"}
+                    </p>
+                  </div>
+                  <PaymentBadge status={t.status} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </section>
 
       <div className="mt-12 flex items-end justify-between">
         <h2 className="font-display text-3xl">My investments</h2>

@@ -18,13 +18,18 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authenticated/documents'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
+import { Route as AuthenticatedTransactionsRouteImport } from './routes/_authenticated/transactions'
 import { Route as ProjectsProjectIdRouteImport } from './routes/projects.$projectId'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedAdminAdvisersRouteImport } from './routes/_authenticated/admin.advisers'
+import { Route as AuthenticatedAdminInspectionsRouteImport } from './routes/_authenticated/admin.inspections'
 import { Route as AuthenticatedAdminInvestorsRouteImport } from './routes/_authenticated/admin.investors'
 import { Route as AuthenticatedAdminProjectsRouteImport } from './routes/_authenticated/admin.projects'
+import { Route as AuthenticatedAdminTransactionsRouteImport } from './routes/_authenticated/admin.transactions'
 import { Route as AuthenticatedApplicationsIndexRouteImport } from './routes/_authenticated/applications.index'
 import { Route as AuthenticatedApplicationsAppIdRouteImport } from './routes/_authenticated/applications.$appId'
+import { Route as AuthenticatedInspectionsIndexRouteImport } from './routes/_authenticated/inspections.index'
+import { Route as AuthenticatedInspectionsNewRouteImport } from './routes/_authenticated/inspections.new'
 import { Route as AuthenticatedAdminApplicationsAppIdRouteImport } from './routes/_authenticated/admin.applications.$appId'
 import { Route as ApiPublicAvatarSplatRouteImport } from './routes/api/public/avatar.$'
 import { Route as ApiPublicProjectImageSplatRouteImport } from './routes/api/public/project-image.$'
@@ -75,6 +80,12 @@ const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedTransactionsRoute =
+  AuthenticatedTransactionsRouteImport.update({
+    id: '/transactions',
+    path: '/transactions',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const ProjectsProjectIdRoute = ProjectsProjectIdRouteImport.update({
   id: '/projects/$projectId',
   path: '/projects/$projectId',
@@ -91,6 +102,12 @@ const AuthenticatedAdminAdvisersRoute =
     path: '/admin/advisers',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminInspectionsRoute =
+  AuthenticatedAdminInspectionsRouteImport.update({
+    id: '/admin/inspections',
+    path: '/admin/inspections',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminInvestorsRoute =
   AuthenticatedAdminInvestorsRouteImport.update({
     id: '/admin/investors',
@@ -103,6 +120,12 @@ const AuthenticatedAdminProjectsRoute =
     path: '/admin/projects',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminTransactionsRoute =
+  AuthenticatedAdminTransactionsRouteImport.update({
+    id: '/admin/transactions',
+    path: '/admin/transactions',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedApplicationsIndexRoute =
   AuthenticatedApplicationsIndexRouteImport.update({
     id: '/applications/',
@@ -113,6 +136,18 @@ const AuthenticatedApplicationsAppIdRoute =
   AuthenticatedApplicationsAppIdRouteImport.update({
     id: '/applications/$appId',
     path: '/applications/$appId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedInspectionsIndexRoute =
+  AuthenticatedInspectionsIndexRouteImport.update({
+    id: '/inspections/',
+    path: '/inspections/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedInspectionsNewRoute =
+  AuthenticatedInspectionsNewRouteImport.update({
+    id: '/inspections/new',
+    path: '/inspections/new',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedAdminApplicationsAppIdRoute =
@@ -142,13 +177,18 @@ export interface FileRoutesByFullPath {
   '/documents': typeof AuthenticatedDocumentsRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/profile': typeof AuthenticatedProfileRoute
+  '/transactions': typeof AuthenticatedTransactionsRoute
   '/projects/$projectId': typeof ProjectsProjectIdRoute
   '/admin/advisers': typeof AuthenticatedAdminAdvisersRoute
+  '/admin/inspections': typeof AuthenticatedAdminInspectionsRoute
   '/admin/investors': typeof AuthenticatedAdminInvestorsRoute
   '/admin/projects': typeof AuthenticatedAdminProjectsRoute
+  '/admin/transactions': typeof AuthenticatedAdminTransactionsRoute
   '/applications/$appId': typeof AuthenticatedApplicationsAppIdRoute
+  '/inspections/new': typeof AuthenticatedInspectionsNewRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/applications/': typeof AuthenticatedApplicationsIndexRoute
+  '/inspections/': typeof AuthenticatedInspectionsIndexRoute
   '/admin/applications/$appId': typeof AuthenticatedAdminApplicationsAppIdRoute
   '/api/public/avatar/$': typeof ApiPublicAvatarSplatRoute
   '/api/public/project-image/$': typeof ApiPublicProjectImageSplatRoute
@@ -162,13 +202,18 @@ export interface FileRoutesByTo {
   '/documents': typeof AuthenticatedDocumentsRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/profile': typeof AuthenticatedProfileRoute
+  '/transactions': typeof AuthenticatedTransactionsRoute
   '/projects/$projectId': typeof ProjectsProjectIdRoute
   '/admin/advisers': typeof AuthenticatedAdminAdvisersRoute
+  '/admin/inspections': typeof AuthenticatedAdminInspectionsRoute
   '/admin/investors': typeof AuthenticatedAdminInvestorsRoute
   '/admin/projects': typeof AuthenticatedAdminProjectsRoute
+  '/admin/transactions': typeof AuthenticatedAdminTransactionsRoute
   '/applications/$appId': typeof AuthenticatedApplicationsAppIdRoute
+  '/inspections/new': typeof AuthenticatedInspectionsNewRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/applications': typeof AuthenticatedApplicationsIndexRoute
+  '/inspections': typeof AuthenticatedInspectionsIndexRoute
   '/admin/applications/$appId': typeof AuthenticatedAdminApplicationsAppIdRoute
   '/api/public/avatar/$': typeof ApiPublicAvatarSplatRoute
   '/api/public/project-image/$': typeof ApiPublicProjectImageSplatRoute
@@ -184,13 +229,18 @@ export interface FileRoutesById {
   '/_authenticated/documents': typeof AuthenticatedDocumentsRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
+  '/_authenticated/transactions': typeof AuthenticatedTransactionsRoute
   '/projects/$projectId': typeof ProjectsProjectIdRoute
   '/_authenticated/admin/advisers': typeof AuthenticatedAdminAdvisersRoute
+  '/_authenticated/admin/inspections': typeof AuthenticatedAdminInspectionsRoute
   '/_authenticated/admin/investors': typeof AuthenticatedAdminInvestorsRoute
   '/_authenticated/admin/projects': typeof AuthenticatedAdminProjectsRoute
+  '/_authenticated/admin/transactions': typeof AuthenticatedAdminTransactionsRoute
   '/_authenticated/applications/$appId': typeof AuthenticatedApplicationsAppIdRoute
+  '/_authenticated/inspections/new': typeof AuthenticatedInspectionsNewRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/applications/': typeof AuthenticatedApplicationsIndexRoute
+  '/_authenticated/inspections/': typeof AuthenticatedInspectionsIndexRoute
   '/_authenticated/admin/applications/$appId': typeof AuthenticatedAdminApplicationsAppIdRoute
   '/api/public/avatar/$': typeof ApiPublicAvatarSplatRoute
   '/api/public/project-image/$': typeof ApiPublicProjectImageSplatRoute
@@ -206,13 +256,18 @@ export interface FileRouteTypes {
     | '/documents'
     | '/notifications'
     | '/profile'
+    | '/transactions'
     | '/projects/$projectId'
     | '/admin/advisers'
+    | '/admin/inspections'
     | '/admin/investors'
     | '/admin/projects'
+    | '/admin/transactions'
     | '/applications/$appId'
+    | '/inspections/new'
     | '/admin/'
     | '/applications/'
+    | '/inspections/'
     | '/admin/applications/$appId'
     | '/api/public/avatar/$'
     | '/api/public/project-image/$'
@@ -226,13 +281,18 @@ export interface FileRouteTypes {
     | '/documents'
     | '/notifications'
     | '/profile'
+    | '/transactions'
     | '/projects/$projectId'
     | '/admin/advisers'
+    | '/admin/inspections'
     | '/admin/investors'
     | '/admin/projects'
+    | '/admin/transactions'
     | '/applications/$appId'
+    | '/inspections/new'
     | '/admin'
     | '/applications'
+    | '/inspections'
     | '/admin/applications/$appId'
     | '/api/public/avatar/$'
     | '/api/public/project-image/$'
@@ -247,13 +307,18 @@ export interface FileRouteTypes {
     | '/_authenticated/documents'
     | '/_authenticated/notifications'
     | '/_authenticated/profile'
+    | '/_authenticated/transactions'
     | '/projects/$projectId'
     | '/_authenticated/admin/advisers'
+    | '/_authenticated/admin/inspections'
     | '/_authenticated/admin/investors'
     | '/_authenticated/admin/projects'
+    | '/_authenticated/admin/transactions'
     | '/_authenticated/applications/$appId'
+    | '/_authenticated/inspections/new'
     | '/_authenticated/admin/'
     | '/_authenticated/applications/'
+    | '/_authenticated/inspections/'
     | '/_authenticated/admin/applications/$appId'
     | '/api/public/avatar/$'
     | '/api/public/project-image/$'
@@ -334,6 +399,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProfileRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/transactions': {
+      id: '/_authenticated/transactions'
+      path: '/transactions'
+      fullPath: '/transactions'
+      preLoaderRoute: typeof AuthenticatedTransactionsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/projects/$projectId': {
       id: '/projects/$projectId'
       path: '/projects/$projectId'
@@ -355,6 +427,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminAdvisersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/inspections': {
+      id: '/_authenticated/admin/inspections'
+      path: '/admin/inspections'
+      fullPath: '/admin/inspections'
+      preLoaderRoute: typeof AuthenticatedAdminInspectionsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/investors': {
       id: '/_authenticated/admin/investors'
       path: '/admin/investors'
@@ -369,6 +448,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminProjectsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/transactions': {
+      id: '/_authenticated/admin/transactions'
+      path: '/admin/transactions'
+      fullPath: '/admin/transactions'
+      preLoaderRoute: typeof AuthenticatedAdminTransactionsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/applications/': {
       id: '/_authenticated/applications/'
       path: '/applications'
@@ -381,6 +467,20 @@ declare module '@tanstack/react-router' {
       path: '/applications/$appId'
       fullPath: '/applications/$appId'
       preLoaderRoute: typeof AuthenticatedApplicationsAppIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/inspections/': {
+      id: '/_authenticated/inspections/'
+      path: '/inspections'
+      fullPath: '/inspections/'
+      preLoaderRoute: typeof AuthenticatedInspectionsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/inspections/new': {
+      id: '/_authenticated/inspections/new'
+      path: '/inspections/new'
+      fullPath: '/inspections/new'
+      preLoaderRoute: typeof AuthenticatedInspectionsNewRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin/applications/$appId': {
@@ -413,12 +513,17 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDocumentsRoute: typeof AuthenticatedDocumentsRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+  AuthenticatedTransactionsRoute: typeof AuthenticatedTransactionsRoute
   AuthenticatedAdminAdvisersRoute: typeof AuthenticatedAdminAdvisersRoute
+  AuthenticatedAdminInspectionsRoute: typeof AuthenticatedAdminInspectionsRoute
   AuthenticatedAdminInvestorsRoute: typeof AuthenticatedAdminInvestorsRoute
   AuthenticatedAdminProjectsRoute: typeof AuthenticatedAdminProjectsRoute
+  AuthenticatedAdminTransactionsRoute: typeof AuthenticatedAdminTransactionsRoute
   AuthenticatedApplicationsAppIdRoute: typeof AuthenticatedApplicationsAppIdRoute
+  AuthenticatedInspectionsNewRoute: typeof AuthenticatedInspectionsNewRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
   AuthenticatedApplicationsIndexRoute: typeof AuthenticatedApplicationsIndexRoute
+  AuthenticatedInspectionsIndexRoute: typeof AuthenticatedInspectionsIndexRoute
   AuthenticatedAdminApplicationsAppIdRoute: typeof AuthenticatedAdminApplicationsAppIdRoute
 }
 
@@ -428,12 +533,17 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDocumentsRoute: AuthenticatedDocumentsRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
+  AuthenticatedTransactionsRoute: AuthenticatedTransactionsRoute,
   AuthenticatedAdminAdvisersRoute: AuthenticatedAdminAdvisersRoute,
+  AuthenticatedAdminInspectionsRoute: AuthenticatedAdminInspectionsRoute,
   AuthenticatedAdminInvestorsRoute: AuthenticatedAdminInvestorsRoute,
   AuthenticatedAdminProjectsRoute: AuthenticatedAdminProjectsRoute,
+  AuthenticatedAdminTransactionsRoute: AuthenticatedAdminTransactionsRoute,
   AuthenticatedApplicationsAppIdRoute: AuthenticatedApplicationsAppIdRoute,
+  AuthenticatedInspectionsNewRoute: AuthenticatedInspectionsNewRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
   AuthenticatedApplicationsIndexRoute: AuthenticatedApplicationsIndexRoute,
+  AuthenticatedInspectionsIndexRoute: AuthenticatedInspectionsIndexRoute,
   AuthenticatedAdminApplicationsAppIdRoute:
     AuthenticatedAdminApplicationsAppIdRoute,
 }

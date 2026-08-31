@@ -87,7 +87,12 @@ function AdminDashboard() {
         (sum, r) => sum + (r.application_payments ?? []).filter((p) => p.status === "pending").length,
         0,
       );
+      const { count: inspectionCount } = await supabase
+        .from("inspection_appointments")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "requested");
       return {
+        inspections: inspectionCount ?? 0,
         investors: investors.size,
         applications: rows.length,
         pending: rows.filter((r) => r.status === "submitted" || r.status === "under_review").length,
@@ -104,6 +109,7 @@ function AdminDashboard() {
       ["Total applications", stats.data ? String(stats.data.applications) : "—"],
       ["Pending review", stats.data ? String(stats.data.pending) : "—"],
       ["Payment verification", stats.data ? String(stats.data.pendingPayments) : "—"],
+      ["Inspection requests", stats.data ? String(stats.data.inspections) : "—"],
       ["Approved", stats.data ? String(stats.data.approved) : "—"],
       ["Total investment value", stats.data ? formatCompact(stats.data.value) : "—"],
     ],

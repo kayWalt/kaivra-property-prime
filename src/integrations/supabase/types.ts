@@ -327,6 +327,109 @@ export type Database = {
           },
         ]
       }
+      inspection_appointments: {
+        Row: {
+          admin_note: string | null
+          application_id: string | null
+          assigned_adviser: string | null
+          attendee_count: number
+          cancelled_at: string | null
+          completed_at: string | null
+          confirmed_at: string | null
+          created_at: string
+          created_by: string | null
+          duration_minutes: number
+          email: string | null
+          id: string
+          investor_id: string
+          notes: string | null
+          phone: string | null
+          project_id: string | null
+          property_id: string | null
+          reference: string | null
+          reminder_day_sent_at: string | null
+          reminder_hour_sent_at: string | null
+          scheduled_date: string
+          scheduled_time: string
+          status: Database["public"]["Enums"]["inspection_status"]
+          updated_at: string
+        }
+        Insert: {
+          admin_note?: string | null
+          application_id?: string | null
+          assigned_adviser?: string | null
+          attendee_count?: number
+          cancelled_at?: string | null
+          completed_at?: string | null
+          confirmed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          duration_minutes?: number
+          email?: string | null
+          id?: string
+          investor_id: string
+          notes?: string | null
+          phone?: string | null
+          project_id?: string | null
+          property_id?: string | null
+          reference?: string | null
+          reminder_day_sent_at?: string | null
+          reminder_hour_sent_at?: string | null
+          scheduled_date: string
+          scheduled_time: string
+          status?: Database["public"]["Enums"]["inspection_status"]
+          updated_at?: string
+        }
+        Update: {
+          admin_note?: string | null
+          application_id?: string | null
+          assigned_adviser?: string | null
+          attendee_count?: number
+          cancelled_at?: string | null
+          completed_at?: string | null
+          confirmed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          duration_minutes?: number
+          email?: string | null
+          id?: string
+          investor_id?: string
+          notes?: string | null
+          phone?: string | null
+          project_id?: string | null
+          property_id?: string | null
+          reference?: string | null
+          reminder_day_sent_at?: string | null
+          reminder_hour_sent_at?: string | null
+          scheduled_date?: string
+          scheduled_time?: string
+          status?: Database["public"]["Enums"]["inspection_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inspection_appointments_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspection_appointments_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspection_appointments_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           body: string | null
@@ -553,6 +656,13 @@ export type Database = {
         | "rejected"
         | "requires_correction"
       doc_kind: "passport" | "signature" | "proof_of_payment" | "additional"
+      inspection_status:
+        | "requested"
+        | "confirmed"
+        | "rescheduled"
+        | "completed"
+        | "cancelled"
+        | "no_show"
       payment_method:
         | "bank_transfer"
         | "bank_deposit"
@@ -698,6 +808,14 @@ export const Constants = {
         "requires_correction",
       ],
       doc_kind: ["passport", "signature", "proof_of_payment", "additional"],
+      inspection_status: [
+        "requested",
+        "confirmed",
+        "rescheduled",
+        "completed",
+        "cancelled",
+        "no_show",
+      ],
       payment_method: ["bank_transfer", "bank_deposit", "pos", "cash", "other"],
       payment_status: ["pending", "verified", "rejected"],
     },

@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { INSPECTION_STATUS_LABEL, inspectionTone, type InspectionStatus } from "@/lib/inspections";
 import { STATUS_LABEL, statusTone, type ApplicationStatus, type PaymentStatus } from "@/lib/kaivra";
 
 const toneClass = {
@@ -30,6 +31,20 @@ export function PaymentBadge({ status }: { status: PaymentStatus }) {
     <span className={cn("eyebrow inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1", toneClass[tone])}>
       <span aria-hidden className="size-1.5 rounded-full bg-current" />
       {label}
+    </span>
+  );
+}
+
+export function InspectionBadge({ status }: { status: InspectionStatus }) {
+  return (
+    <span
+      className={cn(
+        "eyebrow inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1",
+        toneClass[inspectionTone(status)],
+      )}
+    >
+      <span aria-hidden className="size-1.5 rounded-full bg-current" />
+      {INSPECTION_STATUS_LABEL[status]}
     </span>
   );
 }
