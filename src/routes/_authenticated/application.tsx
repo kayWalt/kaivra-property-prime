@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Check, ChevronLeft, ChevronRight, CloudOff, Loader2, Plus, Save, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { AsyncButton } from "@/components/kaivra/AsyncButton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -667,10 +668,9 @@ function ApplicationWizard() {
             <Button variant="outline" onClick={() => setConfirmOpen(false)} disabled={submitting}>
               Cancel
             </Button>
-            <Button onClick={() => void submit()} disabled={submitting}>
-              {submitting ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
+            <AsyncButton onClick={() => submit()} disabled={submitting} pendingLabel="Submitting…">
               Submit
-            </Button>
+            </AsyncButton>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1289,9 +1289,9 @@ function StepPayment({
               <div className="flex items-center gap-2">
                 <PaymentBadge status={payment.status as "pending" | "verified" | "rejected"} />
                 {!disabled && payment.status !== "verified" ? (
-                  <Button variant="ghost" size="icon" aria-label="Remove payment" onClick={() => void onRemove(payment.id)}>
+                  <AsyncButton variant="ghost" size="icon" aria-label="Remove payment" onClick={() => onRemove(payment.id)}>
                     <Trash2 className="size-4" />
-                  </Button>
+                  </AsyncButton>
                 ) : null}
               </div>
             </li>
@@ -1356,19 +1356,23 @@ function StepPayment({
                 </Field>
               </div>
             </div>
-            <Button
+            <AsyncButton
               className="mt-4"
               disabled={adding || form.amount <= 0}
+              pendingLabel="Adding payment…"
               onClick={async () => {
                 setAdding(true);
-                await onAdd(form);
-                setForm(EMPTY_PAYMENT);
-                setAdding(false);
+                try {
+                  await onAdd(form);
+                  setForm(EMPTY_PAYMENT);
+                } finally {
+                  setAdding(false);
+                }
               }}
             >
-              {adding ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Plus className="mr-2 size-4" />}
+              <Plus className="mr-2 size-4" />
               Add payment
-            </Button>
+            </AsyncButton>
           </div>
         ) : null}
       </section>
