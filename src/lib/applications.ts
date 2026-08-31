@@ -52,43 +52,48 @@ export async function logEvent(
   detail?: string,
   actorName?: string,
 ) {
-  const { data: auth } = await supabase.auth.getUser();
-  await supabase.from("application_events").insert({
-    application_id: applicationId,
-    actor: auth.user?.id ?? null,
-    actor_name: actorName ?? auth.user?.email ?? null,
-    action,
-    detail: detail ?? null,
-  });
+  try {
+    const { data: auth } = await supabase.auth.getUser();
+    await supabase.from("application_events").insert({
+      application_id: applicationId,
+      actor: auth.user?.id ?? null,
+      actor_name: actorName ?? auth.user?.email ?? null,
+      action,
+      detail: detail ?? null,
+    });
+  } catch {
+    /* audit trail is best-effort: never block the user's action */
+  }
 }
 
 export async function notify(userId: string, title: string, body: string, link?: string) {
-  await supabase.from("notifications").insert({ user_id: userId, title, body, link: link ?? null });
+  try {
+    await supabase
+      .from("notifications")
+      .insert({ user_id: userId, title, body, link: link ?? null });
+  } catch {
+    /* best-effort */
+  }
 }
 
+/**
+ * Fan-out to admins and project advisers. Investors are not allowed to write
+ * notifications addressed to other users, so this always goes through the
+ * server function — and never throws, so a notification problem can never
+ * block the action that triggered it.
+ */
 export async function notifyStaffForProject(
   projectId: string | null,
   title: string,
   body: string,
   link: string,
 ) {
-  const targets = new Set<string>();
-  const { data: admins } = await supabase
-    .from("user_roles")
-    .select("user_id, role")
-    .in("role", ["admin", "super_admin"]);
-  admins?.forEach((a) => targets.add(a.user_id));
-  if (projectId) {
-    const { data: advisers } = await supabase
-      .from("project_advisers")
-      .select("adviser_id")
-      .eq("project_id", projectId);
-    advisers?.forEach((a) => targets.add(a.adviser_id));
+  try {
+    const { notifyProjectStaff } = await import("./notifications.functions");
+    await notifyProjectStaff({ data: { projectId, title, body, link } });
+  } catch {
+    /* best-effort */
   }
-  if (targets.size === 0) return;
-  await supabase
-    .from("notifications")
-    .insert(Array.from(targets).map((user_id) => ({ user_id, title, body, link })));
 }
 
 export function totals(
