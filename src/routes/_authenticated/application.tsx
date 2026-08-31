@@ -104,7 +104,6 @@ function ApplicationWizard() {
   const [initialised, setInitialised] = useState(false);
   const pendingRef = useRef<DraftState | null>(null);
   const bootRef = useRef(false);
-  const aliveRef = useRef<{ current: boolean } | null>(null);
 
   // ---------- data ----------
   const projects = useQuery({
@@ -161,16 +160,13 @@ function ApplicationWizard() {
   useEffect(() => {
     if (initialised || bootRef.current || !user) return;
     bootRef.current = true;
-    // Cancellation is tied to unmount only. A re-render (e.g. the profile
-    // query resolving) must not abort an in-flight bootstrap, otherwise the
-    // wizard stays stuck on skeletons forever because bootRef is already set.
-    const alive = { current: true };
-    aliveRef.current = alive;
+    // No cancellation: bootRef already guarantees the bootstrap runs once.
+    // Aborting it on re-render/StrictMode remount left the wizard stuck on
+    // skeletons because the retry was blocked by bootRef.
 
     async function boot() {
       if (search.id) {
         const { data } = await supabase.from("applications").select("*").eq("id", search.id!).maybeSingle();
-        if (!alive.current) return;
         if (data) {
           const cached = typeof window !== "undefined" ? window.localStorage.getItem(localKey(data.id)) : null;
           const base: DraftState = {
@@ -213,7 +209,6 @@ function ApplicationWizard() {
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
-      if (!alive.current) return;
       if (reusable && !search.project && !search.property) {
         setApplicationId(reusable.id);
         setDraft({
@@ -250,7 +245,6 @@ function ApplicationWizard() {
         })
         .select()
         .single();
-      if (!alive.current) return;
       if (error || !data) {
         bootRef.current = false;
         toast.error("We could not start your application. Please try again.");
@@ -266,11 +260,6 @@ function ApplicationWizard() {
     void boot();
   }, [user, profile, search.id, search.project, search.property, initialised, navigate]);
 
-  useEffect(() => {
-    return () => {
-      if (aliveRef.current) aliveRef.current.current = false;
-    };
-  }, []);
 
   // ---------- autosave ----------
   const persist = useCallback(
