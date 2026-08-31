@@ -25,6 +25,7 @@ import { Route as AuthenticatedAdminInvestorsRouteImport } from './routes/_authe
 import { Route as AuthenticatedAdminProjectsRouteImport } from './routes/_authenticated/admin.projects'
 import { Route as AuthenticatedApplicationsIndexRouteImport } from './routes/_authenticated/applications.index'
 import { Route as AuthenticatedApplicationsAppIdRouteImport } from './routes/_authenticated/applications.$appId'
+import { Route as AuthenticatedInspectionsIndexRouteImport } from './routes/_authenticated/inspections.index'
 import { Route as AuthenticatedInspectionsNewRouteImport } from './routes/_authenticated/inspections.new'
 import { Route as AuthenticatedAdminApplicationsAppIdRouteImport } from './routes/_authenticated/admin.applications.$appId'
 import { Route as ApiPublicAvatarSplatRouteImport } from './routes/api/public/avatar.$'
@@ -116,6 +117,12 @@ const AuthenticatedApplicationsAppIdRoute =
     path: '/applications/$appId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedInspectionsIndexRoute =
+  AuthenticatedInspectionsIndexRouteImport.update({
+    id: '/inspections/',
+    path: '/inspections/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedInspectionsNewRoute =
   AuthenticatedInspectionsNewRouteImport.update({
     id: '/inspections/new',
@@ -157,6 +164,7 @@ export interface FileRoutesByFullPath {
   '/inspections/new': typeof AuthenticatedInspectionsNewRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/applications/': typeof AuthenticatedApplicationsIndexRoute
+  '/inspections/': typeof AuthenticatedInspectionsIndexRoute
   '/admin/applications/$appId': typeof AuthenticatedAdminApplicationsAppIdRoute
   '/api/public/avatar/$': typeof ApiPublicAvatarSplatRoute
   '/api/public/project-image/$': typeof ApiPublicProjectImageSplatRoute
@@ -178,6 +186,7 @@ export interface FileRoutesByTo {
   '/inspections/new': typeof AuthenticatedInspectionsNewRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/applications': typeof AuthenticatedApplicationsIndexRoute
+  '/inspections': typeof AuthenticatedInspectionsIndexRoute
   '/admin/applications/$appId': typeof AuthenticatedAdminApplicationsAppIdRoute
   '/api/public/avatar/$': typeof ApiPublicAvatarSplatRoute
   '/api/public/project-image/$': typeof ApiPublicProjectImageSplatRoute
@@ -201,6 +210,7 @@ export interface FileRoutesById {
   '/_authenticated/inspections/new': typeof AuthenticatedInspectionsNewRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/applications/': typeof AuthenticatedApplicationsIndexRoute
+  '/_authenticated/inspections/': typeof AuthenticatedInspectionsIndexRoute
   '/_authenticated/admin/applications/$appId': typeof AuthenticatedAdminApplicationsAppIdRoute
   '/api/public/avatar/$': typeof ApiPublicAvatarSplatRoute
   '/api/public/project-image/$': typeof ApiPublicProjectImageSplatRoute
@@ -224,6 +234,7 @@ export interface FileRouteTypes {
     | '/inspections/new'
     | '/admin/'
     | '/applications/'
+    | '/inspections/'
     | '/admin/applications/$appId'
     | '/api/public/avatar/$'
     | '/api/public/project-image/$'
@@ -245,6 +256,7 @@ export interface FileRouteTypes {
     | '/inspections/new'
     | '/admin'
     | '/applications'
+    | '/inspections'
     | '/admin/applications/$appId'
     | '/api/public/avatar/$'
     | '/api/public/project-image/$'
@@ -267,6 +279,7 @@ export interface FileRouteTypes {
     | '/_authenticated/inspections/new'
     | '/_authenticated/admin/'
     | '/_authenticated/applications/'
+    | '/_authenticated/inspections/'
     | '/_authenticated/admin/applications/$appId'
     | '/api/public/avatar/$'
     | '/api/public/project-image/$'
@@ -396,6 +409,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedApplicationsAppIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/inspections/': {
+      id: '/_authenticated/inspections/'
+      path: '/inspections'
+      fullPath: '/inspections/'
+      preLoaderRoute: typeof AuthenticatedInspectionsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/inspections/new': {
       id: '/_authenticated/inspections/new'
       path: '/inspections/new'
@@ -440,6 +460,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedInspectionsNewRoute: typeof AuthenticatedInspectionsNewRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
   AuthenticatedApplicationsIndexRoute: typeof AuthenticatedApplicationsIndexRoute
+  AuthenticatedInspectionsIndexRoute: typeof AuthenticatedInspectionsIndexRoute
   AuthenticatedAdminApplicationsAppIdRoute: typeof AuthenticatedAdminApplicationsAppIdRoute
 }
 
@@ -456,6 +477,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedInspectionsNewRoute: AuthenticatedInspectionsNewRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
   AuthenticatedApplicationsIndexRoute: AuthenticatedApplicationsIndexRoute,
+  AuthenticatedInspectionsIndexRoute: AuthenticatedInspectionsIndexRoute,
   AuthenticatedAdminApplicationsAppIdRoute:
     AuthenticatedAdminApplicationsAppIdRoute,
 }
