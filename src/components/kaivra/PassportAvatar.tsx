@@ -26,12 +26,12 @@ export function PassportAvatar({
   loading = false,
   zoomable = false,
 }: {
-  url?: string | null;
-  name?: string | null;
-  className?: string;
-  textClassName?: string;
-  loading?: boolean;
-  zoomable?: boolean;
+  url?: string | null | undefined;
+  name?: string | null | undefined;
+  className?: string | undefined;
+  textClassName?: string | undefined;
+  loading?: boolean | undefined;
+  zoomable?: boolean | undefined;
 }) {
   const [failed, setFailed] = useState(false);
   const [ready, setReady] = useState(false);
