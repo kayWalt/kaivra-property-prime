@@ -85,6 +85,7 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
     }
     setDownloading(true);
     try {
+      const { downloadApplicationPdf } = await import("@/lib/pdf");
       await downloadApplicationPdf({
         application: record as never,
         payments: (payments.data ?? []) as never,
