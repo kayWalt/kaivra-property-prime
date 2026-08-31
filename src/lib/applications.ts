@@ -2,7 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { ApplicationStatus } from "./kaivra";
 
 export const APPLICATION_SELECT =
-  "*, projects(id, name, location, hero_image, currency), properties(id, name, property_type, size_label, unit_price, image_urls)";
+  "*, projects(id, name, location, hero_image, currency, project_code), properties(id, name, property_type, size_label, unit_price, image_urls, property_code)";
 
 export type ApplicationRow = Awaited<ReturnType<typeof fetchApplication>>;
 

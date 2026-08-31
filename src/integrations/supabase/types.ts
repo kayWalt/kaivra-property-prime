@@ -189,6 +189,7 @@ export type Database = {
           id: string
           method: Database["public"]["Enums"]["payment_method"]
           paid_on: string | null
+          payment_reference: string
           reference: string | null
           rejection_reason: string | null
           sender: string | null
@@ -206,6 +207,7 @@ export type Database = {
           id?: string
           method?: Database["public"]["Enums"]["payment_method"]
           paid_on?: string | null
+          payment_reference?: string
           reference?: string | null
           rejection_reason?: string | null
           sender?: string | null
@@ -223,6 +225,7 @@ export type Database = {
           id?: string
           method?: Database["public"]["Enums"]["payment_method"]
           paid_on?: string | null
+          payment_reference?: string
           reference?: string | null
           rejection_reason?: string | null
           sender?: string | null
@@ -252,6 +255,7 @@ export type Database = {
           id: string
           investment: Json
           investor_id: string
+          legacy_reference: string | null
           payment_info: Json
           personal: Json
           project_id: string | null
@@ -275,6 +279,7 @@ export type Database = {
           id?: string
           investment?: Json
           investor_id: string
+          legacy_reference?: string | null
           payment_info?: Json
           personal?: Json
           project_id?: string | null
@@ -298,6 +303,7 @@ export type Database = {
           id?: string
           investment?: Json
           investor_id?: string
+          legacy_reference?: string | null
           payment_info?: Json
           personal?: Json
           project_id?: string | null
@@ -342,11 +348,12 @@ export type Database = {
           email: string | null
           id: string
           investor_id: string
+          legacy_reference: string | null
           notes: string | null
           phone: string | null
           project_id: string | null
           property_id: string | null
-          reference: string | null
+          reference: string
           reminder_day_sent_at: string | null
           reminder_hour_sent_at: string | null
           scheduled_date: string
@@ -368,11 +375,12 @@ export type Database = {
           email?: string | null
           id?: string
           investor_id: string
+          legacy_reference?: string | null
           notes?: string | null
           phone?: string | null
           project_id?: string | null
           property_id?: string | null
-          reference?: string | null
+          reference?: string
           reminder_day_sent_at?: string | null
           reminder_hour_sent_at?: string | null
           scheduled_date: string
@@ -394,11 +402,12 @@ export type Database = {
           email?: string | null
           id?: string
           investor_id?: string
+          legacy_reference?: string | null
           notes?: string | null
           phone?: string | null
           project_id?: string | null
           property_id?: string | null
-          reference?: string | null
+          reference?: string
           reminder_day_sent_at?: string | null
           reminder_hour_sent_at?: string | null
           scheduled_date?: string
@@ -468,6 +477,7 @@ export type Database = {
           full_name: string | null
           id: string
           investor_code: string | null
+          legacy_investor_code: string | null
           phone: string | null
           updated_at: string
         }
@@ -478,6 +488,7 @@ export type Database = {
           full_name?: string | null
           id: string
           investor_code?: string | null
+          legacy_investor_code?: string | null
           phone?: string | null
           updated_at?: string
         }
@@ -488,6 +499,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           investor_code?: string | null
+          legacy_investor_code?: string | null
           phone?: string | null
           updated_at?: string
         }
@@ -532,6 +544,7 @@ export type Database = {
           location: string
           name: string
           payment_plans: Json
+          project_code: string
           self_registration_open: boolean
           updated_at: string
         }
@@ -547,6 +560,7 @@ export type Database = {
           location?: string
           name: string
           payment_plans?: Json
+          project_code?: string
           self_registration_open?: boolean
           updated_at?: string
         }
@@ -562,6 +576,7 @@ export type Database = {
           location?: string
           name?: string
           payment_plans?: Json
+          project_code?: string
           self_registration_open?: boolean
           updated_at?: string
         }
@@ -577,6 +592,7 @@ export type Database = {
           name: string
           payment_plan: string
           project_id: string
+          property_code: string
           property_type: string
           size_label: string
           unit_price: number
@@ -591,6 +607,7 @@ export type Database = {
           name: string
           payment_plan?: string
           project_id: string
+          property_code?: string
           property_type?: string
           size_label?: string
           unit_price?: number
@@ -605,6 +622,7 @@ export type Database = {
           name?: string
           payment_plan?: string
           project_id?: string
+          property_code?: string
           property_type?: string
           size_label?: string
           unit_price?: number

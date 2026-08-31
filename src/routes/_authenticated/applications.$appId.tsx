@@ -9,8 +9,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge, PaymentBadge } from "@/components/kaivra/StatusBadge";
 import { openDocument } from "@/components/kaivra/FileUpload";
 import { PassportAvatar } from "@/components/kaivra/PassportAvatar";
+import { useProfile } from "@/hooks/useAuth";
 import { usePassportAvatars } from "@/hooks/usePassportAvatars";
 import { AddPaymentDialog } from "@/components/kaivra/AddPaymentDialog";
+import { ReferenceChip } from "@/components/kaivra/ReferenceChip";
 import {
   fetchApplication,
   fetchDocuments,
@@ -68,6 +70,7 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
     enabled: !!manage,
   });
   const investorId = app.data?.investor_id as string | undefined;
+  const { data: profile } = useProfile(investorId);
   const { avatars, isLoading: avatarsLoading } = usePassportAvatars(investorId ? [investorId] : []);
 
   if (app.isLoading) {
@@ -121,6 +124,7 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
         payments: (payments.data ?? []) as never,
         documents: docs as never,
         investorName: personal["full_name"] ?? "Investor",
+        investorCode: profile?.investor_code ?? null,
       });
       void logEvent(appId, "pdf_downloaded", `PDF downloaded for ${record.reference ?? "draft"}`);
     } catch {
@@ -133,8 +137,10 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
   return (
     <div className="space-y-8">
       <header className="flex flex-wrap items-start justify-between gap-4 print:block">
-        <div>
-          <p className="eyebrow text-primary">{record.reference ?? "Draft application"}</p>
+        <div className="min-w-0">
+          <p className="eyebrow text-primary">
+            {record.reference ? "Application" : "Draft application"}
+          </p>
           <h1 className="mt-1 font-display text-3xl sm:text-4xl">
             {record.projects?.name ?? "Project pending"}
           </h1>
@@ -142,6 +148,11 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
             {record.properties?.name ?? "Property not selected"} · submitted{" "}
             {formatDate(record.submitted_at)}
           </p>
+          <div className="mt-3 flex flex-wrap gap-3">
+            <ReferenceChip label="Application reference" value={record.reference} />
+            <ReferenceChip label="Project reference" value={record.projects?.project_code} />
+            <ReferenceChip label="Property reference" value={record.properties?.property_code} />
+          </div>
         </div>
         <div className="flex flex-wrap items-center gap-2 print:hidden">
           <StatusBadge status={record.status as ApplicationStatus} />
@@ -234,15 +245,20 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
                 key={payment.id}
                 className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border px-4 py-3"
               >
-                <div>
+                <div className="min-w-0">
                   <p className="eyebrow text-muted-foreground">
                     Payment {String(index + 1).padStart(2, "0")}
                   </p>
                   <p className="mt-1 text-sm font-semibold">{formatNaira(payment.amount)}</p>
                   <p className="text-xs text-muted-foreground">
                     {formatDate(payment.paid_on)} · {payment.bank ?? "—"} ·{" "}
-                    {payment.reference ?? "no reference"}
+                    {payment.reference ?? "no bank reference"}
                   </p>
+                  <ReferenceChip
+                    className="mt-2"
+                    size="sm"
+                    value={payment.payment_reference}
+                  />
                   {payment.status === "rejected" && payment.rejection_reason ? (
                     <p className="mt-1 text-xs text-destructive">{payment.rejection_reason}</p>
                   ) : null}

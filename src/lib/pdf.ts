@@ -21,6 +21,7 @@ interface PaymentRow {
   bank: string | null;
   sender: string | null;
   reference: string | null;
+  payment_reference?: string | null;
   method: string;
   status: string;
   description: string | null;
@@ -38,17 +39,24 @@ export interface PdfInput {
     investment: Record<string, unknown>;
     payment_info: Record<string, unknown>;
     declaration_accepted: boolean;
-    projects?: { name?: string; location?: string; currency?: string } | null;
+    projects?: {
+      name?: string;
+      location?: string;
+      currency?: string;
+      project_code?: string | null;
+    } | null;
     properties?: {
       name?: string;
       property_type?: string;
       size_label?: string;
       unit_price?: number;
+      property_code?: string | null;
     } | null;
   };
   payments: PaymentRow[];
   documents: DocRow[];
   investorName: string;
+  investorCode?: string | null;
   adviserName?: string | null;
 }
 
@@ -145,7 +153,11 @@ export async function generateApplicationPdf(input: PdfInput): Promise<jsPDF> {
       doc.setFont("helvetica", "normal");
       doc.setFontSize(7.5);
       doc.setTextColor(...GREY);
-      doc.text(`Application Reference: ${app.reference ?? "DRAFT"}`, M, H - 30);
+      doc.text(
+        `Application Reference: ${app.reference ?? "DRAFT"}   Investor ID: ${input.investorCode ?? "—"}`,
+        M,
+        H - 30,
+      );
       doc.text(`Generated ${formatDate(new Date().toISOString())}`, W / 2, H - 30, {
         align: "center",
       });
@@ -212,6 +224,13 @@ export async function generateApplicationPdf(input: PdfInput): Promise<jsPDF> {
   doc.text(`Status  ${STATUS_LABEL[app.status as ApplicationStatus]}`, W - M, 92, {
     align: "right",
   });
+  doc.text(`Investor ID  ${input.investorCode ?? "—"}`, W - M, 106, { align: "right" });
+  doc.text(
+    `Project  ${app.projects?.project_code ?? "—"}   Property  ${app.properties?.property_code ?? "—"}`,
+    W - M,
+    120,
+    { align: "right" },
+  );
 
   y = 168;
 
@@ -333,7 +352,11 @@ export async function generateApplicationPdf(input: PdfInput): Promise<jsPDF> {
         cols[2]!,
         y,
       );
-      doc.text(doc.splitTextToSize(p.reference ?? "—", 90)[0] ?? "", cols[3]!, y);
+      doc.text(
+        doc.splitTextToSize(p.payment_reference ?? p.reference ?? "—", 90)[0] ?? "",
+        cols[3]!,
+        y,
+      );
       doc.text(p.method.replace(/_/g, " "), cols[4]!, y);
       doc.setTextColor(...(p.status === "verified" ? EMERALD : GREY));
       doc.text(p.status.toUpperCase(), cols[5]!, y);
