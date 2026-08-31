@@ -124,8 +124,52 @@ function ApplicationWizard() {
   const [submitted, setSubmitted] = useState<{ reference: string; id: string } | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [initialised, setInitialised] = useState(false);
+  const [resume, setResume] = useState<{
+    id: string;
+    draft: DraftState;
+    updatedAt: string | null;
+  } | null>(null);
+  const [discarding, setDiscarding] = useState(false);
   const pendingRef = useRef<DraftState | null>(null);
   const bootRef = useRef(false);
+
+  // Creates a brand-new draft row and puts the wizard on step 1.
+  const startFreshDraft = useCallback(async () => {
+    if (!user) return;
+    const seed: DraftState = {
+      ...EMPTY_DRAFT,
+      project_id: search.project ?? null,
+      property_id: search.property ?? null,
+      personal: { full_name: profile?.full_name ?? "" },
+      contact: { email: profile?.email ?? user.email ?? "", phone: profile?.phone ?? "" },
+    };
+    const { data, error } = await supabase
+      .from("applications")
+      .insert({
+        investor_id: user.id,
+        created_by: user.id,
+        project_id: seed.project_id,
+        property_id: seed.property_id,
+        personal: seed.personal as never,
+        contact: seed.contact as never,
+        investment: seed.investment as never,
+        payment_info: {} as never,
+        current_step: 1,
+      })
+      .select()
+      .single();
+    if (error || !data) {
+      bootRef.current = false;
+      toast.error("We could not start your application. Please try again.");
+      return;
+    }
+    setApplicationId(data.id);
+    setDraft(seed);
+    setStep(1);
+    setInitialised(true);
+    void logEvent(data.id, "application_created", "Application draft created");
+    void navigate({ to: "/application", search: { id: data.id }, replace: true });
+  }, [user, profile, search.project, search.property, navigate]);
 
   // ---------- data ----------
   const projects = useQuery({
@@ -285,6 +329,19 @@ function ApplicationWizard() {
           declaration_accepted: !!reusable.declaration_accepted,
           current_step: reusable.current_step ?? 1,
         };
+        // Only ask when the investor actually started filling something in.
+        const started =
+          (reusable.current_step ?? 1) > 1 ||
+          !!reusable.project_id ||
+          Object.keys((reusable.personal ?? {}) as PersonalDetails).length > 0;
+        if (started) {
+          setResume({
+            id: reusable.id,
+            draft: seeded,
+            updatedAt: (reusable.updated_at as string | null) ?? null,
+          });
+          return;
+        }
         setApplicationId(reusable.id);
         setDraft(seeded);
         setStep(seeded.current_step || 1);
@@ -293,44 +350,12 @@ function ApplicationWizard() {
         return;
       }
 
-      // create a fresh draft
-
-      const seed: DraftState = {
-        ...EMPTY_DRAFT,
-        project_id: search.project ?? null,
-        property_id: search.property ?? null,
-        personal: { full_name: profile?.full_name ?? "" },
-        contact: { email: profile?.email ?? user?.email ?? "", phone: profile?.phone ?? "" },
-      };
-      const { data, error } = await supabase
-        .from("applications")
-        .insert({
-          investor_id: user!.id,
-          created_by: user!.id,
-          project_id: seed.project_id,
-          property_id: seed.property_id,
-          personal: seed.personal as never,
-          contact: seed.contact as never,
-          investment: seed.investment as never,
-          payment_info: {} as never,
-          current_step: 1,
-        })
-        .select()
-        .single();
-      if (error || !data) {
-        bootRef.current = false;
-        toast.error("We could not start your application. Please try again.");
-        return;
-      }
-      setApplicationId(data.id);
-      setDraft(seed);
-      setInitialised(true);
-      void logEvent(data.id, "application_created", "Application draft created");
-      void navigate({ to: "/application", search: { id: data.id }, replace: true });
+      await startFreshDraft();
     }
 
     void boot();
-  }, [user, profile, search.id, search.project, search.property, initialised, navigate]);
+  }, [user, profile, search.id, search.project, search.property, initialised, navigate, startFreshDraft]);
+
 
   // ---------- autosave ----------
   const persist = useCallback(
@@ -558,12 +583,73 @@ function ApplicationWizard() {
   if (!initialised) {
     return (
       <div className="mx-auto w-full max-w-3xl space-y-4 px-4 py-12">
-        <Skeleton className="h-8 w-56" />
-        <Skeleton className="h-14 w-full" />
-        <Skeleton className="h-64 w-full" />
+        {resume ? (
+          <div className="rounded-lg border border-border bg-card p-6">
+            <p className="eyebrow text-primary">Unfinished application</p>
+            <h1 className="mt-1 font-display text-3xl">Continue where you left off?</h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              You started an application
+              {resume.updatedAt ? ` on ${formatDate(resume.updatedAt)}` : ""} and did not finish it.
+              You can pick it up from step {resume.draft.current_step || 1}, or discard it and start
+              a new one.
+            </p>
+            <div className="mt-6 flex flex-col gap-2 sm:flex-row">
+              <AsyncButton
+                className="sm:w-auto"
+                pendingLabel="Opening…"
+                onClick={async () => {
+                  setApplicationId(resume.id);
+                  setDraft(resume.draft);
+                  setStep(resume.draft.current_step || 1);
+                  setInitialised(true);
+                  setResume(null);
+                  void navigate({
+                    to: "/application",
+                    search: { id: resume.id },
+                    replace: true,
+                  });
+                }}
+              >
+                Continue application
+              </AsyncButton>
+              <Button
+                variant="outline"
+                disabled={discarding}
+                onClick={async () => {
+                  setDiscarding(true);
+                  const { error } = await supabase
+                    .from("applications")
+                    .delete()
+                    .eq("id", resume.id);
+                  if (error) {
+                    setDiscarding(false);
+                    toast.error("That draft could not be discarded. Please try again.");
+                    return;
+                  }
+                  if (typeof window !== "undefined")
+                    window.localStorage.removeItem(localKey(resume.id));
+                  setResume(null);
+                  await startFreshDraft();
+                  setDiscarding(false);
+                  toast.success("Previous draft discarded. Starting a new application.");
+                }}
+              >
+                <Trash2 className="mr-1.5 size-4" />
+                {discarding ? "Discarding…" : "Discard & start new"}
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <Skeleton className="h-8 w-56" />
+            <Skeleton className="h-14 w-full" />
+            <Skeleton className="h-64 w-full" />
+          </>
+        )}
       </div>
     );
   }
+
 
   return (
     <div className="mx-auto w-full max-w-4xl px-4 pb-32 pt-8 sm:px-6">
