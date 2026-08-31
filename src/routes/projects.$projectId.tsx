@@ -117,13 +117,16 @@ function ProjectDetail() {
             fetchPriority="high"
           />
         </button>
-        <div className="hero-scrim absolute inset-0" />
-        <div className="relative mx-auto flex h-full w-full max-w-7xl flex-col justify-end px-5 pb-14 sm:px-8">
+        <div className="hero-scrim pointer-events-none absolute inset-0" />
+        <div className="pointer-events-none relative mx-auto flex h-full w-full max-w-7xl flex-col justify-end px-5 pb-14 sm:px-8">
           <div className="rule-gold mb-6" />
           <p className="eyebrow flex items-center gap-1.5 text-gold">
             <MapPin className="size-3.5" aria-hidden /> {project.location}
           </p>
           <h1 className="mt-3 max-w-3xl font-display text-4xl text-onyx-foreground sm:text-6xl">{project.name}</h1>
+          <span className="mt-4 inline-flex w-fit items-center gap-1.5 rounded-full bg-onyx/60 px-3 py-1.5 text-xs text-onyx-foreground backdrop-blur">
+            <Images className="size-3.5" aria-hidden /> Tap to view {allImages.length} photos
+          </span>
         </div>
       </section>
 
