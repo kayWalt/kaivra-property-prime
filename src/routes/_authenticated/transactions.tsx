@@ -40,6 +40,7 @@ export type TxRow = {
   bank: string | null;
   sender: string | null;
   reference: string | null;
+  payment_reference: string | null;
   method: string;
   description: string | null;
   status: PaymentStatus;
@@ -63,7 +64,7 @@ export function useMyTransactions(userId?: string, limit = 200) {
       const { data, error } = await supabase
         .from("application_payments")
         .select(
-          "id, amount, paid_on, created_at, bank, sender, reference, method, description, status, verified_at, rejection_reason, applications!inner(id, reference, investor_id, investment, projects(name, currency), properties(name))",
+          "id, amount, paid_on, created_at, bank, sender, reference, payment_reference, method, description, status, verified_at, rejection_reason, applications!inner(id, reference, investor_id, investment, projects(name, currency), properties(name))",
         )
         .eq("applications.investor_id", userId!)
         .order("paid_on", { ascending: false, nullsFirst: false })
@@ -112,7 +113,7 @@ function TransactionsPage() {
         project: row.applications?.projects?.name ?? "—",
         property: row.applications?.properties?.name ?? "—",
         applicationReference: row.applications?.reference ?? "—",
-        transactionReference: row.reference ?? row.id.slice(0, 8).toUpperCase(),
+        transactionReference: row.payment_reference ?? row.reference ?? "—",
         paidOn: row.paid_on ?? row.created_at,
         amount: row.amount,
         method: row.method,
@@ -193,7 +194,9 @@ function TransactionsPage() {
               {tx.data.map((row) => (
                 <tr key={row.id} className="hover:bg-accent/30">
                   <td className="px-4 py-3">{formatDate(row.paid_on ?? row.created_at)}</td>
-                  <td className="px-4 py-3">{row.reference ?? "—"}</td>
+                  <td className="px-4 py-3">
+                    <ReferenceChip size="sm" value={row.payment_reference ?? row.reference} />
+                  </td>
                   <td className="px-4 py-3">
                     {row.applications?.projects?.name ?? "—"}
                     <span className="block text-xs text-muted-foreground">
@@ -228,7 +231,8 @@ function TransactionsPage() {
                   <div>
                     <p className="font-semibold">{formatNaira(row.amount)}</p>
                     <p className="text-xs text-muted-foreground">
-                      {formatDate(row.paid_on ?? row.created_at)} · {row.reference ?? "—"}
+                      {formatDate(row.paid_on ?? row.created_at)} ·{" "}
+                      {row.payment_reference ?? row.reference ?? "—"}
                     </p>
                     <p className="mt-1 text-xs text-muted-foreground">
                       {row.applications?.projects?.name ?? "—"}
@@ -251,7 +255,8 @@ function TransactionsPage() {
             <div className="space-y-4">
               <dl className="grid grid-cols-2 gap-4 text-sm">
                 {[
-                  ["Reference", open.reference ?? "—"],
+                  ["Payment reference", open.payment_reference ?? "—"],
+                  ["Bank reference", open.reference ?? "—"],
                   ["Payment date", formatDate(open.paid_on ?? open.created_at)],
                   ["Amount", formatNaira(open.amount)],
                   ["Method", open.method.replace(/_/g, " ")],
