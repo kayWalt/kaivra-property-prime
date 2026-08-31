@@ -227,7 +227,35 @@ function ManageApplication() {
     void payments.refetch();
   }
 
+  async function handleLink() {
+    if (!picked) {
+      toast.error("Select the investor this investment belongs to.");
+      return;
+    }
+    try {
+      const result = await linkInvestment({
+        data: { applicationId: appId, investorId: picked.id },
+      });
+      if ("unchanged" in result && result.unchanged) {
+        toast.info("This investment is already linked to that investor.");
+      } else {
+        toast.success(
+          `Investment linked to ${picked.full_name ?? "the investor"}. It now appears in their portfolio.`,
+        );
+      }
+      setLinkOpen(false);
+      setPicked(null);
+      void application.refetch();
+      void owner.refetch();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "The investment could not be linked.",
+      );
+    }
+  }
+
   async function handleDelete() {
+
     setDeleting(true);
     try {
       await removeApplication({ data: { applicationId: appId } });
