@@ -42,14 +42,14 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
-  const [busy, setBusy] = useState(false);
+  const [action, setAction] = useState<null | "submit" | "google">(null);
+  const busy = action !== null;
   const [checkEmail, setCheckEmail] = useState(false);
+  const { session } = useSession();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/dashboard", replace: true });
-    });
-  }, [navigate]);
+    if (session) navigate({ to: "/dashboard", replace: true });
+  }, [session, navigate]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
