@@ -216,9 +216,21 @@ function ProjectDetail() {
  * Responsive gallery with a full-screen viewer. Supports keyboard arrows on
  * desktop and horizontal swipe on touch devices.
  */
-function Lightbox({ images, projectName }: { images: GalleryImage[]; projectName: string }) {
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
+function Lightbox({
+  images,
+  projectName,
+  gridOffset = 0,
+  openIndex,
+  onOpenChange,
+}: {
+  images: GalleryImage[];
+  projectName: string;
+  gridOffset?: number;
+  openIndex: number | null;
+  onOpenChange: (index: number | null) => void;
+}) {
   const touchStart = useRef<number | null>(null);
+  const setOpenIndex = onOpenChange;
 
   const step = useCallback(
     (delta: number) =>
