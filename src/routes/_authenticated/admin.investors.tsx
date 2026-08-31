@@ -66,6 +66,7 @@ type Row = {
 
 type Investor = {
   id: string;
+  code: string | null;
   name: string;
   email: string;
   phone: string;
@@ -77,8 +78,19 @@ type Investor = {
 function InvestorsPage() {
   const { user } = useSession();
   const { data: roles, isLoading: rolesLoading } = useRoles(user?.id);
-  const staff = isStaffRole(primaryRole(roles));
+  const role = primaryRole(roles);
+  const staff = isStaffRole(role);
+  const isAdmin = role === "admin" || role === "super_admin";
   const [term, setTerm] = useState("");
+  const navigate = useNavigate();
+
+  const startAssisted = useServerFn(createAssistedApplication);
+  const register = useServerFn(registerInvestor);
+
+  const [existingOpen, setExistingOpen] = useState(false);
+  const [registerOpen, setRegisterOpen] = useState(false);
+  const [picked, setPicked] = useState<InvestorSummary | null>(null);
+  const [form, setForm] = useState({ fullName: "", email: "", phone: "" });
 
   // RLS already scopes this to the applications this staff member may see.
   const query = useQuery({
@@ -97,6 +109,21 @@ function InvestorsPage() {
     },
   });
 
+  // Permanent KAIVRA Investor IDs live on profiles; staff may read them.
+  const profilesQuery = useQuery({
+    queryKey: ["admin-investor-profiles"],
+    enabled: staff,
+    staleTime: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, investor_code, full_name, email, phone, created_at")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
   const investors = useMemo<Investor[]>(() => {
     const map = new Map<string, Investor>();
     for (const row of query.data ?? []) {
@@ -111,6 +138,7 @@ function InvestorsPage() {
       } else {
         map.set(row.investor_id, {
           id: row.investor_id,
+          code: null,
           name: personal.full_name ?? "Unnamed investor",
           email: contact.email ?? "—",
           phone: contact.phone ?? "—",
@@ -120,14 +148,75 @@ function InvestorsPage() {
         });
       }
     }
-    const list = [...map.values()];
+
+    for (const profile of profilesQuery.data ?? []) {
+      const existing = map.get(profile.id);
+      if (existing) {
+        existing.code = profile.investor_code;
+        if (existing.name === "Unnamed investor" && profile.full_name)
+          existing.name = profile.full_name;
+        if (existing.email === "—" && profile.email) existing.email = profile.email;
+        if (existing.phone === "—" && profile.phone) existing.phone = profile.phone;
+      } else if (isAdmin) {
+        // Registered investors with no submitted investment yet.
+        map.set(profile.id, {
+          id: profile.id,
+          code: profile.investor_code,
+          name: profile.full_name ?? "Unnamed investor",
+          email: profile.email ?? "—",
+          phone: profile.phone ?? "—",
+          applications: [],
+          value: 0,
+          latest: undefined,
+        });
+      }
+    }
+
+    const list = [...map.values()].sort((a, b) => b.applications.length - a.applications.length);
     const needle = term.trim().toLowerCase();
     return needle
-      ? list.filter((i) => `${i.name} ${i.email} ${i.phone}`.toLowerCase().includes(needle))
+      ? list.filter((i) =>
+          `${i.code ?? ""} ${i.name} ${i.email} ${i.phone} ${i.applications
+            .map((a) => a.reference ?? "")
+            .join(" ")}`
+            .toLowerCase()
+            .includes(needle),
+        )
       : list;
-  }, [query.data, term]);
+  }, [query.data, profilesQuery.data, term, isAdmin]);
 
   const { avatars, isLoading: avatarsLoading } = usePassportAvatars(investors.map((i) => i.id));
+
+  async function openInvestment(investorId: string) {
+    const { applicationId } = await startAssisted({ data: { investorId } });
+    setExistingOpen(false);
+    setRegisterOpen(false);
+    setPicked(null);
+    toast.success("Investment started", { description: "Complete the details for this investor." });
+    void navigate({ to: "/application", search: { id: applicationId } });
+  }
+
+  async function handleRegister() {
+    const fullName = form.fullName.trim();
+    const email = form.email.trim();
+    if (fullName.length < 2 || !email) {
+      toast.error("Enter the investor's full name and email address.");
+      return;
+    }
+    const { investor, created } = await register({
+      data: { fullName, email, phone: form.phone.trim() || null },
+    });
+    toast.success(
+      created ? `Investor registered · ${investor.investor_code ?? ""}` : "Existing investor found",
+      {
+        description: created
+          ? "A permanent KAIVRA Investor ID has been issued."
+          : "This email already belongs to an investor — their record was reused.",
+      },
+    );
+    setForm({ fullName: "", email: "", phone: "" });
+    await openInvestment(investor.id);
+  }
 
   if (rolesLoading) return <Skeleton className="h-40 w-full" />;
   if (!staff) {
@@ -149,12 +238,33 @@ function InvestorsPage() {
         </p>
       </header>
 
-      <Input
-        value={term}
-        onChange={(e) => setTerm(e.target.value)}
-        placeholder="Search by name, email or phone"
-        className="max-w-md"
-      />
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <Input
+          value={term}
+          onChange={(e) => setTerm(e.target.value)}
+          placeholder="Search by Investor ID, name, email, phone or reference"
+          className="max-w-md"
+          aria-label="Search investors"
+        />
+        <div className="flex flex-wrap gap-2">
+          <AsyncButton
+            variant="outline"
+            onClick={() => {
+              setPicked(null);
+              setExistingOpen(true);
+            }}
+          >
+            <PlusCircle className="mr-2 size-4" aria-hidden />
+            Add investment for existing investor
+          </AsyncButton>
+          {isAdmin ? (
+            <AsyncButton onClick={() => setRegisterOpen(true)}>
+              <UserPlus className="mr-2 size-4" aria-hidden />
+              Register investor &amp; add investment
+            </AsyncButton>
+          ) : null}
+        </div>
+      </div>
 
       {query.isLoading ? (
         <div className="space-y-3">
@@ -164,7 +274,7 @@ function InvestorsPage() {
       ) : investors.length === 0 ? (
         <EmptyState
           title="No investors yet"
-          body="Investors appear here once they submit an application."
+          body="Investors appear here once they are registered or submit an application."
         />
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
@@ -183,6 +293,9 @@ function InvestorsPage() {
                   />
                   <div className="min-w-0">
                     <h2 className="truncate font-display text-xl">{investor.name}</h2>
+                    <p className="font-mono text-xs tracking-wide text-muted-foreground">
+                      {investor.code ?? "—"}
+                    </p>
                     <p className="truncate text-sm text-muted-foreground">{investor.email}</p>
                     <p className="text-sm text-muted-foreground">{investor.phone}</p>
                   </div>
@@ -206,28 +319,111 @@ function InvestorsPage() {
               </dl>
 
               <ul className="mt-4 space-y-2 border-t border-border pt-4 text-sm">
-                {investor.applications.map((app) => (
-                  <li key={app.id} className="flex min-w-0 items-center justify-between gap-3">
-                    <span className="min-w-0 truncate">
-                      {app.reference ?? "—"} · {app.projects?.name ?? "—"}
-                    </span>
-                    <span className="flex items-center gap-3 whitespace-nowrap text-muted-foreground">
-                      {formatDate(app.submitted_at ?? app.created_at)}
-                      <Link
-                        to="/admin/applications/$appId"
-                        params={{ appId: app.id }}
-                        className="font-medium text-primary underline-offset-4 hover:underline"
-                      >
-                        View
-                      </Link>
-                    </span>
-                  </li>
-                ))}
+                {investor.applications.length === 0 ? (
+                  <li className="text-muted-foreground">No investments recorded yet.</li>
+                ) : (
+                  investor.applications.map((app) => (
+                    <li key={app.id} className="flex min-w-0 items-center justify-between gap-3">
+                      <span className="min-w-0 truncate">
+                        {app.reference ?? "—"} · {app.projects?.name ?? "—"}
+                      </span>
+                      <span className="flex items-center gap-3 whitespace-nowrap text-muted-foreground">
+                        {formatDate(app.submitted_at ?? app.created_at)}
+                        <Link
+                          to="/admin/applications/$appId"
+                          params={{ appId: app.id }}
+                          className="font-medium text-primary underline-offset-4 hover:underline"
+                        >
+                          View
+                        </Link>
+                      </span>
+                    </li>
+                  ))
+                )}
               </ul>
+
+              <AsyncButton
+                variant="outline"
+                size="sm"
+                className="mt-4 w-full"
+                pendingLabel="Starting…"
+                onClick={() => openInvestment(investor.id)}
+              >
+                Add investment
+              </AsyncButton>
             </article>
           ))}
         </div>
       )}
+
+      <Dialog open={existingOpen} onOpenChange={setExistingOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Add investment for existing investor</DialogTitle>
+            <DialogDescription>
+              Search the existing investor identity — records are never duplicated.
+            </DialogDescription>
+          </DialogHeader>
+          <InvestorPicker selected={picked} onSelect={setPicked} />
+          <DialogFooter>
+            <AsyncButton
+              disabled={!picked}
+              pendingLabel="Starting…"
+              onClick={() => (picked ? openInvestment(picked.id) : undefined)}
+            >
+              Start investment
+            </AsyncButton>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={registerOpen} onOpenChange={setRegisterOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Register investor &amp; add investment</DialogTitle>
+            <DialogDescription>
+              A permanent KAIVRA Investor ID is issued automatically. If the email already exists,
+              that investor is reused instead of creating a duplicate.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="inv-name">Full name</Label>
+              <Input
+                id="inv-name"
+                value={form.fullName}
+                onChange={(e) => setForm((f) => ({ ...f, fullName: e.target.value }))}
+                autoComplete="off"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="inv-email">Email address</Label>
+              <Input
+                id="inv-email"
+                type="email"
+                value={form.email}
+                onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                autoComplete="off"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="inv-phone">Phone (optional)</Label>
+              <Input
+                id="inv-phone"
+                value={form.phone}
+                onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+                autoComplete="off"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <AsyncButton pendingLabel="Registering…" onClick={handleRegister}>
+              Register &amp; start investment
+            </AsyncButton>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
+
