@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge, PaymentBadge } from "@/components/kaivra/StatusBadge";
 import { openDocument } from "@/components/kaivra/FileUpload";
 import { PassportAvatar } from "@/components/kaivra/PassportAvatar";
+import { useProfile } from "@/hooks/useAuth";
 import { usePassportAvatars } from "@/hooks/usePassportAvatars";
 import { AddPaymentDialog } from "@/components/kaivra/AddPaymentDialog";
 import { ReferenceChip } from "@/components/kaivra/ReferenceChip";
@@ -69,6 +70,7 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
     enabled: !!manage,
   });
   const investorId = app.data?.investor_id as string | undefined;
+  const { data: profile } = useProfile(investorId);
   const { avatars, isLoading: avatarsLoading } = usePassportAvatars(investorId ? [investorId] : []);
 
   if (app.isLoading) {
