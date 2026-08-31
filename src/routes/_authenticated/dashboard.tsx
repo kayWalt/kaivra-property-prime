@@ -147,14 +147,11 @@ function Dashboard() {
         {role === "investor" ? "Investor" : role.replace("_", " ")}
       </p>
       <h1 className="mt-2 font-display text-4xl">Welcome back, {firstName}</h1>
-      {profile?.investor_code ? (
-        <p className="mt-2 text-xs uppercase tracking-[0.2em] text-muted-foreground">
-          KAIVRA Investor ID ·{" "}
-          <span className="font-semibold tracking-normal text-foreground">
-            {profile.investor_code}
-          </span>
-        </p>
-      ) : null}
+      <ReferenceChip
+        className="mt-3 max-w-xs"
+        label="KAIVRA Investor ID"
+        value={profile?.investor_code}
+      />
 
       {role !== "investor" ? (
         <div className="mt-6 rounded-lg border border-border bg-card p-5">
