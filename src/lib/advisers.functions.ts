@@ -29,22 +29,38 @@ export const sendAdviserInvitation = createServerFn({ method: "POST" })
 
     const email = data.email.toLowerCase();
 
-    const { data: invitation, error: invitationError } = await context.supabase
+    const invitationValues = {
+      email,
+      full_name: data.fullName || null,
+      phone: data.phone || null,
+      project_ids: data.projectIds,
+      invited_by: context.userId,
+      status: "pending",
+      error_detail: null,
+    };
+    const { data: existingInvitation, error: lookupError } = await context.supabase
       .from("adviser_invitations")
-      .upsert(
-        {
-          email,
-          full_name: data.fullName || null,
-          phone: data.phone || null,
-          project_ids: data.projectIds,
-          invited_by: context.userId,
-          status: "pending",
-          error_detail: null,
-        },
-        { onConflict: "email" },
-      )
       .select("id")
+      .ilike("email", email)
       .maybeSingle();
+    if (lookupError) {
+      console.error("adviser invitation lookup failed", lookupError.message);
+      throw new Error("The invitation could not be recorded. Please try again.");
+    }
+
+    const invitationResult = existingInvitation?.id
+      ? await context.supabase
+          .from("adviser_invitations")
+          .update(invitationValues)
+          .eq("id", existingInvitation.id)
+          .select("id")
+          .single()
+      : await context.supabase
+          .from("adviser_invitations")
+          .insert(invitationValues)
+          .select("id")
+          .single();
+    const { data: invitation, error: invitationError } = invitationResult;
     if (invitationError) {
       console.error("adviser invitation upsert failed", invitationError.message);
       throw new Error("The invitation could not be recorded. Please try again.");
