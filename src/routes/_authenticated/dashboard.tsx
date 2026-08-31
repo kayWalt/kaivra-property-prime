@@ -54,7 +54,7 @@ function Dashboard() {
         .order("created_at", { ascending: false })
         // The dashboard only renders recent activity — don't pull a full history
         // over a mobile connection.
-        .limit(10);
+        .limit(50);
       if (error) throw error;
       return data ?? [];
     },
