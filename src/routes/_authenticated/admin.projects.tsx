@@ -446,21 +446,72 @@ function PropertyManager({
           <li className="text-sm text-muted-foreground">No properties yet for this project.</li>
         ) : null}
         {properties.map((property) => (
-          <li key={property.id} className="rounded-md border border-border px-4 py-2 text-sm">
-            <div className="flex items-center justify-between gap-2">
-              <span>
-                <strong>{property.name}</strong>
-                <span className="text-muted-foreground"> · {property.size_label ?? "—"}</span>
-              </span>
-              <span className="flex items-center gap-2">
-                {formatNaira(property.unit_price)} · {property.units_available ?? 0} units
-                <Button size="sm" variant="ghost" onClick={() => (editingId === property.id ? setEditingId(null) : startEdit(property))}>
+          <li key={property.id} className="rounded-md border border-border px-3 py-3 text-sm sm:px-4">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div className="min-w-0">
+                <strong className="break-words">{property.name}</strong>
+                <span className="text-muted-foreground"> · {property.size_label || "—"}</span>
+                <p className="text-muted-foreground">
+                  {formatNaira(property.unit_price)} · {property.units_available ?? 0} units
+                  {property.is_active ? "" : " · hidden"}
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-1">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => (editingId === property.id ? setEditingId(null) : startEdit(property))}
+                >
                   {editingId === property.id ? "Close" : "Edit"}
                 </Button>
-              </span>
+                <AsyncButton
+                  size="sm"
+                  variant="ghost"
+                  pendingLabel="Updating…"
+                  onClick={() => togglePropertyActive(property.id, property.is_active)}
+                >
+                  {property.is_active ? "Deactivate" : "Activate"}
+                </AsyncButton>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button size="sm" variant="ghost" aria-label={`Delete ${property.name}`}>
+                      <Trash2 className="size-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete {property.name}?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This permanently removes the property. If investors have already applied for it, deactivate it
+                        instead.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => void removeProperty(property.id)}>Delete</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             </div>
             {editingId === property.id ? (
-              <div className="mt-3 grid gap-3 border-t border-border pt-3 sm:grid-cols-3">
+              <div className="mt-3 grid gap-3 border-t border-border pt-3 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor={`e-name-${property.id}`}>Property name</Label>
+                  <Input
+                    id={`e-name-${property.id}`}
+                    value={editForm.name}
+                    onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor={`e-type-${property.id}`}>Property type</Label>
+                  <Input
+                    id={`e-type-${property.id}`}
+                    value={editForm.property_type}
+                    onChange={(e) => setEditForm({ ...editForm, property_type: e.target.value })}
+                  />
+                </div>
                 <div className="space-y-1.5">
                   <Label htmlFor={`e-size-${property.id}`}>Size</Label>
                   <Input
@@ -474,6 +525,7 @@ function PropertyManager({
                   <Input
                     id={`e-price-${property.id}`}
                     type="number"
+                    inputMode="numeric"
                     min={0}
                     value={editForm.unit_price || ""}
                     onChange={(e) => setEditForm({ ...editForm, unit_price: Number(e.target.value) || 0 })}
@@ -484,17 +536,19 @@ function PropertyManager({
                   <Input
                     id={`e-units-${property.id}`}
                     type="number"
+                    inputMode="numeric"
                     min={0}
                     value={editForm.units_available || ""}
                     onChange={(e) => setEditForm({ ...editForm, units_available: Number(e.target.value) || 0 })}
                   />
                 </div>
-                <div className="sm:col-span-3">
+                <div className="sm:col-span-2 lg:col-span-3">
                   <AsyncButton size="sm" onClick={() => saveEdit(property.id)} disabled={editSaving} pendingLabel="Saving…">
                     <Save className="mr-2 size-4" />
                     Save changes
                   </AsyncButton>
                 </div>
+
               </div>
             ) : null}
           </li>
