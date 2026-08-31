@@ -174,33 +174,52 @@ function AdminInspections() {
   async function apply(
     row: Row,
     patch: TablesUpdate<"inspection_appointments">,
-    message: string,
+    /** Built from the row as saved, so the investor always sees the stored KVR-S reference, date and time. */
+    message: (saved: {
+      reference: string;
+      scheduled_date: string;
+      scheduled_time: string;
+    }) => string,
     action: string,
+    title = "Inspection update",
   ) {
-    const { error } = await supabase.from("inspection_appointments").update(patch).eq("id", row.id);
-    if (error) {
+    const { data: saved, error } = await supabase
+      .from("inspection_appointments")
+      .update(patch)
+      .eq("id", row.id)
+      .select("id, reference, scheduled_date, scheduled_time, investor_id, application_id")
+      .maybeSingle();
+    if (error || !saved) {
       toast.error(
-        error.code === "23505"
+        error?.code === "23505"
           ? "That slot is already booked for this project."
           : "The inspection could not be updated. Please try again.",
       );
       return;
     }
+
+    const body = message({
+      reference: saved.reference ?? row.reference ?? "",
+      scheduled_date: saved.scheduled_date,
+      scheduled_time: String(saved.scheduled_time).slice(0, 5),
+    });
+
     await Promise.all([
-      notify(row.investor_id, "Inspection update", message, "/inspections"),
-      row.application_id
+      notify(saved.investor_id, title, body, "/inspections"),
+      saved.application_id
         ? logEvent(
-            row.application_id,
+            saved.application_id,
             action,
-            `${row.reference} · ${message}`,
+            `${saved.reference} · ${body}`,
             profile?.full_name ?? undefined,
           )
         : Promise.resolve(),
     ]);
     queryClient.invalidateQueries({ queryKey: ["admin-inspections"] });
     queryClient.invalidateQueries({ queryKey: ["my-inspections"] });
-    toast.success("Inspection updated.");
+    toast.success(`Inspection ${saved.reference ?? ""} updated.`);
     setOpen(null);
+
   }
 
   if (rolesLoading) return <Skeleton className="mx-auto mt-10 h-40 w-full max-w-6xl" />;
@@ -393,11 +412,15 @@ function AdminInspections() {
                       {
                         status: "confirmed",
                         confirmed_at: new Date().toISOString(),
+                        scheduled_date: newDate || open.scheduled_date,
+                        scheduled_time: `${newTime || String(open.scheduled_time).slice(0, 5)}:00`,
                         admin_note: note || null,
                         assigned_adviser: adviser || null,
                       },
-                      `Your inspection ${open.reference} is confirmed for ${formatDate(open.scheduled_date)} at ${formatSlot(open.scheduled_time)}.`,
+                      (s) =>
+                        `Your inspection ${s.reference} is confirmed for ${formatDate(s.scheduled_date)} at ${formatSlot(s.scheduled_time)}. Please arrive 10 minutes early and quote ${s.reference} on arrival.`,
                       "inspection_confirmed",
+                      "Inspection confirmed",
                     )
                   }
                 >
@@ -416,8 +439,10 @@ function AdminInspections() {
                         admin_note: note || null,
                         assigned_adviser: adviser || null,
                       },
-                      `Your inspection ${open.reference} has been moved to ${formatDate(newDate)} at ${formatSlot(newTime)}.`,
+                      (s) =>
+                        `Your inspection ${s.reference} has been moved to ${formatDate(s.scheduled_date)} at ${formatSlot(s.scheduled_time)}.`,
                       "inspection_rescheduled",
+                      "Inspection rescheduled",
                     )
                   }
                 >
@@ -434,8 +459,10 @@ function AdminInspections() {
                         completed_at: new Date().toISOString(),
                         admin_note: note || null,
                       },
-                      `Your inspection ${open.reference} has been marked completed. Thank you for visiting.`,
+                      (s) =>
+                        `Your inspection ${s.reference} has been marked completed. Thank you for visiting.`,
                       "inspection_completed",
+                      "Inspection completed",
                     )
                   }
                 >
@@ -448,8 +475,10 @@ function AdminInspections() {
                     apply(
                       open,
                       { status: "no_show", admin_note: note || null },
-                      `Your inspection ${open.reference} was recorded as a no-show. Contact us to rebook.`,
+                      (s) =>
+                        `Your inspection ${s.reference} was recorded as a no-show. Contact us to rebook.`,
                       "inspection_no_show",
+                      "Inspection no-show",
                     )
                   }
                 >
@@ -466,8 +495,10 @@ function AdminInspections() {
                         cancelled_at: new Date().toISOString(),
                         admin_note: note || null,
                       },
-                      `Your inspection ${open.reference} has been cancelled. Please book a new visit.`,
+                      (s) =>
+                        `Your inspection ${s.reference} has been cancelled. Please book a new visit.`,
                       "inspection_cancelled",
+                      "Inspection cancelled",
                     )
                   }
                 >
@@ -480,7 +511,8 @@ function AdminInspections() {
                     apply(
                       open,
                       { admin_note: note || null, assigned_adviser: adviser || null },
-                      `Your inspection ${open.reference} has been updated.`,
+                      (s) =>
+                        `Your inspection ${s.reference} on ${formatDate(s.scheduled_date)} at ${formatSlot(s.scheduled_time)} has been updated.`,
                       "inspection_updated",
                     )
                   }
@@ -488,6 +520,7 @@ function AdminInspections() {
                   Save note
                 </AsyncButton>
               </div>
+
               <Button variant="ghost" className="w-full" onClick={() => setOpen(null)}>
                 Close
               </Button>
