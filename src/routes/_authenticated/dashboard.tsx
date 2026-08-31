@@ -132,7 +132,9 @@ function Dashboard() {
             ["Total investment", formatNaira(portfolio.value)],
             ["Total paid", formatNaira(portfolio.paid)],
             ["Outstanding", formatNaira(portfolio.outstanding)],
-            ["Properties", String(portfolio.count)],
+            ["Investments", String(portfolio.count)],
+            ["Projects", String(projectCount)],
+            ["Properties", String(propertyCount)],
           ].map(([label, value]) => (
             <div key={label} className="rounded-lg border border-border bg-card p-4">
               <p className="eyebrow text-muted-foreground">{label}</p>
