@@ -53,6 +53,7 @@ function ProjectManagement() {
   const role = primaryRole(roles);
   const canManage = role === "admin" || role === "super_admin";
 
+  const queryClient = useQueryClient();
   const [creating, setCreating] = useState(false);
   const [openProject, setOpenProject] = useState<string | null>(null);
   const [editProject, setEditProject] = useState<string | null>(null);
@@ -63,6 +64,7 @@ function ProjectManagement() {
   const projects = useQuery({
     queryKey: ["admin-projects"],
     enabled: canManage,
+    staleTime: 30_000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("projects")
@@ -72,6 +74,15 @@ function ProjectManagement() {
       return data ?? [];
     },
   });
+
+  // Targeted cache refresh: admin list + every investor-facing project view.
+  const refresh = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: ["admin-projects"] });
+    void queryClient.invalidateQueries({ queryKey: ["public-projects"] });
+    void queryClient.invalidateQueries({ queryKey: ["project"] });
+  }, [queryClient]);
+
+
 
   if (isLoading) {
     return (
