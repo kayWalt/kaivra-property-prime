@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Brand } from "@/components/kaivra/Brand";
+import { useSession } from "@/hooks/useAuth";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
@@ -59,7 +60,7 @@ function AuthPage() {
         toast.error(parsedEmail.error.issues[0]?.message ?? "Enter a valid email address");
         return;
       }
-      setBusy(true);
+      setAction("submit");
       try {
         const { error } = await supabase.auth.resetPasswordForEmail(parsedEmail.data, {
           redirectTo: `${window.location.origin}/reset-password`,
@@ -69,7 +70,7 @@ function AuthPage() {
       } catch (err) {
         toast.error(err instanceof Error ? err.message : "Could not send the reset link. Please try again.");
       } finally {
-        setBusy(false);
+        setAction(null);
       }
       return;
     }
@@ -78,7 +79,7 @@ function AuthPage() {
       toast.error(parsed.error.issues[0]?.message ?? "Please check your details.");
       return;
     }
-    setBusy(true);
+    setAction("submit");
     try {
       if (mode === "signup") {
         const { data, error } = await supabase.auth.signUp({
@@ -107,15 +108,15 @@ function AuthPage() {
       const message = err instanceof Error ? err.message : "Something went wrong. Please try again.";
       toast.error(message);
     } finally {
-      setBusy(false);
+      setAction(null);
     }
   }
 
   async function google() {
-    setBusy(true);
+    setAction("google");
     const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
     if (result.error) {
-      setBusy(false);
+      setAction(null);
       toast.error("Google sign-in could not be completed. Please try again.");
       return;
     }
