@@ -83,6 +83,10 @@ function ProjectDetail() {
   const project = query.data;
   const properties = (project.properties ?? []).filter((p) => p.is_active);
   const gallery = parseGallery(project.gallery_images);
+  const heroImage = project.hero_image ?? "/images/project-mountain.jpg";
+  // Hero first, then every gallery image, so the hero click opens the same
+  // viewer and the rest can be browsed from there.
+  const allImages: GalleryImage[] = [{ url: heroImage, caption: project.name }, ...gallery];
 
   return (
     <div className="min-h-screen bg-background">
@@ -98,14 +102,21 @@ function ProjectDetail() {
       </header>
 
       <section className="relative h-[70svh] min-h-[26rem] w-full">
-        <img
-          src={project.hero_image ?? "/images/project-mountain.jpg"}
-          alt={project.name}
-          className="absolute inset-0 size-full object-cover"
-          width={1920}
-          height={1088}
-          fetchPriority="high"
-        />
+        <button
+          type="button"
+          className="absolute inset-0 block size-full cursor-zoom-in"
+          onClick={() => setLightboxIndex(0)}
+          aria-label={`View all ${allImages.length} photos of ${project.name}`}
+        >
+          <img
+            src={heroImage}
+            alt={project.name}
+            className="absolute inset-0 size-full object-cover"
+            width={1920}
+            height={1088}
+            fetchPriority="high"
+          />
+        </button>
         <div className="hero-scrim absolute inset-0" />
         <div className="relative mx-auto flex h-full w-full max-w-7xl flex-col justify-end px-5 pb-14 sm:px-8">
           <div className="rule-gold mb-6" />
