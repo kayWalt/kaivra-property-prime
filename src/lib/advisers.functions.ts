@@ -45,7 +45,10 @@ export const sendAdviserInvitation = createServerFn({ method: "POST" })
       )
       .select("id")
       .maybeSingle();
-    if (invitationError) throw new Error("The invitation could not be recorded. Please try again.");
+    if (invitationError) {
+      console.error("adviser invitation upsert failed", invitationError.message);
+      throw new Error("The invitation could not be recorded. Please try again.");
+    }
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {

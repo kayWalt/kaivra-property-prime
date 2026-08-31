@@ -1,0 +1,2 @@
+DELETE FROM public.adviser_invitations a USING public.adviser_invitations b WHERE a.email = b.email AND a.ctid < b.ctid;
+CREATE UNIQUE INDEX IF NOT EXISTS adviser_invitations_email_key ON public.adviser_invitations (email);
