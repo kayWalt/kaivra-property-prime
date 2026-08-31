@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bell, LogOut, Menu, User } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Brand } from "./Brand";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ import {
 import { useProfile, useRoles, useSession, primaryRole } from "@/hooks/useAuth";
 import { UserAvatar } from "./UserAvatar";
 import { ShareQrButton } from "./ShareQrButton";
+import { clearPushExternalUserId, isMedianApp, requestPushPermission, setPushExternalUserId } from "@/lib/median";
 import { cn } from "@/lib/utils";
 import type { AppRole } from "@/lib/kaivra";
 
@@ -76,7 +77,16 @@ export function AppShell({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
 
+  // Native shell only: register the signed-in user for push. Every call is a
+  // no-op in a normal browser, so nothing changes on the web.
+  useEffect(() => {
+    if (!user?.id || !isMedianApp()) return;
+    requestPushPermission();
+    setPushExternalUserId(user.id);
+  }, [user?.id]);
+
   function signOut() {
+    clearPushExternalUserId();
     // Navigate first so the click feels instant; tear down caches and the
     // Supabase session right after, without blocking the transition.
     void navigate({ to: "/auth", replace: true });
