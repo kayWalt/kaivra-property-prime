@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Brand } from "@/components/kaivra/Brand";
+import { useSession } from "@/hooks/useAuth";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
@@ -42,14 +43,14 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
-  const [busy, setBusy] = useState(false);
+  const [action, setAction] = useState<null | "submit" | "google">(null);
+  const busy = action !== null;
   const [checkEmail, setCheckEmail] = useState(false);
+  const { session } = useSession();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/dashboard", replace: true });
-    });
-  }, [navigate]);
+    if (session) navigate({ to: "/dashboard", replace: true });
+  }, [session, navigate]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -59,7 +60,7 @@ function AuthPage() {
         toast.error(parsedEmail.error.issues[0]?.message ?? "Enter a valid email address");
         return;
       }
-      setBusy(true);
+      setAction("submit");
       try {
         const { error } = await supabase.auth.resetPasswordForEmail(parsedEmail.data, {
           redirectTo: `${window.location.origin}/reset-password`,
@@ -69,7 +70,7 @@ function AuthPage() {
       } catch (err) {
         toast.error(err instanceof Error ? err.message : "Could not send the reset link. Please try again.");
       } finally {
-        setBusy(false);
+        setAction(null);
       }
       return;
     }
@@ -78,7 +79,7 @@ function AuthPage() {
       toast.error(parsed.error.issues[0]?.message ?? "Please check your details.");
       return;
     }
-    setBusy(true);
+    setAction("submit");
     try {
       if (mode === "signup") {
         const { data, error } = await supabase.auth.signUp({
@@ -107,15 +108,15 @@ function AuthPage() {
       const message = err instanceof Error ? err.message : "Something went wrong. Please try again.";
       toast.error(message);
     } finally {
-      setBusy(false);
+      setAction(null);
     }
   }
 
   async function google() {
-    setBusy(true);
+    setAction("google");
     const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
     if (result.error) {
-      setBusy(false);
+      setAction(null);
       toast.error("Google sign-in could not be completed. Please try again.");
       return;
     }
@@ -132,6 +133,8 @@ function AuthPage() {
           className="absolute inset-0 size-full object-cover"
           width={1920}
           height={1088}
+          decoding="async"
+          fetchPriority="low"
         />
         <div className="hero-scrim absolute inset-0" />
         <div className="absolute bottom-12 left-12 right-12">
@@ -239,8 +242,18 @@ function AuthPage() {
                   </p>
                 ) : null}
                 <Button type="submit" className="h-12 w-full" disabled={busy}>
-                  {busy ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
-                  {mode === "signin" ? "Sign in" : mode === "signup" ? "Create account" : "Send reset link"}
+                  {action === "submit" ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
+                  {action === "submit"
+                    ? mode === "signin"
+                      ? "Signing in\u2026"
+                      : mode === "signup"
+                        ? "Creating account\u2026"
+                        : "Sending reset link\u2026"
+                    : mode === "signin"
+                      ? "Sign in"
+                      : mode === "signup"
+                        ? "Create account"
+                        : "Send reset link"}
                 </Button>
                 {mode === "forgot" ? (
                   <Button
@@ -264,7 +277,8 @@ function AuthPage() {
               </div>
 
               <Button variant="outline" className="h-12 w-full" onClick={google} disabled={busy}>
-                Continue with Google
+                {action === "google" ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
+                {action === "google" ? "Connecting to Google\u2026" : "Continue with Google"}
               </Button>
 
               <p className="mt-6 text-center text-sm text-muted-foreground">
