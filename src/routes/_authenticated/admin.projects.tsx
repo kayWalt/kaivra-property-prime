@@ -249,6 +249,42 @@ function PropertyManager({
     units_available: 0,
   });
   const [saving, setSaving] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({ unit_price: 0, units_available: 0, size_label: "" });
+  const [editSaving, setEditSaving] = useState(false);
+
+  function startEdit(property: { id: string; unit_price: number; units_available: number | null; size_label: string | null }) {
+    setEditingId(property.id);
+    setEditForm({
+      unit_price: property.unit_price,
+      units_available: property.units_available ?? 0,
+      size_label: property.size_label ?? "",
+    });
+  }
+
+  async function saveEdit(id: string) {
+    if (editForm.unit_price <= 0) {
+      toast.error("Enter a valid unit price (full naira amount, e.g. 22500000 for ₦22.5m).");
+      return;
+    }
+    setEditSaving(true);
+    const { error } = await supabase
+      .from("properties")
+      .update({
+        unit_price: editForm.unit_price,
+        units_available: editForm.units_available,
+        size_label: editForm.size_label.trim(),
+      })
+      .eq("id", id);
+    setEditSaving(false);
+    if (error) {
+      toast.error("The property could not be updated. Please try again.");
+      return;
+    }
+    toast.success("Property updated.");
+    setEditingId(null);
+    onChanged();
+  }
 
   async function addProperty() {
     if (!form.name.trim() || form.unit_price <= 0) {
@@ -281,14 +317,57 @@ function PropertyManager({
           <li className="text-sm text-muted-foreground">No properties yet for this project.</li>
         ) : null}
         {properties.map((property) => (
-          <li key={property.id} className="flex items-center justify-between rounded-md border border-border px-4 py-2 text-sm">
-            <span>
-              <strong>{property.name}</strong>
-              <span className="text-muted-foreground"> · {property.size_label ?? "—"}</span>
-            </span>
-            <span>
-              {formatNaira(property.unit_price)} · {property.units_available ?? 0} units
-            </span>
+          <li key={property.id} className="rounded-md border border-border px-4 py-2 text-sm">
+            <div className="flex items-center justify-between gap-2">
+              <span>
+                <strong>{property.name}</strong>
+                <span className="text-muted-foreground"> · {property.size_label ?? "—"}</span>
+              </span>
+              <span className="flex items-center gap-2">
+                {formatNaira(property.unit_price)} · {property.units_available ?? 0} units
+                <Button size="sm" variant="ghost" onClick={() => (editingId === property.id ? setEditingId(null) : startEdit(property))}>
+                  {editingId === property.id ? "Close" : "Edit"}
+                </Button>
+              </span>
+            </div>
+            {editingId === property.id ? (
+              <div className="mt-3 grid gap-3 border-t border-border pt-3 sm:grid-cols-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor={`e-size-${property.id}`}>Size</Label>
+                  <Input
+                    id={`e-size-${property.id}`}
+                    value={editForm.size_label}
+                    onChange={(e) => setEditForm({ ...editForm, size_label: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor={`e-price-${property.id}`}>Unit price (₦)</Label>
+                  <Input
+                    id={`e-price-${property.id}`}
+                    type="number"
+                    min={0}
+                    value={editForm.unit_price || ""}
+                    onChange={(e) => setEditForm({ ...editForm, unit_price: Number(e.target.value) || 0 })}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor={`e-units-${property.id}`}>Units available</Label>
+                  <Input
+                    id={`e-units-${property.id}`}
+                    type="number"
+                    min={0}
+                    value={editForm.units_available || ""}
+                    onChange={(e) => setEditForm({ ...editForm, units_available: Number(e.target.value) || 0 })}
+                  />
+                </div>
+                <div className="sm:col-span-3">
+                  <AsyncButton size="sm" onClick={() => saveEdit(property.id)} disabled={editSaving} pendingLabel="Saving…">
+                    <Save className="mr-2 size-4" />
+                    Save changes
+                  </AsyncButton>
+                </div>
+              </div>
+            ) : null}
           </li>
         ))}
       </ul>
@@ -316,7 +395,7 @@ function PropertyManager({
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor={`p-price-${projectId}`}>Unit price (₦)</Label>
+          <Label htmlFor={`p-price-${projectId}`}>Unit price (₦, full amount e.g. 22500000)</Label>
           <Input
             id={`p-price-${projectId}`}
             type="number"
