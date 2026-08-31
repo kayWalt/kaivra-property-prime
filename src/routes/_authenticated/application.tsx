@@ -124,8 +124,52 @@ function ApplicationWizard() {
   const [submitted, setSubmitted] = useState<{ reference: string; id: string } | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [initialised, setInitialised] = useState(false);
+  const [resume, setResume] = useState<{
+    id: string;
+    draft: DraftState;
+    updatedAt: string | null;
+  } | null>(null);
+  const [discarding, setDiscarding] = useState(false);
   const pendingRef = useRef<DraftState | null>(null);
   const bootRef = useRef(false);
+
+  // Creates a brand-new draft row and puts the wizard on step 1.
+  const startFreshDraft = useCallback(async () => {
+    if (!user) return;
+    const seed: DraftState = {
+      ...EMPTY_DRAFT,
+      project_id: search.project ?? null,
+      property_id: search.property ?? null,
+      personal: { full_name: profile?.full_name ?? "" },
+      contact: { email: profile?.email ?? user.email ?? "", phone: profile?.phone ?? "" },
+    };
+    const { data, error } = await supabase
+      .from("applications")
+      .insert({
+        investor_id: user.id,
+        created_by: user.id,
+        project_id: seed.project_id,
+        property_id: seed.property_id,
+        personal: seed.personal as never,
+        contact: seed.contact as never,
+        investment: seed.investment as never,
+        payment_info: {} as never,
+        current_step: 1,
+      })
+      .select()
+      .single();
+    if (error || !data) {
+      bootRef.current = false;
+      toast.error("We could not start your application. Please try again.");
+      return;
+    }
+    setApplicationId(data.id);
+    setDraft(seed);
+    setStep(1);
+    setInitialised(true);
+    void logEvent(data.id, "application_created", "Application draft created");
+    void navigate({ to: "/application", search: { id: data.id }, replace: true });
+  }, [user, profile, search.project, search.property, navigate]);
 
   // ---------- data ----------
   const projects = useQuery({
