@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Loader2, Plus, Save, X } from "lucide-react";
+import { Plus, Save, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   GalleryUploadField,
