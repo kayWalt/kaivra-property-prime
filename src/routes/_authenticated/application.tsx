@@ -754,6 +754,13 @@ function StepProject({
     unit_price: number;
   }) => void;
 }) {
+  const selectedProject = projects.find((p) => p.id === draft.project_id);
+  // When a property has no images of its own, fall back to the project's
+  // gallery so investors still see the linked imagery.
+  const fallbackPropertyImages = [
+    ...parseGallery(selectedProject?.gallery_images).map((g) => g.url),
+    ...(selectedProject?.hero_image ? [selectedProject.hero_image] : []),
+  ];
   return (
     <div className="space-y-10">
       <section>
