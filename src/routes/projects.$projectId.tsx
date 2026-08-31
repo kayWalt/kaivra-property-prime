@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowLeft, ChevronLeft, ChevronRight, MapPin, X } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, Images, MapPin, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { peekSession } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
