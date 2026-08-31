@@ -356,6 +356,73 @@ function ManageApplication() {
       </section>
 
       {admin ? (
+        <section className="mt-6 rounded-lg border border-border bg-card p-5 print:hidden">
+          <h2 className="font-display text-2xl">Investor record</h2>
+          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+            Link this investment to the correct KAIVRA investor identity. Once linked, it appears in
+            that investor&apos;s portfolio, transactions and documents, and they are notified.
+          </p>
+          <div className="mt-4 rounded-md border border-border bg-muted/40 px-4 py-3">
+            <p className="eyebrow text-muted-foreground">Currently linked to</p>
+            <p className="mt-1 font-medium">
+              {owner.data?.full_name ?? (ownerId ? "Unnamed investor" : "Not linked")}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {owner.data?.investor_code ?? "—"} · {owner.data?.email ?? "—"}
+              {owner.data?.phone ? ` · ${owner.data.phone}` : ""}
+            </p>
+          </div>
+
+          <Dialog
+            open={linkOpen}
+            onOpenChange={(next) => {
+              setLinkOpen(next);
+              if (!next) setPicked(null);
+            }}
+          >
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm" className="mt-4">
+                <Link2 className="mr-1.5 size-4" /> Link this investment to…
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+              <DialogHeader>
+                <DialogTitle>Link this investment to an investor</DialogTitle>
+                <DialogDescription>
+                  Search by KAIVRA Investor ID, name, email, phone or reference. Ownership moves to
+                  the investor you select — records are never merged automatically.
+                </DialogDescription>
+              </DialogHeader>
+
+              <InvestorPicker selected={picked} onSelect={setPicked} />
+
+              {picked ? (
+                <p className="rounded-md border border-primary/30 bg-primary/5 px-3 py-2 text-sm">
+                  Linking {application.data?.reference ?? "this application"} to{" "}
+                  <span className="font-medium">{picked.full_name ?? "this investor"}</span>
+                  {picked.investor_code ? ` · ${picked.investor_code}` : ""}
+                </p>
+              ) : null}
+
+              <DialogFooter>
+                <Button variant="ghost" onClick={() => setLinkOpen(false)}>
+                  Cancel
+                </Button>
+                <AsyncButton
+                  disabled={!picked}
+                  pendingLabel="Linking…"
+                  onClick={() => handleLink()}
+                >
+                  Link investment
+                </AsyncButton>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </section>
+      ) : null}
+
+
+      {admin ? (
         <section className="mt-6 rounded-lg border border-destructive/30 bg-card p-5 print:hidden">
           <h2 className="font-display text-2xl">Delete application</h2>
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
