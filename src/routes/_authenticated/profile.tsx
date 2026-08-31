@@ -154,11 +154,26 @@ function ProfilePage() {
 
         <div className="space-y-1.5">
           <Label htmlFor="name">Full name</Label>
-          <Input id="name" value={fullName} onChange={(e) => setFullName(e.target.value)} maxLength={120} />
+          <Input
+            id="name"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            maxLength={120}
+            autoComplete="name"
+            autoCapitalize="words"
+          />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="profile_phone">Phone number</Label>
-          <Input id="profile_phone" value={phone} onChange={(e) => setPhone(e.target.value)} maxLength={32} />
+          <Input
+            id="profile_phone"
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            maxLength={32}
+          />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="profile_email">Email address</Label>
