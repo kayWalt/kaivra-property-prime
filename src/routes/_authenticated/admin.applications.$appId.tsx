@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Check, X, Trash2 } from "lucide-react";
+import { Check, X, Trash2, Link2 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import {
   AlertDialog,
@@ -15,6 +15,15 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { deleteApplication } from "@/lib/applications.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -22,6 +31,8 @@ import { AsyncButton } from "@/components/kaivra/AsyncButton";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PaymentBadge } from "@/components/kaivra/StatusBadge";
+import { InvestorPicker } from "@/components/kaivra/InvestorPicker";
+import { linkApplicationToInvestor, type InvestorSummary } from "@/lib/investors.functions";
 import { ApplicationDetailView } from "./applications.$appId";
 import { useRoles, useSession, primaryRole, isStaffRole } from "@/hooks/useAuth";
 import { fetchPayments, logEvent, notify } from "@/lib/applications";
@@ -31,6 +42,7 @@ import {
   formatNaira,
   type ApplicationStatus,
 } from "@/lib/kaivra";
+
 
 export const Route = createFileRoute("/_authenticated/admin/applications/$appId")({
   head: () => ({
