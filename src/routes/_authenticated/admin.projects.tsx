@@ -106,49 +106,67 @@ function ProjectManagement() {
   }
 
   async function createProject() {
+    if (creating) return; // guards against duplicate submissions
     if (!form.name.trim()) {
       toast.error("Give the project a name.");
       return;
     }
-    setCreating(true);
-    const { error } = await supabase.from("projects").insert({
-      name: form.name.trim(),
-      location: form.location.trim(),
-      description: form.description.trim(),
-      hero_image: form.hero_image.trim() || (gallery[0]?.url ?? null),
-      gallery_images: gallery,
-    });
-    setCreating(false);
-    if (error) {
-      toast.error("The project could not be created. Please try again.");
+    if (!form.location.trim()) {
+      toast.error("Add the project location so investors know where it is.");
       return;
     }
-    toast.success("Project created.");
-    setForm({ name: "", location: "", description: "", hero_image: "" });
-    setGallery([]);
-    void projects.refetch();
+    setCreating(true);
+    try {
+      const { data, error } = await supabase
+        .from("projects")
+        .insert({
+          name: form.name.trim(),
+          location: form.location.trim(),
+          description: form.description.trim(),
+          hero_image: form.hero_image.trim() || (gallery[0]?.url ?? null),
+          gallery_images: gallery,
+        })
+        .select("*, properties(*)")
+        .single();
+      if (error) throw error;
+
+      // Show the new project instantly, then reconcile with the server.
+      queryClient.setQueryData(["admin-projects"], (current: unknown) =>
+        Array.isArray(current) ? [...current, data] : current,
+      );
+      toast.success("Project created.");
+      setForm({ name: "", location: "", description: "", hero_image: "" });
+      setGallery([]);
+      await refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "The project could not be created. Please try again.");
+    } finally {
+      setCreating(false);
+    }
   }
 
   async function toggleActive(id: string, isActive: boolean) {
     const { error } = await supabase.from("projects").update({ is_active: !isActive }).eq("id", id);
     if (error) {
-      toast.error("This project could not be updated.");
+      toast.error(error.message || "This project could not be updated.");
       return;
     }
-    void projects.refetch();
+    toast.success(isActive ? "Project deactivated — hidden from investors." : "Project activated and visible to investors.");
+    await refresh();
   }
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6">
+    <div className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
+        <div className="min-w-0">
           <p className="eyebrow text-primary">Administration</p>
-          <h1 className="mt-1 font-display text-4xl">Projects & properties</h1>
+          <h1 className="mt-1 font-display text-3xl sm:text-4xl">Projects &amp; properties</h1>
         </div>
         <Button asChild variant="outline">
           <Link to="/admin">Applications</Link>
         </Button>
       </div>
+
 
       <section className="mt-8 rounded-lg border border-border bg-card p-5">
         <h2 className="font-display text-2xl">Create project</h2>
