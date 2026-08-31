@@ -8,6 +8,7 @@ import { createAvatarUploadTicket, removeAvatarFile } from "@/lib/avatar.functio
 import { Button } from "@/components/ui/button";
 import { AsyncButton } from "@/components/kaivra/AsyncButton";
 import { compressImage } from "@/components/kaivra/FileUpload";
+import { ReferenceChip } from "@/components/kaivra/ReferenceChip";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useProfile, useRoles, useSession, primaryRole } from "@/hooks/useAuth";
