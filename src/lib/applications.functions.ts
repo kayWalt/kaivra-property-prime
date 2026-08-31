@@ -53,7 +53,10 @@ export const deleteApplication = createServerFn({ method: "POST" })
       .from("applications")
       .delete()
       .eq("id", data.applicationId);
-    if (deleteError) throw new Error("The application could not be deleted. Please try again.");
+    if (deleteError) {
+      console.error("[deleteApplication] delete failed", deleteError);
+      throw new Error(`The application could not be deleted: ${deleteError.message}`);
+    }
 
     await supabaseAdmin.from("admin_audit_events").insert({
       actor: context.userId,
