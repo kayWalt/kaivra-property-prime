@@ -167,9 +167,9 @@ function ProjectManagement() {
           </div>
         </div>
         <AsyncButton className="mt-4" onClick={() => createProject()} disabled={creating} pendingLabel="Creating…">
-          {creating ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Plus className="mr-2 size-4" />}
+          <Plus className="mr-2 size-4" />
           Create project
-        </Button>
+        </AsyncButton>
       </section>
 
       <div className="mt-10 space-y-4">
@@ -337,9 +337,9 @@ function PropertyManager({
         </div>
       </div>
       <AsyncButton className="mt-4" size="sm" onClick={() => addProperty()} disabled={saving} pendingLabel="Saving…">
-        {saving ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Plus className="mr-2 size-4" />}
+        <Plus className="mr-2 size-4" />
         Add property
-      </Button>
+      </AsyncButton>
     </div>
   );
 }
@@ -436,9 +436,9 @@ function ProjectEditor({
       </div>
       <div className="flex gap-2 sm:col-span-2">
         <AsyncButton size="sm" onClick={() => save()} disabled={saving} pendingLabel="Saving…">
-          {saving ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Save className="mr-2 size-4" />}
+          <Save className="mr-2 size-4" />
           Save changes
-        </Button>
+        </AsyncButton>
         <Button size="sm" variant="ghost" onClick={onClose}>
           <X className="mr-2 size-4" /> Cancel
         </Button>
