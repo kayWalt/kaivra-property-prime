@@ -46,6 +46,7 @@ export const AsyncButton = forwardRef<HTMLButtonElement, AsyncButtonProps>(funct
         return;
       }
       if (!onClick) return;
+      haptic(); // native-only tap feedback; no-op in the browser
       lock.current = true;
       setPending(true); // synchronous: visible within the same frame
       void (async () => {
