@@ -54,7 +54,7 @@ function Dashboard() {
         .order("created_at", { ascending: false })
         // The dashboard only renders recent activity — don't pull a full history
         // over a mobile connection.
-        .limit(10);
+        .limit(50);
       if (error) throw error;
       return data ?? [];
     },
@@ -77,6 +77,12 @@ function Dashboard() {
     { value: 0, paid: 0, outstanding: 0, count: 0 },
   );
   const progress = portfolio.value > 0 ? Math.round((portfolio.paid / portfolio.value) * 100) : 0;
+  const projectCount = new Set(
+    (apps.data ?? []).map((a) => a.project_id).filter(Boolean) as string[],
+  ).size;
+  const propertyCount = new Set(
+    (apps.data ?? []).map((a) => a.property_id).filter(Boolean) as string[],
+  ).size;
   const nextInspection = (inspections.data ?? [])
     .filter((i) => isUpcoming(i.status, i.scheduled_date, i.scheduled_time))
     .sort((a, b) =>
@@ -91,6 +97,14 @@ function Dashboard() {
         {role === "investor" ? "Investor" : role.replace("_", " ")}
       </p>
       <h1 className="mt-2 font-display text-4xl">Welcome back, {firstName}</h1>
+      {profile?.investor_code ? (
+        <p className="mt-2 text-xs uppercase tracking-[0.2em] text-muted-foreground">
+          KAIVRA Investor ID ·{" "}
+          <span className="font-semibold tracking-normal text-foreground">
+            {profile.investor_code}
+          </span>
+        </p>
+      ) : null}
 
       {role !== "investor" ? (
         <div className="mt-6 rounded-lg border border-border bg-card p-5">
@@ -124,7 +138,9 @@ function Dashboard() {
             ["Total investment", formatNaira(portfolio.value)],
             ["Total paid", formatNaira(portfolio.paid)],
             ["Outstanding", formatNaira(portfolio.outstanding)],
-            ["Properties", String(portfolio.count)],
+            ["Investments", String(portfolio.count)],
+            ["Projects", String(projectCount)],
+            ["Properties", String(propertyCount)],
           ].map(([label, value]) => (
             <div key={label} className="rounded-lg border border-border bg-card p-4">
               <p className="eyebrow text-muted-foreground">{label}</p>
