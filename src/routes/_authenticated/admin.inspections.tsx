@@ -22,6 +22,7 @@ import { InspectionBadge } from "@/components/kaivra/StatusBadge";
 import { useProfile, useRoles, useSession, primaryRole, isStaffRole } from "@/hooks/useAuth";
 import { logEvent, notify } from "@/lib/applications";
 import { formatDate } from "@/lib/kaivra";
+import type { TablesUpdate } from "@/integrations/supabase/types";
 import {
   INSPECTION_SELECT,
   INSPECTION_SLOTS,
@@ -160,7 +161,7 @@ function AdminInspections() {
     setAdviser(row.assigned_adviser ?? "");
   }
 
-  async function apply(row: Row, patch: Record<string, unknown>, message: string, action: string) {
+  async function apply(row: Row, patch: TablesUpdate<"inspection_appointments">, message: string, action: string) {
     const { error } = await supabase.from("inspection_appointments").update(patch).eq("id", row.id);
     if (error) {
       toast.error(
