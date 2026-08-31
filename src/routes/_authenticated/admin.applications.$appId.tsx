@@ -286,11 +286,12 @@ function ManageApplication() {
           {payments.data?.map((payment) => (
             <li key={payment.id} className="rounded-md border border-border px-4 py-3">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
+                <div className="min-w-0">
                   <p className="text-sm font-semibold">{formatNaira(payment.amount)}</p>
                   <p className="text-xs text-muted-foreground">
-                    {payment.bank ?? "—"} · {payment.reference ?? "no reference"}
+                    {payment.bank ?? "—"} · {payment.reference ?? "no bank reference"}
                   </p>
+                  <ReferenceChip className="mt-2" size="sm" value={payment.payment_reference} />
                 </div>
                 <div className="flex items-center gap-2">
                   <PaymentBadge status={payment.status as "pending" | "verified" | "rejected"} />
