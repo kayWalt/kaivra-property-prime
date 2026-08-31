@@ -1,15 +1,35 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { toast } from "sonner";
+import { UserPlus, PlusCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { AsyncButton } from "@/components/kaivra/AsyncButton";
+import { InvestorPicker } from "@/components/kaivra/InvestorPicker";
 import { StatusBadge } from "@/components/kaivra/StatusBadge";
 import { EmptyState } from "@/components/kaivra/EmptyState";
 import { PassportAvatar } from "@/components/kaivra/PassportAvatar";
 import { usePassportAvatars } from "@/hooks/usePassportAvatars";
 import { useRoles, useSession, primaryRole, isStaffRole } from "@/hooks/useAuth";
+import {
+  createAssistedApplication,
+  registerInvestor,
+  type InvestorSummary,
+} from "@/lib/investors.functions";
 import { formatNaira, formatDate, type ApplicationStatus } from "@/lib/kaivra";
+
 
 export const Route = createFileRoute("/_authenticated/admin/investors")({
   head: () => ({
