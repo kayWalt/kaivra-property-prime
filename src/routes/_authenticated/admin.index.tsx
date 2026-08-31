@@ -8,6 +8,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/kaivra/StatusBadge";
 import { StatusPicker } from "@/components/kaivra/StatusPicker";
 import { EmptyState } from "@/components/kaivra/EmptyState";
+import { PassportAvatar } from "@/components/kaivra/PassportAvatar";
+import { usePassportAvatars } from "@/hooks/usePassportAvatars";
 import { useRoles, useSession, primaryRole, isStaffRole } from "@/hooks/useAuth";
 import { totals } from "@/lib/applications";
 import {
@@ -119,6 +121,12 @@ function AdminDashboard() {
       };
     },
   });
+
+  const investorIds = useMemo(
+    () => (apps.data?.rows ?? []).map((r) => r.investor_id),
+    [apps.data],
+  );
+  const { avatars, isLoading: avatarsLoading } = usePassportAvatars(investorIds);
 
   const cards = useMemo(
     () => [
@@ -251,7 +259,18 @@ function AdminDashboard() {
                   return (
                     <tr key={row.id} className="hover:bg-accent/40">
                       <td className="px-4 py-3 font-medium">{row.reference}</td>
-                      <td className="px-4 py-3">{personal["full_name"] ?? "—"}</td>
+                      <td className="px-4 py-3">
+                        <span className="flex items-center gap-2.5">
+                          <PassportAvatar
+                            url={avatars[row.investor_id]}
+                            name={personal["full_name"]}
+                            loading={avatarsLoading}
+                            className="size-9"
+                            textClassName="text-[11px]"
+                          />
+                          <span>{personal["full_name"] ?? "—"}</span>
+                        </span>
+                      </td>
                       <td className="px-4 py-3">{row.projects?.name ?? "—"}</td>
                       <td className="px-4 py-3">{formatNaira(investment.total_value ?? 0)}</td>
                       <td className="px-4 py-3">{formatNaira(paid)}</td>
@@ -301,10 +320,23 @@ function AdminDashboard() {
                     <p className="eyebrow text-muted-foreground">{row.reference}</p>
                     <StatusBadge status={row.status as ApplicationStatus} />
                   </div>
-                  <p className="mt-2 text-sm font-semibold">{personal["full_name"] ?? "—"}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {row.projects?.name ?? "—"} · {formatNaira(investment.total_value ?? 0)}
-                  </p>
+                  <div className="mt-2 flex items-center gap-3">
+                    <PassportAvatar
+                      url={avatars[row.investor_id]}
+                      name={personal["full_name"]}
+                      loading={avatarsLoading}
+                      className="size-10"
+                      textClassName="text-xs"
+                    />
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold">
+                        {personal["full_name"] ?? "—"}
+                      </p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {row.projects?.name ?? "—"} · {formatNaira(investment.total_value ?? 0)}
+                      </p>
+                    </div>
+                  </div>
                 </Link>
                 <div className="mt-3">
                   <StatusPicker
