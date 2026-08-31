@@ -18,6 +18,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authenticated/documents'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
+import { Route as AuthenticatedTransactionsRouteImport } from './routes/_authenticated/transactions'
 import { Route as ProjectsProjectIdRouteImport } from './routes/projects.$projectId'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedAdminAdvisersRouteImport } from './routes/_authenticated/admin.advisers'
@@ -77,6 +78,12 @@ const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedTransactionsRoute =
+  AuthenticatedTransactionsRouteImport.update({
+    id: '/transactions',
+    path: '/transactions',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const ProjectsProjectIdRoute = ProjectsProjectIdRouteImport.update({
   id: '/projects/$projectId',
   path: '/projects/$projectId',
@@ -156,6 +163,7 @@ export interface FileRoutesByFullPath {
   '/documents': typeof AuthenticatedDocumentsRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/profile': typeof AuthenticatedProfileRoute
+  '/transactions': typeof AuthenticatedTransactionsRoute
   '/projects/$projectId': typeof ProjectsProjectIdRoute
   '/admin/advisers': typeof AuthenticatedAdminAdvisersRoute
   '/admin/investors': typeof AuthenticatedAdminInvestorsRoute
@@ -178,6 +186,7 @@ export interface FileRoutesByTo {
   '/documents': typeof AuthenticatedDocumentsRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/profile': typeof AuthenticatedProfileRoute
+  '/transactions': typeof AuthenticatedTransactionsRoute
   '/projects/$projectId': typeof ProjectsProjectIdRoute
   '/admin/advisers': typeof AuthenticatedAdminAdvisersRoute
   '/admin/investors': typeof AuthenticatedAdminInvestorsRoute
@@ -202,6 +211,7 @@ export interface FileRoutesById {
   '/_authenticated/documents': typeof AuthenticatedDocumentsRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
+  '/_authenticated/transactions': typeof AuthenticatedTransactionsRoute
   '/projects/$projectId': typeof ProjectsProjectIdRoute
   '/_authenticated/admin/advisers': typeof AuthenticatedAdminAdvisersRoute
   '/_authenticated/admin/investors': typeof AuthenticatedAdminInvestorsRoute
@@ -226,6 +236,7 @@ export interface FileRouteTypes {
     | '/documents'
     | '/notifications'
     | '/profile'
+    | '/transactions'
     | '/projects/$projectId'
     | '/admin/advisers'
     | '/admin/investors'
@@ -248,6 +259,7 @@ export interface FileRouteTypes {
     | '/documents'
     | '/notifications'
     | '/profile'
+    | '/transactions'
     | '/projects/$projectId'
     | '/admin/advisers'
     | '/admin/investors'
@@ -271,6 +283,7 @@ export interface FileRouteTypes {
     | '/_authenticated/documents'
     | '/_authenticated/notifications'
     | '/_authenticated/profile'
+    | '/_authenticated/transactions'
     | '/projects/$projectId'
     | '/_authenticated/admin/advisers'
     | '/_authenticated/admin/investors'
@@ -358,6 +371,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof AuthenticatedProfileRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/transactions': {
+      id: '/_authenticated/transactions'
+      path: '/transactions'
+      fullPath: '/transactions'
+      preLoaderRoute: typeof AuthenticatedTransactionsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/projects/$projectId': {
@@ -453,6 +473,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDocumentsRoute: typeof AuthenticatedDocumentsRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+  AuthenticatedTransactionsRoute: typeof AuthenticatedTransactionsRoute
   AuthenticatedAdminAdvisersRoute: typeof AuthenticatedAdminAdvisersRoute
   AuthenticatedAdminInvestorsRoute: typeof AuthenticatedAdminInvestorsRoute
   AuthenticatedAdminProjectsRoute: typeof AuthenticatedAdminProjectsRoute
@@ -470,6 +491,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDocumentsRoute: AuthenticatedDocumentsRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
+  AuthenticatedTransactionsRoute: AuthenticatedTransactionsRoute,
   AuthenticatedAdminAdvisersRoute: AuthenticatedAdminAdvisersRoute,
   AuthenticatedAdminInvestorsRoute: AuthenticatedAdminInvestorsRoute,
   AuthenticatedAdminProjectsRoute: AuthenticatedAdminProjectsRoute,
