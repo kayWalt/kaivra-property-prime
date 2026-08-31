@@ -8,6 +8,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { initMedianRuntime } from "@/lib/median";
 
 import appCss from "../styles.css?url";
 import { Toaster } from "@/components/ui/sonner";
