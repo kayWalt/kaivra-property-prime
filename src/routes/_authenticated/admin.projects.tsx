@@ -11,6 +11,7 @@ import {
   type GalleryImage,
 } from "@/components/kaivra/ProjectImageFields";
 import { Button } from "@/components/ui/button";
+import { ReferenceChip } from "@/components/kaivra/ReferenceChip";
 import { AsyncButton } from "@/components/kaivra/AsyncButton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
