@@ -333,12 +333,27 @@ function PropertyManager({
   });
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState({ unit_price: 0, units_available: 0, size_label: "" });
+  const [editForm, setEditForm] = useState({
+    name: "",
+    property_type: "",
+    unit_price: 0,
+    units_available: 0,
+    size_label: "",
+  });
   const [editSaving, setEditSaving] = useState(false);
 
-  function startEdit(property: { id: string; unit_price: number; units_available: number | null; size_label: string | null }) {
+  function startEdit(property: {
+    id: string;
+    name: string;
+    property_type: string | null;
+    unit_price: number;
+    units_available: number | null;
+    size_label: string | null;
+  }) {
     setEditingId(property.id);
     setEditForm({
+      name: property.name,
+      property_type: property.property_type ?? "",
       unit_price: property.unit_price,
       units_available: property.units_available ?? 0,
       size_label: property.size_label ?? "",
@@ -346,6 +361,10 @@ function PropertyManager({
   }
 
   async function saveEdit(id: string) {
+    if (!editForm.name.trim()) {
+      toast.error("Enter a property name.");
+      return;
+    }
     if (editForm.unit_price <= 0) {
       toast.error("Enter a valid unit price (full naira amount, e.g. 22500000 for ₦22.5m).");
       return;
@@ -354,6 +373,8 @@ function PropertyManager({
     const { error } = await supabase
       .from("properties")
       .update({
+        name: editForm.name.trim(),
+        property_type: editForm.property_type.trim(),
         unit_price: editForm.unit_price,
         units_available: editForm.units_available,
         size_label: editForm.size_label.trim(),
@@ -361,13 +382,38 @@ function PropertyManager({
       .eq("id", id);
     setEditSaving(false);
     if (error) {
-      toast.error("The property could not be updated. Please try again.");
+      toast.error(error.message || "The property could not be updated. Please try again.");
       return;
     }
     toast.success("Property updated.");
     setEditingId(null);
     onChanged();
   }
+
+  async function togglePropertyActive(id: string, isActive: boolean) {
+    const { error } = await supabase.from("properties").update({ is_active: !isActive }).eq("id", id);
+    if (error) {
+      toast.error(error.message || "The property could not be updated.");
+      return;
+    }
+    toast.success(isActive ? "Property hidden from investors." : "Property is now visible to investors.");
+    onChanged();
+  }
+
+  async function removeProperty(id: string) {
+    const { error } = await supabase.from("properties").delete().eq("id", id);
+    if (error) {
+      toast.error(
+        error.message.includes("foreign key")
+          ? "This property is referenced by an application, so it cannot be deleted. Deactivate it instead."
+          : error.message || "The property could not be deleted.",
+      );
+      return;
+    }
+    toast.success("Property deleted.");
+    onChanged();
+  }
+
 
   async function addProperty() {
     if (!form.name.trim() || form.unit_price <= 0) {
