@@ -184,18 +184,22 @@ function Dashboard() {
         <h2 className="font-display text-3xl">Portfolio overview</h2>
         <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
           {[
-            ["Total investment", formatNaira(portfolio.value)],
-            ["Total paid", formatNaira(portfolio.paid)],
-            ["Outstanding", formatNaira(portfolio.outstanding)],
+            ["Total invested", formatNaira(portfolio.value)],
+            ["Total paid (verified)", formatNaira(portfolio.paid)],
+            ["Outstanding balance", formatNaira(portfolio.outstanding)],
+            ["Awaiting verification", formatNaira(portfolio.pending)],
             ["Investments", String(portfolio.count)],
             ["Projects", String(projectCount)],
             ["Properties", String(propertyCount)],
           ].map(([label, value]) => (
             <div key={label} className="rounded-lg border border-border bg-card p-4">
               <p className="eyebrow text-muted-foreground">{label}</p>
-              <p className="mt-2 font-display text-2xl">{apps.isLoading ? "—" : value}</p>
+              <p className="mt-2 font-display text-2xl">
+                {portfolioQuery.isLoading ? "—" : value}
+              </p>
             </div>
           ))}
+
         </div>
         <div className="mt-4 rounded-lg border border-border bg-card p-5">
           <div className="flex items-center justify-between text-sm">
