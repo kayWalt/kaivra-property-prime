@@ -188,7 +188,13 @@ function InvestorsPage() {
   const { avatars, isLoading: avatarsLoading } = usePassportAvatars(investors.map((i) => i.id));
 
   async function openInvestment(investorId: string) {
-    const { applicationId } = await startAssisted({ data: { investorId } });
+    let applicationId: string;
+    try {
+      ({ applicationId } = await startAssisted({ data: { investorId } }));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "The investment could not be started.");
+      return;
+    }
     setExistingOpen(false);
     setRegisterOpen(false);
     setPicked(null);
@@ -203,9 +209,16 @@ function InvestorsPage() {
       toast.error("Enter the investor's full name and email address.");
       return;
     }
-    const { investor, created } = await register({
-      data: { fullName, email, phone: form.phone.trim() || null },
-    });
+    let investor: InvestorSummary;
+    let created: boolean;
+    try {
+      ({ investor, created } = await register({
+        data: { fullName, email, phone: form.phone.trim() || null },
+      }));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "The investor could not be registered.");
+      return;
+    }
     toast.success(
       created ? `Investor registered · ${investor.investor_code ?? ""}` : "Existing investor found",
       {
