@@ -619,7 +619,7 @@ function ApplicationWizard() {
         ) : null}
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 px-4 py-3 backdrop-blur">
+      <div className="kv-safe-bottom fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 px-4 py-3 backdrop-blur">
         <div className="mx-auto flex w-full max-w-4xl items-center justify-between gap-3">
           <Button
             variant="ghost"
