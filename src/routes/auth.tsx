@@ -71,8 +71,13 @@ function AuthPage() {
         if (error) throw error;
         setResetSent(true);
       } catch (err) {
+        const raw = err instanceof Error ? err.message : "";
         toast.error(
-          err instanceof Error ? err.message : "Could not send the reset link. Please try again.",
+          /rate|too many|seconds/i.test(raw)
+            ? "Too many attempts. Please wait a moment and try again."
+            : /smtp|sending|email|configur/i.test(raw)
+              ? "Reset emails are not available right now. Please contact KAIVRA support."
+              : "Could not send the reset link. Please try again.",
         );
       } finally {
         setAction(null);
