@@ -69,10 +69,14 @@ function ManageApplication() {
   const admin = (roles ?? []).some((r) => r === "admin" || r === "super_admin");
   const navigate = useNavigate();
   const removeApplication = useServerFn(deleteApplication);
+  const linkInvestment = useServerFn(linkApplicationToInvestor);
+  const [linkOpen, setLinkOpen] = useState(false);
+  const [picked, setPicked] = useState<InvestorSummary | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [busy, setBusy] = useState(false);
   const [rejecting, setRejecting] = useState<string | null>(null);
   const [reason, setReason] = useState("");
+
 
   const application = useQuery({
     queryKey: ["application-status", appId],
