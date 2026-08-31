@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { EmptyState } from "@/components/kaivra/EmptyState";
 import { PaymentBadge } from "@/components/kaivra/StatusBadge";
+import { ReferenceChip } from "@/components/kaivra/ReferenceChip";
 import { openDocument } from "@/components/kaivra/FileUpload";
 import { useProfile, useSession } from "@/hooks/useAuth";
 import { downloadPaymentReceipt } from "@/lib/receipt";
