@@ -158,7 +158,8 @@ function AdminTransactions() {
       "Method",
       "Bank",
       "Sender",
-      "Reference",
+      "Payment reference",
+      "Bank reference",
       "Status",
       "Verified date",
     ];
