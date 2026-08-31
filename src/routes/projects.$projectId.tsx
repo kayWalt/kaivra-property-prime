@@ -230,12 +230,14 @@ function Lightbox({
   gridOffset = 0,
   openIndex,
   onOpenChange,
+  hideGrid = false,
 }: {
   images: GalleryImage[];
   projectName: string;
   gridOffset?: number;
   openIndex: number | null;
   onOpenChange: (index: number | null) => void;
+  hideGrid?: boolean;
 }) {
   const touchStart = useRef<number | null>(null);
   const setOpenIndex = onOpenChange;
