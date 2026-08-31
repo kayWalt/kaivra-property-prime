@@ -165,7 +165,6 @@ function ApplicationWizard() {
     // skeletons because the retry was blocked by bootRef.
 
     async function boot() {
-      console.log('[boot] start', { id: search.id, user: !!user });
       if (search.id) {
         const { data } = await supabase.from("applications").select("*").eq("id", search.id!).maybeSingle();
         if (data) {
@@ -189,7 +188,6 @@ function ApplicationWizard() {
               /* ignore malformed cache */
             }
           }
-          console.log('[boot] loaded existing');
           setApplicationId(data.id);
           setDraft(next);
           setStep(next.current_step || 1);
