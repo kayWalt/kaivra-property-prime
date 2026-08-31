@@ -731,7 +731,7 @@ function StepProject({
   onProject,
   onProperty,
 }: {
-  projects: { id: string; name: string; location: string | null; hero_image: string | null }[];
+  projects: { id: string; name: string; location: string | null; hero_image: string | null; gallery_images?: unknown }[];
   properties: {
     id: string;
     name: string;
