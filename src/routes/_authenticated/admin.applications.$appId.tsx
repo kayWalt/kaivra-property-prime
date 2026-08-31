@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Check, X, Trash2 } from "lucide-react";
+import { Check, X, Trash2, Link2 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import {
   AlertDialog,
@@ -15,6 +15,15 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { deleteApplication } from "@/lib/applications.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -22,6 +31,8 @@ import { AsyncButton } from "@/components/kaivra/AsyncButton";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PaymentBadge } from "@/components/kaivra/StatusBadge";
+import { InvestorPicker } from "@/components/kaivra/InvestorPicker";
+import { linkApplicationToInvestor, type InvestorSummary } from "@/lib/investors.functions";
 import { ApplicationDetailView } from "./applications.$appId";
 import { useRoles, useSession, primaryRole, isStaffRole } from "@/hooks/useAuth";
 import { fetchPayments, logEvent, notify } from "@/lib/applications";
@@ -31,6 +42,7 @@ import {
   formatNaira,
   type ApplicationStatus,
 } from "@/lib/kaivra";
+
 
 export const Route = createFileRoute("/_authenticated/admin/applications/$appId")({
   head: () => ({
@@ -57,10 +69,14 @@ function ManageApplication() {
   const admin = (roles ?? []).some((r) => r === "admin" || r === "super_admin");
   const navigate = useNavigate();
   const removeApplication = useServerFn(deleteApplication);
+  const linkInvestment = useServerFn(linkApplicationToInvestor);
+  const [linkOpen, setLinkOpen] = useState(false);
+  const [picked, setPicked] = useState<InvestorSummary | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [busy, setBusy] = useState(false);
   const [rejecting, setRejecting] = useState<string | null>(null);
   const [reason, setReason] = useState("");
+
 
   const application = useQuery({
     queryKey: ["application-status", appId],
@@ -81,6 +97,22 @@ function ManageApplication() {
     enabled: staff,
     queryFn: () => fetchPayments(appId),
   });
+
+  const ownerId = application.data?.investor_id ?? null;
+  const owner = useQuery({
+    queryKey: ["application-owner", ownerId],
+    enabled: !!ownerId && staff,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, full_name, email, phone, investor_code")
+        .eq("id", ownerId!)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
 
   if (isLoading) {
     return (
@@ -195,7 +227,35 @@ function ManageApplication() {
     void payments.refetch();
   }
 
+  async function handleLink() {
+    if (!picked) {
+      toast.error("Select the investor this investment belongs to.");
+      return;
+    }
+    try {
+      const result = await linkInvestment({
+        data: { applicationId: appId, investorId: picked.id },
+      });
+      if ("unchanged" in result && result.unchanged) {
+        toast.info("This investment is already linked to that investor.");
+      } else {
+        toast.success(
+          `Investment linked to ${picked.full_name ?? "the investor"}. It now appears in their portfolio.`,
+        );
+      }
+      setLinkOpen(false);
+      setPicked(null);
+      void application.refetch();
+      void owner.refetch();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "The investment could not be linked.",
+      );
+    }
+  }
+
   async function handleDelete() {
+
     setDeleting(true);
     try {
       await removeApplication({ data: { applicationId: appId } });
@@ -294,6 +354,73 @@ function ManageApplication() {
           ))}
         </div>
       </section>
+
+      {admin ? (
+        <section className="mt-6 rounded-lg border border-border bg-card p-5 print:hidden">
+          <h2 className="font-display text-2xl">Investor record</h2>
+          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+            Link this investment to the correct KAIVRA investor identity. Once linked, it appears in
+            that investor&apos;s portfolio, transactions and documents, and they are notified.
+          </p>
+          <div className="mt-4 rounded-md border border-border bg-muted/40 px-4 py-3">
+            <p className="eyebrow text-muted-foreground">Currently linked to</p>
+            <p className="mt-1 font-medium">
+              {owner.data?.full_name ?? (ownerId ? "Unnamed investor" : "Not linked")}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {owner.data?.investor_code ?? "—"} · {owner.data?.email ?? "—"}
+              {owner.data?.phone ? ` · ${owner.data.phone}` : ""}
+            </p>
+          </div>
+
+          <Dialog
+            open={linkOpen}
+            onOpenChange={(next) => {
+              setLinkOpen(next);
+              if (!next) setPicked(null);
+            }}
+          >
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm" className="mt-4">
+                <Link2 className="mr-1.5 size-4" /> Link this investment to…
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+              <DialogHeader>
+                <DialogTitle>Link this investment to an investor</DialogTitle>
+                <DialogDescription>
+                  Search by KAIVRA Investor ID, name, email, phone or reference. Ownership moves to
+                  the investor you select — records are never merged automatically.
+                </DialogDescription>
+              </DialogHeader>
+
+              <InvestorPicker selected={picked} onSelect={setPicked} />
+
+              {picked ? (
+                <p className="rounded-md border border-primary/30 bg-primary/5 px-3 py-2 text-sm">
+                  Linking {application.data?.reference ?? "this application"} to{" "}
+                  <span className="font-medium">{picked.full_name ?? "this investor"}</span>
+                  {picked.investor_code ? ` · ${picked.investor_code}` : ""}
+                </p>
+              ) : null}
+
+              <DialogFooter>
+                <Button variant="ghost" onClick={() => setLinkOpen(false)}>
+                  Cancel
+                </Button>
+                <AsyncButton
+                  disabled={!picked}
+                  pendingLabel="Linking…"
+                  onClick={() => handleLink()}
+                >
+                  Link investment
+                </AsyncButton>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </section>
+      ) : null}
+
 
       {admin ? (
         <section className="mt-6 rounded-lg border border-destructive/30 bg-card p-5 print:hidden">
