@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { createUploadTicket, getDocumentUrl } from "@/lib/storage.functions";
 import { Button } from "@/components/ui/button";
+import { AsyncButton } from "@/components/kaivra/AsyncButton";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 
@@ -118,10 +119,13 @@ export function UploadCard({
     setProgress(20);
     try {
       const list: File[] = multiple ? Array.from(files) : Array.from(files).slice(0, 1);
-      for (const file of list) {
-        await uploadDocument({ applicationId, kind, file, paymentId: paymentId ?? null, label: title });
-        setProgress((p) => Math.min(90, p + 60 / list.length));
-      }
+      // Uploads are independent — run them concurrently instead of queueing.
+      await Promise.all(
+        list.map(async (file) => {
+          await uploadDocument({ applicationId, kind, file, paymentId: paymentId ?? null, label: title });
+          setProgress((p) => Math.min(90, p + 60 / list.length));
+        }),
+      );
       setProgress(100);
       toast.success(`${title} uploaded`);
       onChanged();
@@ -180,25 +184,25 @@ export function UploadCard({
             <li key={doc.id} className="flex items-center gap-2 rounded-md border border-border bg-muted/50 px-3 py-2">
               <span className="truncate text-xs">{doc.file_name}</span>
               <div className="ml-auto flex gap-1">
-                <Button
+                <AsyncButton
                   type="button"
                   size="icon"
                   variant="ghost"
                   aria-label={`View ${doc.file_name}`}
-                  onClick={() => void openDocument(doc.id)}
+                  onClick={() => openDocument(doc.id)}
                 >
                   <Eye className="size-4" />
-                </Button>
+                </AsyncButton>
                 {!disabled ? (
-                  <Button
+                  <AsyncButton
                     type="button"
                     size="icon"
                     variant="ghost"
                     aria-label={`Remove ${doc.file_name}`}
-                    onClick={() => void remove(doc.id)}
+                    onClick={() => remove(doc.id)}
                   >
                     <Trash2 className="size-4" />
-                  </Button>
+                  </AsyncButton>
                 ) : null}
               </div>
             </li>

@@ -31,7 +31,7 @@ function Notifications() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("notifications")
-        .select("*")
+        .select("id, title, body, link, read_at, created_at")
         .eq("user_id", user!.id)
         .order("created_at", { ascending: false })
         .limit(100);
@@ -47,7 +47,7 @@ function Notifications() {
       .update({ read_at: new Date().toISOString() })
       .eq("user_id", user.id)
       .is("read_at", null)
-      .then(() => queryClient.invalidateQueries({ queryKey: ["notifications-unread"] }));
+      .then(() => queryClient.invalidateQueries({ queryKey: ["notifications", "unread"] }));
   }, [list.data, user?.id, queryClient]);
 
   return (

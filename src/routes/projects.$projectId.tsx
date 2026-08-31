@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, MapPin } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { peekSession } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Brand } from "@/components/kaivra/Brand";
@@ -43,8 +44,11 @@ function ProjectDetail() {
   });
 
   async function invest(propertyId?: string) {
-    const { data } = await supabase.auth.getSession();
-    if (!data.session) {
+    // Use the shared session store first so the button navigates instantly
+    // instead of waiting on an auth round trip.
+    const cached = peekSession();
+    const session = cached.session ?? (await supabase.auth.getSession()).data.session;
+    if (!session) {
       navigate({ to: "/auth" });
       return;
     }

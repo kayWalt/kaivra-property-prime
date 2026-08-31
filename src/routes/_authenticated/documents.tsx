@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Eye } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { AsyncButton } from "@/components/kaivra/AsyncButton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/kaivra/EmptyState";
 import { openDocument } from "@/components/kaivra/FileUpload";
@@ -39,7 +40,7 @@ function DocumentsPage() {
       if (ids.length === 0) return [];
       const { data, error } = await supabase
         .from("application_documents")
-        .select("*")
+        .select("id, kind, file_name, application_id, created_at")
         .in("application_id", ids)
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -79,9 +80,9 @@ function DocumentsPage() {
                 {doc.file_name} · {doc.reference} · {formatDate(doc.created_at)}
               </p>
             </div>
-            <Button variant="ghost" size="sm" onClick={() => void openDocument(doc.id)}>
+            <AsyncButton variant="ghost" size="sm" pendingLabel="Opening…" onClick={() => openDocument(doc.id)}>
               <Eye className="mr-2 size-4" /> View
-            </Button>
+            </AsyncButton>
           </div>
         ))}
       </div>

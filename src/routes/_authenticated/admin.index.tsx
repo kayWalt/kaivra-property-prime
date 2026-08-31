@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,10 +37,18 @@ function AdminDashboard() {
   const [term, setTerm] = useState("");
   const [status, setStatus] = useState<"" | ApplicationStatus>("");
   const [page, setPage] = useState(0);
+  const [debouncedTerm, setDebouncedTerm] = useState("");
+
+  // Typing stays local and instant; only the settled term hits the database.
+  useEffect(() => {
+    const timer = window.setTimeout(() => setDebouncedTerm(term), 300);
+    return () => window.clearTimeout(timer);
+  }, [term]);
 
   const apps = useQuery({
-    queryKey: ["admin-applications", term, status, page],
+    queryKey: ["admin-applications", debouncedTerm, status, page],
     enabled: staff,
+    placeholderData: keepPreviousData,
     queryFn: async () => {
       let query = supabase
         .from("applications")
@@ -52,8 +60,8 @@ function AdminDashboard() {
         .order("submitted_at", { ascending: false, nullsFirst: false })
         .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
       if (status) query = query.eq("status", status);
-      if (term.trim()) {
-        const q = `%${term.trim()}%`;
+      if (debouncedTerm.trim()) {
+        const q = `%${debouncedTerm.trim()}%`;
         query = query.or(`reference.ilike.${q},personal->>full_name.ilike.${q},contact->>email.ilike.${q}`);
       }
       const { data, error, count } = await query;
@@ -65,6 +73,7 @@ function AdminDashboard() {
   const stats = useQuery({
     queryKey: ["admin-stats"],
     enabled: staff,
+    staleTime: 60_000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("applications")
