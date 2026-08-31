@@ -255,6 +255,12 @@ function ProjectManagement() {
                   {project.name}
                 </h2>
                 <p className="text-sm text-muted-foreground">{project.location}</p>
+                <ReferenceChip
+                  className="mt-2 max-w-[16rem]"
+                  size="sm"
+                  label="Project ID"
+                  value={(project as { project_code?: string | null }).project_code}
+                />
                 <span className="mt-1 inline-block text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                   {project.is_active ? "Active" : "Inactive"}
                 </span>
