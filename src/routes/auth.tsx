@@ -105,9 +105,15 @@ function AuthPage() {
         navigate({ to: "/dashboard", replace: true });
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Something went wrong. Please try again.";
+      const raw = err instanceof Error ? err.message : "Something went wrong. Please try again.";
+      const message = /weak|pwned/i.test(raw)
+        ? "That password has appeared in known data breaches. Please choose a stronger, unique password."
+        : /already registered|user already/i.test(raw)
+          ? "An account with this email already exists. Try signing in instead."
+          : raw;
       toast.error(message);
     } finally {
+
       setAction(null);
     }
   }
