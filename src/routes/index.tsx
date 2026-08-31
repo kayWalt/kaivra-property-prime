@@ -105,7 +105,9 @@ function Landing() {
         <div className="relative mx-auto flex min-h-[92svh] w-full max-w-7xl flex-col justify-end px-5 pb-16 pt-32 sm:px-8 sm:pb-24">
           <div className="max-w-2xl kv-rise">
             <div className="rule-gold mb-8" />
-            <p className="eyebrow text-gold">Smart Real Estate Investment Management</p>
+            <p className="eyebrow inline-block rounded-sm bg-info px-3 py-1.5 text-info-foreground">
+              Smart Real Estate Investment Management
+            </p>
             <h1 className="mt-4 font-display text-5xl leading-[1.05] text-onyx-foreground sm:text-7xl">
               Invest in the future you can own.
             </h1>
