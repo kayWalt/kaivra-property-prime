@@ -1,7 +1,7 @@
 import * as React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, MapPin, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, Mail, MapPin, Phone, ShieldCheck, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -317,9 +317,32 @@ function Landing() {
 
 
       <footer className="surface-onyx">
-        <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-5 py-12 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+        <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-5 py-12 sm:px-8 lg:flex-row lg:items-start lg:justify-between">
           <Brand tone="inverted" withTagline />
-          <p className="text-xs text-onyx-foreground/60">
+          <div className="flex flex-col gap-4 sm:flex-row sm:gap-10">
+            <div className="flex items-start gap-3">
+              <Phone className="mt-0.5 size-4 text-gold" aria-hidden />
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wider text-onyx-foreground/60">Call us</p>
+                <a href="tel:+2347058926912" className="mt-1 block text-sm text-onyx-foreground hover:text-gold">
+                  +234 705 892 6912
+                </a>
+                <a href="tel:09125067938" className="block text-sm text-onyx-foreground hover:text-gold">
+                  0912 506 7938
+                </a>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <Mail className="mt-0.5 size-4 text-gold" aria-hidden />
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wider text-onyx-foreground/60">Email support</p>
+                <a href="mailto:support@kaivra.com" className="mt-1 block text-sm text-onyx-foreground hover:text-gold">
+                  support@kaivra.com
+                </a>
+              </div>
+            </div>
+          </div>
+          <p className="text-xs text-onyx-foreground/60 lg:self-center">
             © {new Date().getFullYear()} KAIVRA. All rights reserved.
           </p>
         </div>
