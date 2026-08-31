@@ -370,9 +370,14 @@ function ManageApplication() {
               {owner.data?.full_name ?? (ownerId ? "Unnamed investor" : "Not linked")}
             </p>
             <p className="text-xs text-muted-foreground">
-              {owner.data?.investor_code ?? "—"} · {owner.data?.email ?? "—"}
+              {owner.data?.email ?? "—"}
               {owner.data?.phone ? ` · ${owner.data.phone}` : ""}
             </p>
+            <ReferenceChip
+              className="mt-2 max-w-xs"
+              label="Investor ID"
+              value={owner.data?.investor_code}
+            />
           </div>
 
           <Dialog
