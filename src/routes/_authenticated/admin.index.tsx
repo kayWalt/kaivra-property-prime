@@ -240,6 +240,7 @@ function AdminDashboard() {
                             investorId={row.investor_id}
                             current={row.status as ApplicationStatus}
                             reviewerId={user?.id}
+                            canDecide={role === "admin" || role === "super_admin"}
                             onUpdated={() => {
                               void apps.refetch();
                               void stats.refetch();
@@ -283,6 +284,7 @@ function AdminDashboard() {
                     investorId={row.investor_id}
                     current={row.status as ApplicationStatus}
                     reviewerId={user?.id}
+                    canDecide={role === "admin" || role === "super_admin"}
                     onUpdated={() => {
                       void apps.refetch();
                       void stats.refetch();

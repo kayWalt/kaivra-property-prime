@@ -141,7 +141,10 @@ function InvestorsPage() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
           {investors.map((investor) => (
-            <article key={investor.id} className="rounded-xl border border-border bg-card p-5 transition-shadow hover:shadow-md">
+            <article
+              key={investor.id}
+              className="min-w-0 rounded-xl border border-border bg-card p-5 transition-shadow hover:shadow-md"
+            >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex min-w-0 items-start gap-3">
                   <PassportAvatar
@@ -151,8 +154,8 @@ function InvestorsPage() {
                     className="size-12 sm:size-14"
                   />
                   <div className="min-w-0">
-                  <h2 className="font-display text-xl">{investor.name}</h2>
-                  <p className="text-sm text-muted-foreground">{investor.email}</p>
+                  <h2 className="truncate font-display text-xl">{investor.name}</h2>
+                  <p className="truncate text-sm text-muted-foreground">{investor.email}</p>
                   <p className="text-sm text-muted-foreground">{investor.phone}</p>
                   </div>
                 </div>
@@ -160,20 +163,20 @@ function InvestorsPage() {
               </div>
 
               <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
-                <div>
+                <div className="min-w-0">
                   <dt className="text-xs uppercase tracking-widest text-muted-foreground">Applications</dt>
                   <dd className="font-semibold">{investor.applications.length}</dd>
                 </div>
-                <div>
+                <div className="min-w-0">
                   <dt className="text-xs uppercase tracking-widest text-muted-foreground">Total value</dt>
-                  <dd className="font-semibold">{formatNaira(investor.value)}</dd>
+                  <dd className="font-semibold break-words">{formatNaira(investor.value)}</dd>
                 </div>
               </dl>
 
               <ul className="mt-4 space-y-2 border-t border-border pt-4 text-sm">
                 {investor.applications.map((app) => (
-                  <li key={app.id} className="flex items-center justify-between gap-3">
-                    <span className="truncate">
+                  <li key={app.id} className="flex min-w-0 items-center justify-between gap-3">
+                    <span className="min-w-0 truncate">
                       {app.reference ?? "—"} · {app.projects?.name ?? "—"}
                     </span>
                     <span className="flex items-center gap-3 whitespace-nowrap text-muted-foreground">

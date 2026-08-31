@@ -21,6 +21,8 @@ type Props = {
   reviewerId?: string | undefined;
   onUpdated?: () => void;
   size?: "sm" | "default";
+  /** Advisers may progress a review but only administrators can approve or reject. */
+  canDecide?: boolean;
 };
 
 export function StatusPicker({
@@ -31,6 +33,7 @@ export function StatusPicker({
   reviewerId,
   onUpdated,
   size = "sm",
+  canDecide = true,
 }: Props) {
   const [busy, setBusy] = useState(false);
 
@@ -43,7 +46,11 @@ export function StatusPicker({
       .eq("id", applicationId);
     setBusy(false);
     if (error) {
-      toast.error("The status could not be updated. Please try again.");
+      toast.error(
+        error.message.includes("administrators")
+          ? "Only KAIVRA administrators can approve or reject an application."
+          : "The status could not be updated. Please try again.",
+      );
       return;
     }
     toast.success(`Status updated to ${STATUS_LABEL[next]}.`);
@@ -69,7 +76,9 @@ export function StatusPicker({
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Mark application as</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {APPLICATION_STATUSES.filter((s) => s !== "draft").map((s) => (
+        {APPLICATION_STATUSES.filter(
+          (s) => s !== "draft" && (canDecide || (s !== "approved" && s !== "rejected")),
+        ).map((s) => (
           <DropdownMenuItem key={s} disabled={s === current} onSelect={() => void setStatus(s)}>
             {STATUS_LABEL[s]}
           </DropdownMenuItem>
