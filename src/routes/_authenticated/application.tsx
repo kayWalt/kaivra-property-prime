@@ -505,11 +505,25 @@ function ApplicationWizard() {
         .single();
       if (error || !data) throw error ?? new Error("submit failed");
 
-      await logEvent(applicationId, "application_submitted", `Reference ${data.reference}`);
+      const actorName = assisted
+        ? (profile?.full_name ?? user.email ?? "KAIVRA staff")
+        : undefined;
+      await logEvent(
+        applicationId,
+        "application_submitted",
+        assisted
+          ? `Reference ${data.reference} — submitted on behalf of ${investor.data?.full_name ?? "the investor"}`
+          : `Reference ${data.reference}`,
+        actorName,
+      );
+      // The notification always goes to the investor who owns the application,
+      // never to the staff member completing it on their behalf.
       await supabase.from("notifications").insert({
-        user_id: user.id,
+        user_id: ownerId ?? user.id,
         title: "Application submitted",
-        body: `Your application ${data.reference} has been submitted and is now under review.`,
+        body: assisted
+          ? `Your application ${data.reference} was submitted by ${actorName} on your behalf and is now under review.`
+          : `Your application ${data.reference} has been submitted and is now under review.`,
         link: `/applications/${applicationId}`,
       });
       await notifyStaffForProject(
@@ -520,6 +534,7 @@ function ApplicationWizard() {
       );
       if (typeof window !== "undefined") window.localStorage.removeItem(localKey(applicationId));
       void queryClient.invalidateQueries({ queryKey: ["my-applications"] });
+      void queryClient.invalidateQueries({ queryKey: ["admin-applications"] });
       setSubmitted({ reference: data.reference ?? "", id: applicationId });
       setConfirmOpen(false);
     } catch {
@@ -530,8 +545,15 @@ function ApplicationWizard() {
   }
 
   if (submitted) {
-    return <SuccessScreen reference={submitted.reference} applicationId={submitted.id} />;
+    return (
+      <SuccessScreen
+        reference={submitted.reference}
+        applicationId={submitted.id}
+        assistedFor={assisted ? (investor.data?.full_name ?? "the investor") : null}
+      />
+    );
   }
+
 
   if (!initialised) {
     return (
