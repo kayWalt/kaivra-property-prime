@@ -1,0 +1,15 @@
+CREATE INDEX IF NOT EXISTS idx_projects_active_created ON public.projects (is_active, created_at);
+CREATE INDEX IF NOT EXISTS idx_properties_project ON public.properties (project_id);
+CREATE INDEX IF NOT EXISTS idx_properties_project_active ON public.properties (project_id, is_active);
+CREATE INDEX IF NOT EXISTS idx_applications_investor ON public.applications (investor_id);
+CREATE INDEX IF NOT EXISTS idx_applications_project ON public.applications (project_id);
+CREATE INDEX IF NOT EXISTS idx_applications_adviser ON public.applications (adviser_id);
+CREATE INDEX IF NOT EXISTS idx_applications_status_created ON public.applications (status, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_application_payments_application ON public.application_payments (application_id);
+CREATE INDEX IF NOT EXISTS idx_application_documents_application ON public.application_documents (application_id);
+CREATE INDEX IF NOT EXISTS idx_application_events_application ON public.application_events (application_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_inspections_investor ON public.inspection_appointments (investor_id);
+CREATE INDEX IF NOT EXISTS idx_inspections_project ON public.inspection_appointments (project_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_user_unread ON public.notifications (user_id, read_at, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_user_roles_user ON public.user_roles (user_id);
+CREATE INDEX IF NOT EXISTS idx_project_advisers_adviser ON public.project_advisers (adviser_id);
