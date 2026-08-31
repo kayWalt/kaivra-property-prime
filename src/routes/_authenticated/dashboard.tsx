@@ -4,13 +4,11 @@ import { ArrowRight, CalendarDays, CreditCard, FileText, Layers } from "lucide-r
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { StatusBadge } from "@/components/kaivra/StatusBadge";
+import { InspectionBadge, PaymentBadge, StatusBadge } from "@/components/kaivra/StatusBadge";
 import { EmptyState } from "@/components/kaivra/EmptyState";
 import { useProfile, useRoles, useSession, primaryRole } from "@/hooks/useAuth";
 import { APPLICATION_SELECT, totals } from "@/lib/applications";
 import { formatDate, formatNaira, type ApplicationStatus } from "@/lib/kaivra";
-import { InspectionBadge } from "@/components/kaivra/StatusBadge";
-import { PaymentBadge } from "@/components/kaivra/StatusBadge";
 import { useMyInspections } from "./inspections.index";
 import { useMyTransactions } from "./transactions";
 import { formatSlot, isUpcoming } from "@/lib/inspections";
