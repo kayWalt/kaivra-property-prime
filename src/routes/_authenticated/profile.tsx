@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { createAvatarUploadTicket, removeAvatarFile } from "@/lib/avatar.functions";
 import { Button } from "@/components/ui/button";
 import { AsyncButton } from "@/components/kaivra/AsyncButton";
+import { compressImage } from "@/components/kaivra/FileUpload";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useProfile, useRoles, useSession, primaryRole } from "@/hooks/useAuth";
@@ -57,8 +58,13 @@ function ProfilePage() {
     if (!file || !user) return;
     setUploading(true);
     try {
-      const ticket = await createAvatarUploadTicket({ data: { fileName: file.name } });
-      const { error } = await supabase.storage.from(ticket.bucket).uploadToSignedUrl(ticket.path, ticket.token, file);
+      // Phone cameras produce multi-megabyte photos: downscale before the
+      // upload so it completes quickly on 3G/4G.
+      const optimised = await compressImage(file, 640, 0.8);
+      const ticket = await createAvatarUploadTicket({ data: { fileName: optimised.name } });
+      const { error } = await supabase.storage
+        .from(ticket.bucket)
+        .uploadToSignedUrl(ticket.path, ticket.token, optimised);
       if (error) throw new Error("Your picture could not be uploaded.");
       await persistAvatar(ticket.url);
       toast.success("Profile picture updated.");
