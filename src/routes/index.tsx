@@ -11,6 +11,8 @@ import { formatCompact } from "@/lib/kaivra";
 import heroAsset from "@/assets/kaivra-22-00-40.jpg.asset.json";
 import adviserAsset from "@/assets/kaivra-22-00-16.jpg.asset.json";
 import residenceAsset from "@/assets/kaivra-22-00-51.jpg.asset.json";
+import partnerHutuAsset from "@/assets/partner-hutu-prestige.jpg.asset.json";
+import partnerAbibeeAsset from "@/assets/partner-abibee.jpg.asset.json";
 
 
 export const Route = createFileRoute("/")({
@@ -314,7 +316,46 @@ function Landing() {
         </div>
       </section>
 
-
+      <section className="border-t border-border bg-card">
+        <div className="mx-auto w-full max-w-7xl px-5 py-20 sm:px-8">
+          <LegacyReveal>
+            <div className="text-center">
+              <p className="eyebrow text-primary kv-legacy" style={{ animationDelay: "0ms" }}>Trusted partners</p>
+              <h2 className="mt-3 font-display text-4xl sm:text-5xl kv-legacy" style={{ animationDelay: "120ms" }}>
+                Our partners
+              </h2>
+              <p className="mx-auto mt-4 max-w-xl text-sm text-muted-foreground kv-legacy" style={{ animationDelay: "240ms" }}>
+                KAIVRA works with established developers and investment firms to bring you secure opportunities.
+              </p>
+            </div>
+            <div className="mx-auto mt-12 grid max-w-3xl gap-6 sm:grid-cols-2">
+              {[
+                { asset: partnerHutuAsset, alt: "Hutu Prestige Polo Lake Resort — polo players and gold shield crest", name: "Hutu Prestige Polo Lake Resort", sub: "Airport Road, Lugbe South District, Abuja" },
+                { asset: partnerAbibeeAsset, alt: "AbiBee Works & Services — Real Estate Investment Ltd", name: "AbiBee Works & Services", sub: "Real Estate Investment Ltd" },
+              ].map((partner, idx) => (
+                <article
+                  key={partner.name}
+                  className="kv-legacy group overflow-hidden rounded-lg border border-border bg-onyx transition-transform duration-300 hover:-translate-y-1"
+                  style={{ animationDelay: `${360 + idx * 150}ms` }}
+                >
+                  <div className="relative aspect-[4/3] overflow-hidden">
+                    <img
+                      src={partner.asset.url}
+                      alt={partner.alt}
+                      loading="lazy"
+                      className="size-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+                  </div>
+                  <div className="p-5 text-center">
+                    <h3 className="font-display text-lg text-onyx-foreground">{partner.name}</h3>
+                    <p className="eyebrow mt-1 text-onyx-foreground/60">{partner.sub}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </LegacyReveal>
+        </div>
+      </section>
 
       <footer className="surface-onyx">
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-5 py-12 sm:px-8 lg:flex-row lg:items-start lg:justify-between">
