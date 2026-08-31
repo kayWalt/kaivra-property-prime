@@ -118,6 +118,14 @@ function ProfilePage() {
     <div className="mx-auto w-full max-w-xl px-4 py-10 sm:px-6">
       <p className="eyebrow text-primary">{primaryRole(roles).replace("_", " ")}</p>
       <h1 className="mt-1 font-display text-4xl">My profile</h1>
+      {profile?.investor_code ? (
+        <p className="mt-2 text-xs uppercase tracking-[0.2em] text-muted-foreground">
+          KAIVRA Investor ID ·{" "}
+          <span className="font-semibold tracking-normal text-foreground">
+            {profile.investor_code}
+          </span>
+        </p>
+      ) : null}
 
       <div className="mt-8 space-y-5 rounded-lg border border-border bg-card p-5">
         <div className="flex flex-wrap items-center gap-4">
