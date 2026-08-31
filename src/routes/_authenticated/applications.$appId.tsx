@@ -133,8 +133,10 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
   return (
     <div className="space-y-8">
       <header className="flex flex-wrap items-start justify-between gap-4 print:block">
-        <div>
-          <p className="eyebrow text-primary">{record.reference ?? "Draft application"}</p>
+        <div className="min-w-0">
+          <p className="eyebrow text-primary">
+            {record.reference ? "Application" : "Draft application"}
+          </p>
           <h1 className="mt-1 font-display text-3xl sm:text-4xl">
             {record.projects?.name ?? "Project pending"}
           </h1>
@@ -142,6 +144,11 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
             {record.properties?.name ?? "Property not selected"} · submitted{" "}
             {formatDate(record.submitted_at)}
           </p>
+          <div className="mt-3 flex flex-wrap gap-3">
+            <ReferenceChip label="Application reference" value={record.reference} />
+            <ReferenceChip label="Project reference" value={record.projects?.project_code} />
+            <ReferenceChip label="Property reference" value={record.properties?.property_code} />
+          </div>
         </div>
         <div className="flex flex-wrap items-center gap-2 print:hidden">
           <StatusBadge status={record.status as ApplicationStatus} />
