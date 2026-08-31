@@ -108,7 +108,9 @@ export function AppShell({ children }: { children: ReactNode }) {
       <header className="no-print sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
         <div className="mx-auto flex h-16 w-full max-w-7xl items-center gap-4 px-4 sm:px-6">
           <Brand />
-          <nav className="ml-6 hidden items-center gap-1 md:flex">
+          {/* Admin roles carry six links; below lg they overflow the bar, so the
+              sheet menu stays in charge until there is room for the full nav. */}
+          <nav className="ml-6 hidden min-w-0 items-center gap-1 lg:flex">chr
             {items.map((item) => (
               <Link
                 key={item.to}
