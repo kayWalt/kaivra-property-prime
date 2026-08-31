@@ -583,12 +583,73 @@ function ApplicationWizard() {
   if (!initialised) {
     return (
       <div className="mx-auto w-full max-w-3xl space-y-4 px-4 py-12">
-        <Skeleton className="h-8 w-56" />
-        <Skeleton className="h-14 w-full" />
-        <Skeleton className="h-64 w-full" />
+        {resume ? (
+          <div className="rounded-lg border border-border bg-card p-6">
+            <p className="eyebrow text-primary">Unfinished application</p>
+            <h1 className="mt-1 font-display text-3xl">Continue where you left off?</h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              You started an application
+              {resume.updatedAt ? ` on ${formatDate(resume.updatedAt)}` : ""} and did not finish it.
+              You can pick it up from step {resume.draft.current_step || 1}, or discard it and start
+              a new one.
+            </p>
+            <div className="mt-6 flex flex-col gap-2 sm:flex-row">
+              <AsyncButton
+                className="sm:w-auto"
+                pendingLabel="Opening…"
+                onClick={async () => {
+                  setApplicationId(resume.id);
+                  setDraft(resume.draft);
+                  setStep(resume.draft.current_step || 1);
+                  setInitialised(true);
+                  setResume(null);
+                  void navigate({
+                    to: "/application",
+                    search: { id: resume.id },
+                    replace: true,
+                  });
+                }}
+              >
+                Continue application
+              </AsyncButton>
+              <Button
+                variant="outline"
+                disabled={discarding}
+                onClick={async () => {
+                  setDiscarding(true);
+                  const { error } = await supabase
+                    .from("applications")
+                    .delete()
+                    .eq("id", resume.id);
+                  if (error) {
+                    setDiscarding(false);
+                    toast.error("That draft could not be discarded. Please try again.");
+                    return;
+                  }
+                  if (typeof window !== "undefined")
+                    window.localStorage.removeItem(localKey(resume.id));
+                  setResume(null);
+                  await startFreshDraft();
+                  setDiscarding(false);
+                  toast.success("Previous draft discarded. Starting a new application.");
+                }}
+              >
+                <Trash2 className="mr-1.5 size-4" />
+                {discarding ? "Discarding…" : "Discard & start new"}
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <Skeleton className="h-8 w-56" />
+            <Skeleton className="h-14 w-full" />
+            <Skeleton className="h-64 w-full" />
+          </>
+        )}
       </div>
     );
   }
+
 
   return (
     <div className="mx-auto w-full max-w-4xl px-4 pb-32 pt-8 sm:px-6">
