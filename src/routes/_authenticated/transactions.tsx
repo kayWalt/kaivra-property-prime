@@ -111,6 +111,7 @@ function TransactionsPage() {
     try {
       await downloadPaymentReceipt({
         investorName: profile?.full_name ?? user?.email ?? "Investor",
+        investorCode: profile?.investor_code ?? null,
         project: row.applications?.projects?.name ?? "—",
         property: row.applications?.properties?.name ?? "—",
         applicationReference: row.applications?.reference ?? "—",

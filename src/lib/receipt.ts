@@ -2,6 +2,7 @@ import { formatMoneyPdf, formatDate } from "@/lib/kaivra";
 
 export interface ReceiptInput {
   investorName: string;
+  investorCode?: string | null;
   project: string;
   property: string;
   applicationReference: string;
@@ -56,6 +57,7 @@ export async function downloadPaymentReceipt(input: ReceiptInput) {
   y += 56;
   const rows: [string, string][] = [
     ["Investor", input.investorName],
+    ["Investor ID", input.investorCode ?? "—"],
     ["Project", input.project],
     ["Property", input.property],
     ["Application reference", input.applicationReference],

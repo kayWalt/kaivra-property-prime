@@ -122,6 +122,7 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
         payments: (payments.data ?? []) as never,
         documents: docs as never,
         investorName: personal["full_name"] ?? "Investor",
+        investorCode: profile?.investor_code ?? null,
       });
       void logEvent(appId, "pdf_downloaded", `PDF downloaded for ${record.reference ?? "draft"}`);
     } catch {
