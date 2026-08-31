@@ -758,7 +758,7 @@ function StepProject({
   // When a property has no images of its own, fall back to the project's
   // gallery so investors still see the linked imagery.
   const fallbackPropertyImages = [
-    ...parseGallery(selectedProject?.gallery_images).map((g) => g.url),
+    ...galleryImageUrls(selectedProject?.gallery_images),
     ...(selectedProject?.hero_image ? [selectedProject.hero_image] : []),
   ];
   return (
