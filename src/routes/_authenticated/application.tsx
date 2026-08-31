@@ -796,33 +796,14 @@ function StepProject({
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             {loadingProperties ? [0, 1].map((i) => <Skeleton key={i} className="h-40 rounded-lg" />) : null}
             {properties.map((property) => (
-              <button
+              <PropertyCard
                 key={property.id}
-                type="button"
+                property={property}
+                fallbackImages={fallbackPropertyImages}
+                selected={draft.property_id === property.id}
                 disabled={disabled}
-                onClick={() => onProperty(property)}
-                className={cn(
-                  "overflow-hidden rounded-lg border p-0 text-left transition-shadow hover:shadow-card",
-                  draft.property_id === property.id ? "border-primary ring-1 ring-primary" : "border-border",
-                )}
-              >
-                <img
-                  src={(property.image_urls as string[] | null)?.[0] ?? "/images/property-terrace.jpg"}
-                  alt={property.name}
-                  loading="lazy"
-                  width={1280}
-                  height={720}
-                  className="h-28 w-full object-cover"
-                />
-                <span className="block p-4">
-                  <span className="eyebrow text-primary">{property.size_label}</span>
-                  <span className="mt-1 block text-sm font-semibold">{property.name}</span>
-                  <span className="mt-2 block font-display text-xl">{formatNaira(property.unit_price)}</span>
-                  <span className="mt-1 block text-xs text-muted-foreground">
-                    {property.units_available ?? 0} units available
-                  </span>
-                </span>
-              </button>
+                onSelect={() => onProperty(property)}
+              />
             ))}
             {!loadingProperties && properties.length === 0 ? (
               <p className="text-sm text-muted-foreground">No properties are currently available for this project.</p>
