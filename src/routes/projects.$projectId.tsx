@@ -265,7 +265,7 @@ function Lightbox({
 
   return (
     <>
-      <div className="mt-8 grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+      <div className={hideGrid ? "hidden" : "mt-8 grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3"}>
         {images.slice(gridOffset).map((image, index) => (
           <figure key={`${image.url}-${index}`} className="overflow-hidden rounded-lg border border-border bg-card">
             <button
