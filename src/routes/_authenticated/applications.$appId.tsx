@@ -242,15 +242,20 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
                 key={payment.id}
                 className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border px-4 py-3"
               >
-                <div>
+                <div className="min-w-0">
                   <p className="eyebrow text-muted-foreground">
                     Payment {String(index + 1).padStart(2, "0")}
                   </p>
                   <p className="mt-1 text-sm font-semibold">{formatNaira(payment.amount)}</p>
                   <p className="text-xs text-muted-foreground">
                     {formatDate(payment.paid_on)} · {payment.bank ?? "—"} ·{" "}
-                    {payment.reference ?? "no reference"}
+                    {payment.reference ?? "no bank reference"}
                   </p>
+                  <ReferenceChip
+                    className="mt-2"
+                    size="sm"
+                    value={payment.payment_reference}
+                  />
                   {payment.status === "rejected" && payment.rejection_reason ? (
                     <p className="mt-1 text-xs text-destructive">{payment.rejection_reason}</p>
                   ) : null}
