@@ -395,7 +395,7 @@ function PropertyManager({
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor={`p-price-${projectId}`}>Unit price (₦)</Label>
+          <Label htmlFor={`p-price-${projectId}`}>Unit price (₦, full amount e.g. 22500000)</Label>
           <Input
             id={`p-price-${projectId}`}
             type="number"
