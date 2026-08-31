@@ -11,6 +11,7 @@ import {
   type GalleryImage,
 } from "@/components/kaivra/ProjectImageFields";
 import { Button } from "@/components/ui/button";
+import { AsyncButton } from "@/components/kaivra/AsyncButton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -165,7 +166,7 @@ function ProjectManagement() {
             />
           </div>
         </div>
-        <Button className="mt-4" onClick={() => void createProject()} disabled={creating}>
+        <AsyncButton className="mt-4" onClick={() => createProject()} disabled={creating} pendingLabel="Creating…">
           {creating ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Plus className="mr-2 size-4" />}
           Create project
         </Button>
@@ -184,9 +185,9 @@ function ProjectManagement() {
                 <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                   {project.is_active ? "Active" : "Inactive"}
                 </span>
-                <Button size="sm" variant="outline" onClick={() => void toggleActive(project.id, project.is_active)}>
+                <AsyncButton size="sm" variant="outline" pendingLabel="Updating…" onClick={() => toggleActive(project.id, project.is_active)}>
                   {project.is_active ? "Deactivate" : "Activate"}
-                </Button>
+                </AsyncButton>
                 <Button
                   size="sm"
                   variant="ghost"
@@ -335,7 +336,7 @@ function PropertyManager({
           />
         </div>
       </div>
-      <Button className="mt-4" size="sm" onClick={() => void addProperty()} disabled={saving}>
+      <AsyncButton className="mt-4" size="sm" onClick={() => addProperty()} disabled={saving} pendingLabel="Saving…">
         {saving ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Plus className="mr-2 size-4" />}
         Add property
       </Button>
@@ -434,7 +435,7 @@ function ProjectEditor({
         />
       </div>
       <div className="flex gap-2 sm:col-span-2">
-        <Button size="sm" onClick={() => void save()} disabled={saving}>
+        <AsyncButton size="sm" onClick={() => save()} disabled={saving} pendingLabel="Saving…">
           {saving ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Save className="mr-2 size-4" />}
           Save changes
         </Button>
