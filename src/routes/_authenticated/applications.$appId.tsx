@@ -164,7 +164,20 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
       </section>
 
       <section id="payments" className="rounded-lg border border-border bg-card p-5">
-        <h2 className="font-display text-2xl">Payments</h2>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="font-display text-2xl">Payments</h2>
+          {manage ? null : (
+            <AddPaymentDialog
+              applicationId={appId}
+              projectId={record.project_id}
+              reference={record.reference}
+              onDone={() => {
+                void payments.refetch();
+                void documents.refetch();
+              }}
+            />
+          )}
+        </div>
         {payments.data?.length === 0 ? (
           <p className="mt-3 text-sm text-muted-foreground">No payment records yet.</p>
         ) : (
