@@ -133,6 +133,8 @@ function AuthPage() {
           className="absolute inset-0 size-full object-cover"
           width={1920}
           height={1088}
+          decoding="async"
+          fetchPriority="low"
         />
         <div className="hero-scrim absolute inset-0" />
         <div className="absolute bottom-12 left-12 right-12">
@@ -240,8 +242,18 @@ function AuthPage() {
                   </p>
                 ) : null}
                 <Button type="submit" className="h-12 w-full" disabled={busy}>
-                  {busy ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
-                  {mode === "signin" ? "Sign in" : mode === "signup" ? "Create account" : "Send reset link"}
+                  {action === "submit" ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
+                  {action === "submit"
+                    ? mode === "signin"
+                      ? "Signing in\u2026"
+                      : mode === "signup"
+                        ? "Creating account\u2026"
+                        : "Sending reset link\u2026"
+                    : mode === "signin"
+                      ? "Sign in"
+                      : mode === "signup"
+                        ? "Create account"
+                        : "Send reset link"}
                 </Button>
                 {mode === "forgot" ? (
                   <Button
@@ -265,7 +277,8 @@ function AuthPage() {
               </div>
 
               <Button variant="outline" className="h-12 w-full" onClick={google} disabled={busy}>
-                Continue with Google
+                {action === "google" ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
+                {action === "google" ? "Connecting to Google\u2026" : "Continue with Google"}
               </Button>
 
               <p className="mt-6 text-center text-sm text-muted-foreground">
