@@ -154,7 +154,13 @@ function ProjectDetail() {
         {gallery.length > 0 ? (
           <>
             <h2 className="mt-16 font-display text-3xl sm:text-4xl">Gallery</h2>
-            <Lightbox images={gallery} projectName={project.name} />
+            <Lightbox
+              images={allImages}
+              projectName={project.name}
+              gridOffset={1}
+              openIndex={lightboxIndex}
+              onOpenChange={setLightboxIndex}
+            />
           </>
         ) : null}
 
