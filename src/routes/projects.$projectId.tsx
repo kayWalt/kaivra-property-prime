@@ -256,12 +256,12 @@ function Lightbox({
   return (
     <>
       <div className="mt-8 grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
-        {images.map((image, index) => (
+        {images.slice(gridOffset).map((image, index) => (
           <figure key={`${image.url}-${index}`} className="overflow-hidden rounded-lg border border-border bg-card">
             <button
               type="button"
               className="block w-full"
-              onClick={() => setOpenIndex(index)}
+              onClick={() => setOpenIndex(index + gridOffset)}
               aria-label={`Open image ${index + 1} full screen`}
             >
               <img
