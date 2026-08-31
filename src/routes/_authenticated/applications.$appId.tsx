@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Download, Eye, Loader2, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AsyncButton } from "@/components/kaivra/AsyncButton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge, PaymentBadge } from "@/components/kaivra/StatusBadge";
 import { openDocument } from "@/components/kaivra/FileUpload";
@@ -112,15 +113,16 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
         </div>
         <div className="flex flex-wrap items-center gap-2 print:hidden">
           <StatusBadge status={record.status as ApplicationStatus} />
-          <Button
+          <AsyncButton
             variant="outline"
-            onClick={() => void handleDownload()}
+            onClick={() => handleDownload()}
             disabled={downloading || isIncomplete}
+            pendingLabel="Preparing PDF…"
             title={isIncomplete ? "Complete and submit the application first" : undefined}
           >
-            {downloading ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Download className="mr-2 size-4" />}
+            <Download className="mr-2 size-4" />
             Download PDF
-          </Button>
+          </AsyncButton>
           {manage ? (
             <Button variant="outline" onClick={() => window.print()}>
               <Printer className="mr-2 size-4" /> Print
@@ -201,9 +203,9 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
                   <span className="font-medium capitalize">{doc.kind.replace(/_/g, " ")}</span>
                   <span className="ml-2 text-muted-foreground">{doc.file_name}</span>
                 </span>
-                <Button variant="ghost" size="sm" onClick={() => void openDocument(doc.id)}>
+                <AsyncButton variant="ghost" size="sm" pendingLabel="Opening…" onClick={() => openDocument(doc.id)}>
                   <Eye className="mr-2 size-4" /> View
-                </Button>
+                </AsyncButton>
               </li>
             ))}
           </ul>

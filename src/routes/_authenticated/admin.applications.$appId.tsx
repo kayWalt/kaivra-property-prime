@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Check, Loader2, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { AsyncButton } from "@/components/kaivra/AsyncButton";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PaymentBadge } from "@/components/kaivra/StatusBadge";
@@ -181,9 +182,9 @@ function ManageApplication() {
                 <div className="flex items-center gap-2">
                   <PaymentBadge status={payment.status as "pending" | "verified" | "rejected"} />
                   {payment.status !== "verified" ? (
-                    <Button size="sm" onClick={() => void verifyPayment(payment.id, payment.amount)}>
+                    <AsyncButton size="sm" pendingLabel="Verifying…" onClick={() => verifyPayment(payment.id, payment.amount)}>
                       <Check className="mr-1.5 size-4" /> Verify
-                    </Button>
+                    </AsyncButton>
                   ) : null}
                   {payment.status !== "rejected" ? (
                     <Button size="sm" variant="outline" onClick={() => setRejecting(payment.id)}>
@@ -201,9 +202,9 @@ function ManageApplication() {
                     className="max-w-md"
                     aria-label="Rejection reason"
                   />
-                  <Button size="sm" variant="destructive" onClick={() => void rejectPayment(payment.id)}>
+                  <AsyncButton size="sm" variant="destructive" pendingLabel="Rejecting…" onClick={() => rejectPayment(payment.id)}>
                     Confirm rejection
-                  </Button>
+                  </AsyncButton>
                   <Button size="sm" variant="ghost" onClick={() => setRejecting(null)}>
                     Cancel
                   </Button>
@@ -218,16 +219,15 @@ function ManageApplication() {
         <h2 className="font-display text-2xl">Application status</h2>
         <div className="mt-4 flex flex-wrap gap-2">
           {APPLICATION_STATUSES.filter((s) => s !== "draft").map((s) => (
-            <Button
+            <AsyncButton
               key={s}
               size="sm"
-              disabled={busy || application.data?.status === s}
+              disabled={application.data?.status === s}
               variant={application.data?.status === s ? "default" : "outline"}
-              onClick={() => void updateStatus(s)}
+              onClick={() => updateStatus(s)}
             >
-              {busy ? <Loader2 className="mr-2 size-3.5 animate-spin" /> : null}
               {STATUS_LABEL[s]}
-            </Button>
+            </AsyncButton>
           ))}
         </div>
       </section>

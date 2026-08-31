@@ -51,11 +51,13 @@ function useUnreadCount(userId?: string) {
   return useQuery({
     queryKey: ["notifications", "unread", userId],
     enabled: !!userId,
-    refetchInterval: 60_000,
+    staleTime: 60_000,
+    refetchInterval: 120_000,
     queryFn: async () => {
       const { count, error } = await supabase
         .from("notifications")
         .select("id", { count: "exact", head: true })
+        .eq("user_id", userId!)
         .is("read_at", null);
       if (error) throw error;
       return count ?? 0;
@@ -74,11 +76,13 @@ export function AppShell({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
 
-  async function signOut() {
-    await queryClient.cancelQueries();
+  function signOut() {
+    // Navigate first so the click feels instant; tear down caches and the
+    // Supabase session right after, without blocking the transition.
+    void navigate({ to: "/auth", replace: true });
+    void queryClient.cancelQueries();
     queryClient.clear();
-    await supabase.auth.signOut();
-    navigate({ to: "/auth", replace: true });
+    void supabase.auth.signOut();
   }
 
   return (
