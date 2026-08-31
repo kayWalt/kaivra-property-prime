@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowLeft, ChevronLeft, ChevronRight, MapPin, X } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, Images, MapPin, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { peekSession } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -30,6 +30,7 @@ export const Route = createFileRoute("/projects/$projectId")({
 function ProjectDetail() {
   const { projectId } = Route.useParams();
   const navigate = useNavigate();
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   const query = useQuery({
     queryKey: ["project", projectId],
@@ -82,6 +83,10 @@ function ProjectDetail() {
   const project = query.data;
   const properties = (project.properties ?? []).filter((p) => p.is_active);
   const gallery = parseGallery(project.gallery_images);
+  const heroImage = project.hero_image ?? "/images/project-mountain.jpg";
+  // Hero first, then every gallery image, so the hero click opens the same
+  // viewer and the rest can be browsed from there.
+  const allImages: GalleryImage[] = [{ url: heroImage, caption: project.name }, ...gallery];
 
   return (
     <div className="min-h-screen bg-background">
@@ -97,21 +102,31 @@ function ProjectDetail() {
       </header>
 
       <section className="relative h-[70svh] min-h-[26rem] w-full">
-        <img
-          src={project.hero_image ?? "/images/project-mountain.jpg"}
-          alt={project.name}
-          className="absolute inset-0 size-full object-cover"
-          width={1920}
-          height={1088}
-          fetchPriority="high"
-        />
-        <div className="hero-scrim absolute inset-0" />
-        <div className="relative mx-auto flex h-full w-full max-w-7xl flex-col justify-end px-5 pb-14 sm:px-8">
+        <button
+          type="button"
+          className="absolute inset-0 block size-full cursor-zoom-in"
+          onClick={() => setLightboxIndex(0)}
+          aria-label={`View all ${allImages.length} photos of ${project.name}`}
+        >
+          <img
+            src={heroImage}
+            alt={project.name}
+            className="absolute inset-0 size-full object-cover"
+            width={1920}
+            height={1088}
+            fetchPriority="high"
+          />
+        </button>
+        <div className="hero-scrim pointer-events-none absolute inset-0" />
+        <div className="pointer-events-none relative mx-auto flex h-full w-full max-w-7xl flex-col justify-end px-5 pb-14 sm:px-8">
           <div className="rule-gold mb-6" />
           <p className="eyebrow flex items-center gap-1.5 text-gold">
             <MapPin className="size-3.5" aria-hidden /> {project.location}
           </p>
           <h1 className="mt-3 max-w-3xl font-display text-4xl text-onyx-foreground sm:text-6xl">{project.name}</h1>
+          <span className="mt-4 inline-flex w-fit items-center gap-1.5 rounded-full bg-onyx/60 px-3 py-1.5 text-xs text-onyx-foreground backdrop-blur">
+            <Images className="size-3.5" aria-hidden /> Tap to view {allImages.length} photos
+          </span>
         </div>
       </section>
 
@@ -139,9 +154,23 @@ function ProjectDetail() {
         {gallery.length > 0 ? (
           <>
             <h2 className="mt-16 font-display text-3xl sm:text-4xl">Gallery</h2>
-            <Lightbox images={gallery} projectName={project.name} />
+            <Lightbox
+              images={allImages}
+              projectName={project.name}
+              gridOffset={1}
+              openIndex={lightboxIndex}
+              onOpenChange={setLightboxIndex}
+            />
           </>
-        ) : null}
+        ) : (
+          <Lightbox
+            images={allImages}
+            projectName={project.name}
+            openIndex={lightboxIndex}
+            onOpenChange={setLightboxIndex}
+            hideGrid
+          />
+        )}
 
 
         <h2 className="mt-16 font-display text-4xl">Property options</h2>
@@ -195,14 +224,30 @@ function ProjectDetail() {
  * Responsive gallery with a full-screen viewer. Supports keyboard arrows on
  * desktop and horizontal swipe on touch devices.
  */
-function Lightbox({ images, projectName }: { images: GalleryImage[]; projectName: string }) {
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
+function Lightbox({
+  images,
+  projectName,
+  gridOffset = 0,
+  openIndex,
+  onOpenChange,
+  hideGrid = false,
+}: {
+  images: GalleryImage[];
+  projectName: string;
+  gridOffset?: number;
+  openIndex: number | null;
+  onOpenChange: (index: number | null) => void;
+  hideGrid?: boolean;
+}) {
   const touchStart = useRef<number | null>(null);
+  const setOpenIndex = onOpenChange;
 
   const step = useCallback(
-    (delta: number) =>
-      setOpenIndex((current) => (current === null ? current : (current + delta + images.length) % images.length)),
-    [images.length],
+    (delta: number) => {
+      if (openIndex === null) return;
+      setOpenIndex((openIndex + delta + images.length) % images.length);
+    },
+    [images.length, openIndex, setOpenIndex],
   );
 
   useEffect(() => {
@@ -220,13 +265,13 @@ function Lightbox({ images, projectName }: { images: GalleryImage[]; projectName
 
   return (
     <>
-      <div className="mt-8 grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
-        {images.map((image, index) => (
+      <div className={hideGrid ? "hidden" : "mt-8 grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3"}>
+        {images.slice(gridOffset).map((image, index) => (
           <figure key={`${image.url}-${index}`} className="overflow-hidden rounded-lg border border-border bg-card">
             <button
               type="button"
               className="block w-full"
-              onClick={() => setOpenIndex(index)}
+              onClick={() => setOpenIndex(index + gridOffset)}
               aria-label={`Open image ${index + 1} full screen`}
             >
               <img
