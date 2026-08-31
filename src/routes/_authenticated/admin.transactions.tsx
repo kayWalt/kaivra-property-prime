@@ -50,6 +50,7 @@ type Row = {
   bank: string | null;
   sender: string | null;
   reference: string | null;
+  payment_reference: string | null;
   method: string;
   description: string | null;
   status: PaymentStatus;
@@ -90,7 +91,7 @@ function AdminTransactions() {
       let q = supabase
         .from("application_payments")
         .select(
-          "id, amount, paid_on, created_at, bank, sender, reference, method, description, status, verified_at, verified_by, rejection_reason, application_id, applications!inner(id, reference, investor_id, personal, projects(id, name), properties(name))",
+          "id, amount, paid_on, created_at, bank, sender, reference, payment_reference, method, description, status, verified_at, verified_by, rejection_reason, application_id, applications!inner(id, reference, investor_id, personal, projects(id, name), properties(name))",
         )
         .order("paid_on", { ascending: false, nullsFirst: false })
         .limit(300);
@@ -130,7 +131,7 @@ function AdminTransactions() {
     return (list.data ?? []).filter((r) => {
       if (project !== "all" && r.applications?.projects?.id !== project) return false;
       if (!needle) return true;
-      return `${r.reference ?? ""} ${r.bank ?? ""} ${r.sender ?? ""} ${r.applications?.reference ?? ""} ${r.applications?.personal?.full_name ?? ""} ${r.applications?.projects?.name ?? ""}`
+      return `${r.payment_reference ?? ""} ${r.reference ?? ""} ${r.bank ?? ""} ${r.sender ?? ""} ${r.applications?.reference ?? ""} ${r.applications?.personal?.full_name ?? ""} ${r.applications?.projects?.name ?? ""}`
         .toLowerCase()
         .includes(needle);
     });
@@ -171,6 +172,7 @@ function AdminTransactions() {
       r.method,
       r.bank ?? "",
       r.sender ?? "",
+      r.payment_reference ?? "",
       r.reference ?? "",
       r.status,
       r.verified_at ?? "",
@@ -265,7 +267,7 @@ function AdminTransactions() {
           className="lg:col-span-2"
           value={term}
           onChange={(e) => setTerm(e.target.value)}
-          placeholder="Search investor, reference, bank"
+          placeholder="Search KAIVRA reference, investor, bank"
         />
         <Select value={status} onValueChange={setStatus}>
           <SelectTrigger>
@@ -407,7 +409,8 @@ function AdminTransactions() {
                   ["Method", open.method.replace(/_/g, " ")],
                   ["Bank", open.bank ?? "—"],
                   ["Sender", open.sender ?? "—"],
-                  ["Reference", open.reference ?? "—"],
+                  ["Payment reference", open.payment_reference ?? "—"],
+                  ["Bank reference", open.reference ?? "—"],
                   ["Verified on", open.verified_at ? formatDate(open.verified_at) : "—"],
                 ].map(([label, value]) => (
                   <div key={label}>
