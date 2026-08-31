@@ -8,6 +8,8 @@ import { AsyncButton } from "@/components/kaivra/AsyncButton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge, PaymentBadge } from "@/components/kaivra/StatusBadge";
 import { openDocument } from "@/components/kaivra/FileUpload";
+import { PassportAvatar } from "@/components/kaivra/PassportAvatar";
+import { usePassportAvatars } from "@/hooks/usePassportAvatars";
 import { AddPaymentDialog } from "@/components/kaivra/AddPaymentDialog";
 import { fetchApplication, fetchDocuments, fetchEvents, fetchPayments, logEvent, totals } from "@/lib/applications";
 
@@ -45,6 +47,8 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
   const payments = useQuery({ queryKey: ["payments", appId], queryFn: () => fetchPayments(appId) });
   const documents = useQuery({ queryKey: ["documents", appId], queryFn: () => fetchDocuments(appId) });
   const events = useQuery({ queryKey: ["events", appId], queryFn: () => fetchEvents(appId), enabled: !!manage });
+  const investorId = app.data?.investor_id as string | undefined;
+  const { avatars, isLoading: avatarsLoading } = usePassportAvatars(investorId ? [investorId] : []);
 
   if (app.isLoading) {
     return (
@@ -146,7 +150,20 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
       </div>
 
       <section className="rounded-lg border border-border bg-card p-5">
-        <h2 className="font-display text-2xl">Investor</h2>
+        <div className="flex items-center gap-4">
+          <PassportAvatar
+            url={avatars[record.investor_id]}
+            name={personal['full_name']}
+            loading={avatarsLoading}
+            zoomable
+            className="size-16 sm:size-20"
+            textClassName="text-lg"
+          />
+          <div>
+            <h2 className="font-display text-2xl">Investor</h2>
+            <p className="text-sm text-muted-foreground">{personal['full_name'] || "—"}</p>
+          </div>
+        </div>
         <dl className="mt-4 grid gap-4 sm:grid-cols-3">
           {[
             ["Full name", personal['full_name']],

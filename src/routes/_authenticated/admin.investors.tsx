@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/kaivra/StatusBadge";
 import { EmptyState } from "@/components/kaivra/EmptyState";
+import { PassportAvatar } from "@/components/kaivra/PassportAvatar";
+import { usePassportAvatars } from "@/hooks/usePassportAvatars";
 import { useRoles, useSession, primaryRole, isStaffRole } from "@/hooks/useAuth";
 import { formatNaira, formatDate, type ApplicationStatus } from "@/lib/kaivra";
 
@@ -97,6 +99,8 @@ function InvestorsPage() {
       : list;
   }, [query.data, term]);
 
+  const { avatars, isLoading: avatarsLoading } = usePassportAvatars(investors.map((i) => i.id));
+
   if (rolesLoading) return <Skeleton className="h-40 w-full" />;
   if (!staff) {
     return (
@@ -137,12 +141,20 @@ function InvestorsPage() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
           {investors.map((investor) => (
-            <article key={investor.id} className="rounded-xl border border-border bg-card p-5">
+            <article key={investor.id} className="rounded-xl border border-border bg-card p-5 transition-shadow hover:shadow-md">
               <div className="flex items-start justify-between gap-4">
-                <div>
+                <div className="flex min-w-0 items-start gap-3">
+                  <PassportAvatar
+                    url={avatars[investor.id]}
+                    name={investor.name}
+                    loading={avatarsLoading}
+                    className="size-12 sm:size-14"
+                  />
+                  <div className="min-w-0">
                   <h2 className="font-display text-xl">{investor.name}</h2>
                   <p className="text-sm text-muted-foreground">{investor.email}</p>
                   <p className="text-sm text-muted-foreground">{investor.phone}</p>
+                  </div>
                 </div>
                 {investor.latest ? <StatusBadge status={investor.latest.status} /> : null}
               </div>
