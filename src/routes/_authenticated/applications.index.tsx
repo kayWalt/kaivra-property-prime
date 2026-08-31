@@ -1,8 +1,21 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { toast } from "sonner";
+import { Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { StatusBadge } from "@/components/kaivra/StatusBadge";
 import { EmptyState } from "@/components/kaivra/EmptyState";
 import { useSession } from "@/hooks/useAuth";
@@ -26,8 +39,16 @@ export const Route = createFileRoute("/_authenticated/applications/")({
   component: MyApplications,
 });
 
+function localDraftKey(id: string) {
+  return `kaivra:application:${id}`;
+}
+
 function MyApplications() {
   const { user } = useSession();
+  const queryClient = useQueryClient();
+  const [discardTarget, setDiscardTarget] = useState<{ id: string; name: string } | null>(null);
+  const [discarding, setDiscarding] = useState(false);
+
   const apps = useQuery({
     queryKey: ["my-applications", user?.id],
     enabled: !!user?.id,
@@ -42,6 +63,31 @@ function MyApplications() {
       return data ?? [];
     },
   });
+
+  async function discardDraft() {
+    if (!discardTarget || !user) return;
+    setDiscarding(true);
+    const { error } = await supabase
+      .from("applications")
+      .delete()
+      .eq("id", discardTarget.id)
+      .eq("investor_id", user.id)
+      .eq("status", "draft");
+    setDiscarding(false);
+
+    if (error) {
+      toast.error("That draft could not be discarded. Please try again.");
+      return;
+    }
+
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem(localDraftKey(discardTarget.id));
+    }
+    toast.success("Draft discarded.");
+    setDiscardTarget(null);
+    void queryClient.invalidateQueries({ queryKey: ["my-applications"] });
+    void queryClient.invalidateQueries({ queryKey: ["application", discardTarget.id] });
+  }
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6">
@@ -71,6 +117,61 @@ function MyApplications() {
             app.application_payments ?? [],
             Number(investment.total_value ?? 0),
           );
+          const isDraft = app.status === "draft";
+
+          if (isDraft) {
+            return (
+              <div
+                key={app.id}
+                className="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-border bg-card px-5 py-4"
+              >
+                <Link
+                  to="/application"
+                  search={{ id: app.id }}
+                  className="min-w-0 flex-1 rounded-md transition-colors hover:text-primary"
+                >
+                  <p className="eyebrow text-muted-foreground">{app.reference ?? "Draft"}</p>
+                  <p className="mt-1 font-display text-xl leading-tight">
+                    {app.projects?.name ?? "Project pending"}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {app.properties?.name ?? "Property not selected"} · created{" "}
+                    {formatDate(app.created_at)}
+                  </p>
+                </Link>
+                <div className="flex flex-wrap items-center gap-3 sm:gap-6">
+                  <div className="text-right">
+                    <p className="text-sm font-semibold">
+                      {formatNaira(investment.total_value ?? 0)}
+                    </p>
+                    <p className="text-xs text-muted-foreground">Paid {formatNaira(paid)}</p>
+                  </div>
+                  <StatusBadge status={app.status as ApplicationStatus} />
+                  <div className="flex items-center gap-2">
+                    <Button asChild size="sm">
+                      <Link to="/application" search={{ id: app.id }}>
+                        Continue
+                      </Link>
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() =>
+                        setDiscardTarget({
+                          id: app.id,
+                          name: app.projects?.name ?? "this application",
+                        })
+                      }
+                    >
+                      <Trash2 className="mr-1.5 size-4" />
+                      Discard
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            );
+          }
+
           return (
             <Link
               key={app.id}
@@ -101,6 +202,36 @@ function MyApplications() {
           );
         })}
       </div>
+
+      <AlertDialog
+        open={!!discardTarget}
+        onOpenChange={(open) => {
+          if (!open && !discarding) setDiscardTarget(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Discard this draft?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This permanently removes your unfinished application
+              {discardTarget ? ` for ${discardTarget.name}` : ""}. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={discarding}>Keep draft</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={discarding}
+              onClick={(event) => {
+                event.preventDefault();
+                void discardDraft();
+              }}
+            >
+              {discarding ? "Discarding…" : "Discard draft"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
