@@ -119,15 +119,25 @@ function AuthPage() {
   }
 
   async function google() {
+    if (busy) return;
     setAction("google");
-    const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
-    if (result.error) {
+    try {
+      // Return to this lightweight public route (not the image-heavy landing
+      // page) so the session lands and forwards to the dashboard immediately.
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: `${window.location.origin}/auth`,
+      });
+      if (result.error) {
+        setAction(null);
+        toast.error("Google sign-in could not be completed. Please try again.");
+        return;
+      }
+      if (result.redirected) return; // browser is navigating away; keep the spinner
+      navigate({ to: "/dashboard", replace: true });
+    } catch (err) {
       setAction(null);
-      toast.error("Google sign-in could not be completed. Please try again.");
-      return;
+      toast.error(err instanceof Error ? err.message : "Google sign-in could not be started.");
     }
-    if (result.redirected) return;
-    navigate({ to: "/dashboard", replace: true });
   }
 
   return (
