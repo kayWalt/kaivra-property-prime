@@ -94,6 +94,22 @@ function ManageApplication() {
     queryFn: () => fetchPayments(appId),
   });
 
+  const ownerId = application.data?.investor_id ?? null;
+  const owner = useQuery({
+    queryKey: ["application-owner", ownerId],
+    enabled: !!ownerId && staff,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, full_name, email, phone, investor_code")
+        .eq("id", ownerId!)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+
   if (isLoading) {
     return (
       <div className="mx-auto w-full max-w-5xl space-y-4 px-4 py-10">
