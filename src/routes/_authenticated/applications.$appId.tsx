@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge, PaymentBadge } from "@/components/kaivra/StatusBadge";
 import { openDocument } from "@/components/kaivra/FileUpload";
 import { fetchApplication, fetchDocuments, fetchEvents, fetchPayments, logEvent, totals } from "@/lib/applications";
-import { downloadApplicationPdf } from "@/lib/pdf";
+
 import { formatDate, formatNaira, type ApplicationStatus } from "@/lib/kaivra";
 
 export const Route = createFileRoute("/_authenticated/applications/$appId")({
