@@ -1,8 +1,21 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Check, X } from "lucide-react";
+import { Check, X, Trash2 } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { deleteApplication } from "@/lib/applications.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { AsyncButton } from "@/components/kaivra/AsyncButton";
@@ -33,6 +46,10 @@ function ManageApplication() {
   const { user } = useSession();
   const { data: roles, isLoading } = useRoles(user?.id);
   const staff = isStaffRole(primaryRole(roles));
+  const admin = (roles ?? []).some((r) => r === "admin" || r === "super_admin");
+  const navigate = useNavigate();
+  const removeApplication = useServerFn(deleteApplication);
+  const [deleting, setDeleting] = useState(false);
   const [busy, setBusy] = useState(false);
   const [rejecting, setRejecting] = useState<string | null>(null);
   const [reason, setReason] = useState("");
@@ -156,6 +173,19 @@ function ManageApplication() {
     void payments.refetch();
   }
 
+  async function handleDelete() {
+    setDeleting(true);
+    try {
+      await removeApplication({ data: { applicationId: appId } });
+      toast.success("Application deleted.");
+      void navigate({ to: "/admin" });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "The application could not be deleted.");
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6">
       <Button asChild variant="ghost" size="sm" className="mb-6 print:hidden">
@@ -231,6 +261,39 @@ function ManageApplication() {
           ))}
         </div>
       </section>
+
+      {admin ? (
+        <section className="mt-6 rounded-lg border border-destructive/30 bg-card p-5 print:hidden">
+          <h2 className="font-display text-2xl">Delete application</h2>
+          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+            Permanently remove this submission along with its payments, documents and history. Only
+            administrators can do this, and it cannot be undone.
+          </p>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" size="sm" className="mt-4" disabled={deleting}>
+                <Trash2 className="mr-1.5 size-4" />
+                {deleting ? "Deleting…" : "Delete application"}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete this application?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  {application.data?.reference ?? "This submission"} and all of its payments,
+                  uploaded documents and history will be permanently removed.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={() => void handleDelete()}>
+                  Delete permanently
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </section>
+      ) : null}
     </div>
   );
 }
