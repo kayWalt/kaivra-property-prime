@@ -233,9 +233,11 @@ function Lightbox({
   const setOpenIndex = onOpenChange;
 
   const step = useCallback(
-    (delta: number) =>
-      setOpenIndex((current) => (current === null ? current : (current + delta + images.length) % images.length)),
-    [images.length],
+    (delta: number) => {
+      if (openIndex === null) return;
+      setOpenIndex((openIndex + delta + images.length) % images.length);
+    },
+    [images.length, openIndex, setOpenIndex],
   );
 
   useEffect(() => {
