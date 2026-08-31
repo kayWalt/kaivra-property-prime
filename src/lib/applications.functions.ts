@@ -49,13 +49,22 @@ export const deleteApplication = createServerFn({ method: "POST" })
       .update({ application_id: null })
       .eq("application_id", data.applicationId);
 
-    const { error: deleteError } = await supabaseAdmin
+    // Delete through the caller's own client: the admin RLS policy allows it and
+    // the service-role path can be rejected when the Data API key is unavailable.
+    const { error: deleteError } = await context.supabase
       .from("applications")
       .delete()
       .eq("id", data.applicationId);
     if (deleteError) {
       console.error("[deleteApplication] delete failed", deleteError);
-      throw new Error(`The application could not be deleted: ${deleteError.message}`);
+      const { error: adminDeleteError } = await supabaseAdmin
+        .from("applications")
+        .delete()
+        .eq("id", data.applicationId);
+      if (adminDeleteError) {
+        console.error("[deleteApplication] admin delete failed", adminDeleteError);
+        throw new Error(`The application could not be deleted: ${adminDeleteError.message}`);
+      }
     }
 
     await supabaseAdmin.from("admin_audit_events").insert({
