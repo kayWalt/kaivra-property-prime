@@ -215,20 +215,60 @@ function ProjectManagement() {
 
       <div className="mt-10 space-y-4">
         {projects.isLoading ? [0, 1].map((i) => <Skeleton key={i} className="h-40 rounded-lg" />) : null}
+        {projects.isError ? (
+          <p className="text-sm text-destructive">
+            Projects could not be loaded.{" "}
+            <button type="button" className="underline" onClick={() => void projects.refetch()}>
+              Try again
+            </button>
+          </p>
+        ) : null}
+        {!projects.isLoading && projects.data?.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No projects yet. Create your first project above.</p>
+        ) : null}
         {projects.data?.map((project) => (
-          <section key={project.id} className="rounded-lg border border-border bg-card p-5">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <h2 className="font-display text-2xl leading-tight">{project.name}</h2>
+          <section key={project.id} className="overflow-hidden rounded-lg border border-border bg-card p-4 sm:p-5">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0">
+                <h2 className="break-words font-display text-xl leading-tight sm:text-2xl">{project.name}</h2>
                 <p className="text-sm text-muted-foreground">{project.location}</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                <span className="mt-1 inline-block text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                   {project.is_active ? "Active" : "Inactive"}
                 </span>
-                <AsyncButton size="sm" variant="outline" pendingLabel="Updating…" onClick={() => toggleActive(project.id, project.is_active)}>
-                  {project.is_active ? "Deactivate" : "Activate"}
-                </AsyncButton>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                {project.is_active ? (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button size="sm" variant="outline">
+                        Deactivate
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Deactivate {project.name}?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          The project will be hidden from the investor directory. You can activate it again at any time.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => void toggleActive(project.id, true)}>
+                          Deactivate
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                ) : (
+                  <AsyncButton
+                    size="sm"
+                    variant="outline"
+                    pendingLabel="Updating…"
+                    onClick={() => toggleActive(project.id, false)}
+                  >
+                    Activate
+                  </AsyncButton>
+                )}
                 <Button
                   size="sm"
                   variant="ghost"
@@ -243,20 +283,22 @@ function ProjectManagement() {
                 >
                   {openProject === project.id ? "Hide properties" : "Properties"}
                 </Button>
+                <Button asChild size="sm" variant="ghost">
+                  <Link to="/projects/$projectId" params={{ projectId: project.id }}>
+                    Preview
+                  </Link>
+                </Button>
               </div>
             </div>
 
             {editProject === project.id ? (
-              <ProjectEditor
-                project={project}
-                onClose={() => setEditProject(null)}
-                onSaved={() => void projects.refetch()}
-              />
+              <ProjectEditor project={project} onClose={() => setEditProject(null)} onSaved={refresh} />
             ) : null}
 
             {openProject === project.id ? (
-              <PropertyManager projectId={project.id} onChanged={() => void projects.refetch()} properties={project.properties ?? []} />
+              <PropertyManager projectId={project.id} onChanged={refresh} properties={project.properties ?? []} />
             ) : null}
+
           </section>
         ))}
 
