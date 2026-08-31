@@ -1,0 +1,1 @@
+ALTER TABLE public.inspection_appointments ALTER COLUMN reference DROP NOT NULL;

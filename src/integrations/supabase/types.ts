@@ -353,7 +353,7 @@ export type Database = {
           phone: string | null
           project_id: string | null
           property_id: string | null
-          reference: string
+          reference: string | null
           reminder_day_sent_at: string | null
           reminder_hour_sent_at: string | null
           scheduled_date: string
@@ -380,7 +380,7 @@ export type Database = {
           phone?: string | null
           project_id?: string | null
           property_id?: string | null
-          reference?: string
+          reference?: string | null
           reminder_day_sent_at?: string | null
           reminder_hour_sent_at?: string | null
           scheduled_date: string
@@ -407,7 +407,7 @@ export type Database = {
           phone?: string | null
           project_id?: string | null
           property_id?: string | null
-          reference?: string
+          reference?: string | null
           reminder_day_sent_at?: string | null
           reminder_hour_sent_at?: string | null
           scheduled_date?: string
