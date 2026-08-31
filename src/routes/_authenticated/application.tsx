@@ -285,6 +285,19 @@ function ApplicationWizard() {
           declaration_accepted: !!reusable.declaration_accepted,
           current_step: reusable.current_step ?? 1,
         };
+        // Only ask when the investor actually started filling something in.
+        const started =
+          (reusable.current_step ?? 1) > 1 ||
+          !!reusable.project_id ||
+          Object.keys((reusable.personal ?? {}) as PersonalDetails).length > 0;
+        if (started) {
+          setResume({
+            id: reusable.id,
+            draft: seeded,
+            updatedAt: (reusable.updated_at as string | null) ?? null,
+          });
+          return;
+        }
         setApplicationId(reusable.id);
         setDraft(seeded);
         setStep(seeded.current_step || 1);
@@ -293,44 +306,12 @@ function ApplicationWizard() {
         return;
       }
 
-      // create a fresh draft
-
-      const seed: DraftState = {
-        ...EMPTY_DRAFT,
-        project_id: search.project ?? null,
-        property_id: search.property ?? null,
-        personal: { full_name: profile?.full_name ?? "" },
-        contact: { email: profile?.email ?? user?.email ?? "", phone: profile?.phone ?? "" },
-      };
-      const { data, error } = await supabase
-        .from("applications")
-        .insert({
-          investor_id: user!.id,
-          created_by: user!.id,
-          project_id: seed.project_id,
-          property_id: seed.property_id,
-          personal: seed.personal as never,
-          contact: seed.contact as never,
-          investment: seed.investment as never,
-          payment_info: {} as never,
-          current_step: 1,
-        })
-        .select()
-        .single();
-      if (error || !data) {
-        bootRef.current = false;
-        toast.error("We could not start your application. Please try again.");
-        return;
-      }
-      setApplicationId(data.id);
-      setDraft(seed);
-      setInitialised(true);
-      void logEvent(data.id, "application_created", "Application draft created");
-      void navigate({ to: "/application", search: { id: data.id }, replace: true });
+      await startFreshDraft();
     }
 
     void boot();
-  }, [user, profile, search.id, search.project, search.property, initialised, navigate]);
+  }, [user, profile, search.id, search.project, search.property, initialised, navigate, startFreshDraft]);
+
 
   // ---------- autosave ----------
   const persist = useCallback(
