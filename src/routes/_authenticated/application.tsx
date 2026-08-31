@@ -569,7 +569,9 @@ function ApplicationWizard() {
     <div className="mx-auto w-full max-w-4xl px-4 pb-32 pt-8 sm:px-6">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <p className="eyebrow text-primary">Investment application</p>
+          <p className="eyebrow text-primary">
+            {assisted ? "Assisted investment application" : "Investment application"}
+          </p>
           <h1 className="mt-1 font-display text-3xl sm:text-4xl">
             {APPLICATION_STEPS[step - 1]?.label ?? "Application"}
           </h1>
@@ -577,11 +579,26 @@ function ApplicationWizard() {
         <SaveIndicator state={saveState} />
       </div>
 
+      {assisted ? (
+        <div className="mt-4 rounded-md border border-primary/30 bg-primary/5 px-4 py-3 text-sm">
+          <p className="font-medium">
+            You are completing this application on behalf of{" "}
+            {investor.data?.full_name ?? "an investor"}
+            {investor.data?.investor_code ? ` · ${investor.data.investor_code}` : ""}
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Documents, payments and history are saved to the investor&apos;s own record. They are
+            notified as soon as you submit.
+          </p>
+        </div>
+      ) : null}
+
       {readOnly ? (
         <p className="mt-4 rounded-md border border-border bg-muted/60 px-4 py-3 text-sm text-muted-foreground">
           This application has been submitted and can no longer be edited.
         </p>
       ) : null}
+
 
       <ol className="mt-6 flex gap-1 overflow-x-auto pb-2" aria-label="Application progress">
         {APPLICATION_STEPS.map((s) => (
