@@ -1932,7 +1932,15 @@ function StepReview({
   );
 }
 
-function SuccessScreen({ reference, applicationId }: { reference: string; applicationId: string }) {
+function SuccessScreen({
+  reference,
+  applicationId,
+  assistedFor,
+}: {
+  reference: string;
+  applicationId: string;
+  assistedFor?: string | null;
+}) {
   return (
     <div className="mx-auto flex min-h-[70vh] w-full max-w-xl flex-col items-center justify-center px-4 text-center">
       <span className="flex size-20 items-center justify-center rounded-full bg-primary/10 text-primary animate-success">
@@ -1940,7 +1948,9 @@ function SuccessScreen({ reference, applicationId }: { reference: string; applic
       </span>
       <h1 className="mt-8 font-display text-4xl">Application submitted</h1>
       <p className="mt-3 text-sm text-muted-foreground">
-        Your investment application has been successfully submitted and is now under review.
+        {assistedFor
+          ? `The application for ${assistedFor} has been submitted and is now under review. They have been notified.`
+          : "Your investment application has been successfully submitted and is now under review."}
       </p>
       <div className="mt-8 w-full rounded-lg border border-border bg-card p-5">
         <p className="eyebrow text-muted-foreground">Application reference</p>
@@ -1950,15 +1960,31 @@ function SuccessScreen({ reference, applicationId }: { reference: string; applic
         </p>
       </div>
       <div className="mt-8 flex flex-wrap justify-center gap-3">
-        <Button asChild>
-          <Link to="/applications/$appId" params={{ appId: applicationId }}>
-            View application
-          </Link>
-        </Button>
-        <Button asChild variant="outline">
-          <Link to="/dashboard">Return to dashboard</Link>
-        </Button>
+        {assistedFor ? (
+          <>
+            <Button asChild>
+              <Link to="/admin/applications/$appId" params={{ appId: applicationId }}>
+                Open in admin
+              </Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link to="/admin/investors">Back to investors</Link>
+            </Button>
+          </>
+        ) : (
+          <>
+            <Button asChild>
+              <Link to="/applications/$appId" params={{ appId: applicationId }}>
+                View application
+              </Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link to="/dashboard">Return to dashboard</Link>
+            </Button>
+          </>
+        )}
       </div>
+
       <p className="mt-4 flex items-center gap-1.5 text-xs text-muted-foreground">
         <Save className="size-3.5" aria-hidden /> Download your PDF from the application page.
       </p>
