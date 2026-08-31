@@ -317,14 +317,57 @@ function PropertyManager({
           <li className="text-sm text-muted-foreground">No properties yet for this project.</li>
         ) : null}
         {properties.map((property) => (
-          <li key={property.id} className="flex items-center justify-between rounded-md border border-border px-4 py-2 text-sm">
-            <span>
-              <strong>{property.name}</strong>
-              <span className="text-muted-foreground"> · {property.size_label ?? "—"}</span>
-            </span>
-            <span>
-              {formatNaira(property.unit_price)} · {property.units_available ?? 0} units
-            </span>
+          <li key={property.id} className="rounded-md border border-border px-4 py-2 text-sm">
+            <div className="flex items-center justify-between gap-2">
+              <span>
+                <strong>{property.name}</strong>
+                <span className="text-muted-foreground"> · {property.size_label ?? "—"}</span>
+              </span>
+              <span className="flex items-center gap-2">
+                {formatNaira(property.unit_price)} · {property.units_available ?? 0} units
+                <Button size="sm" variant="ghost" onClick={() => (editingId === property.id ? setEditingId(null) : startEdit(property))}>
+                  {editingId === property.id ? "Close" : "Edit"}
+                </Button>
+              </span>
+            </div>
+            {editingId === property.id ? (
+              <div className="mt-3 grid gap-3 border-t border-border pt-3 sm:grid-cols-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor={`e-size-${property.id}`}>Size</Label>
+                  <Input
+                    id={`e-size-${property.id}`}
+                    value={editForm.size_label}
+                    onChange={(e) => setEditForm({ ...editForm, size_label: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor={`e-price-${property.id}`}>Unit price (₦)</Label>
+                  <Input
+                    id={`e-price-${property.id}`}
+                    type="number"
+                    min={0}
+                    value={editForm.unit_price || ""}
+                    onChange={(e) => setEditForm({ ...editForm, unit_price: Number(e.target.value) || 0 })}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor={`e-units-${property.id}`}>Units available</Label>
+                  <Input
+                    id={`e-units-${property.id}`}
+                    type="number"
+                    min={0}
+                    value={editForm.units_available || ""}
+                    onChange={(e) => setEditForm({ ...editForm, units_available: Number(e.target.value) || 0 })}
+                  />
+                </div>
+                <div className="sm:col-span-3">
+                  <AsyncButton size="sm" onClick={() => saveEdit(property.id)} disabled={editSaving} pendingLabel="Saving…">
+                    <Save className="mr-2 size-4" />
+                    Save changes
+                  </AsyncButton>
+                </div>
+              </div>
+            ) : null}
           </li>
         ))}
       </ul>
