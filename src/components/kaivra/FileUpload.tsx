@@ -18,6 +18,9 @@ export interface UploadedDoc {
   payment_id?: string | null;
 }
 
+/** Matches the private kaivra-docs bucket limit so oversized files fail fast, client-side. */
+export const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
+
 export async function compressImage(file: File, maxSize = 1600, quality = 0.82): Promise<File> {
   if (!file.type.startsWith("image/") || file.type === "image/gif") return file;
   try {
