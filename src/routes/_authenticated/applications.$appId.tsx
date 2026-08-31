@@ -8,6 +8,7 @@ import { AsyncButton } from "@/components/kaivra/AsyncButton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge, PaymentBadge } from "@/components/kaivra/StatusBadge";
 import { openDocument } from "@/components/kaivra/FileUpload";
+import { AddPaymentDialog } from "@/components/kaivra/AddPaymentDialog";
 import { fetchApplication, fetchDocuments, fetchEvents, fetchPayments, logEvent, totals } from "@/lib/applications";
 
 import { formatDate, formatNaira, type ApplicationStatus } from "@/lib/kaivra";
