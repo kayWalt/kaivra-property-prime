@@ -412,11 +412,15 @@ function AdminInspections() {
                       {
                         status: "confirmed",
                         confirmed_at: new Date().toISOString(),
+                        scheduled_date: newDate || open.scheduled_date,
+                        scheduled_time: `${newTime || String(open.scheduled_time).slice(0, 5)}:00`,
                         admin_note: note || null,
                         assigned_adviser: adviser || null,
                       },
-                      `Your inspection ${open.reference} is confirmed for ${formatDate(open.scheduled_date)} at ${formatSlot(open.scheduled_time)}.`,
+                      (s) =>
+                        `Your inspection ${s.reference} is confirmed for ${formatDate(s.scheduled_date)} at ${formatSlot(s.scheduled_time)}. Please arrive 10 minutes early and quote ${s.reference} on arrival.`,
                       "inspection_confirmed",
+                      "Inspection confirmed",
                     )
                   }
                 >
@@ -435,8 +439,10 @@ function AdminInspections() {
                         admin_note: note || null,
                         assigned_adviser: adviser || null,
                       },
-                      `Your inspection ${open.reference} has been moved to ${formatDate(newDate)} at ${formatSlot(newTime)}.`,
+                      (s) =>
+                        `Your inspection ${s.reference} has been moved to ${formatDate(s.scheduled_date)} at ${formatSlot(s.scheduled_time)}.`,
                       "inspection_rescheduled",
+                      "Inspection rescheduled",
                     )
                   }
                 >
@@ -453,8 +459,10 @@ function AdminInspections() {
                         completed_at: new Date().toISOString(),
                         admin_note: note || null,
                       },
-                      `Your inspection ${open.reference} has been marked completed. Thank you for visiting.`,
+                      (s) =>
+                        `Your inspection ${s.reference} has been marked completed. Thank you for visiting.`,
                       "inspection_completed",
+                      "Inspection completed",
                     )
                   }
                 >
@@ -467,8 +475,10 @@ function AdminInspections() {
                     apply(
                       open,
                       { status: "no_show", admin_note: note || null },
-                      `Your inspection ${open.reference} was recorded as a no-show. Contact us to rebook.`,
+                      (s) =>
+                        `Your inspection ${s.reference} was recorded as a no-show. Contact us to rebook.`,
                       "inspection_no_show",
+                      "Inspection no-show",
                     )
                   }
                 >
@@ -485,8 +495,10 @@ function AdminInspections() {
                         cancelled_at: new Date().toISOString(),
                         admin_note: note || null,
                       },
-                      `Your inspection ${open.reference} has been cancelled. Please book a new visit.`,
+                      (s) =>
+                        `Your inspection ${s.reference} has been cancelled. Please book a new visit.`,
                       "inspection_cancelled",
+                      "Inspection cancelled",
                     )
                   }
                 >
@@ -499,7 +511,8 @@ function AdminInspections() {
                     apply(
                       open,
                       { admin_note: note || null, assigned_adviser: adviser || null },
-                      `Your inspection ${open.reference} has been updated.`,
+                      (s) =>
+                        `Your inspection ${s.reference} on ${formatDate(s.scheduled_date)} at ${formatSlot(s.scheduled_time)} has been updated.`,
                       "inspection_updated",
                     )
                   }
@@ -507,6 +520,7 @@ function AdminInspections() {
                   Save note
                 </AsyncButton>
               </div>
+
               <Button variant="ghost" className="w-full" onClick={() => setOpen(null)}>
                 Close
               </Button>
