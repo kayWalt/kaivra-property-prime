@@ -106,7 +106,7 @@ function ProjectDetail() {
           type="button"
           className="absolute inset-0 block size-full cursor-zoom-in"
           onClick={() => setLightboxIndex(0)}
-          aria-label={`View all ${allImages.length} photos of ${project.name}`}
+          aria-label={`View all ${allImages.length} ${allImages.length === 1 ? "photo" : "photos"} of ${project.name}`}
         >
           <img
             src={heroImage}
@@ -125,7 +125,7 @@ function ProjectDetail() {
           </p>
           <h1 className="mt-3 max-w-3xl font-display text-4xl text-onyx-foreground sm:text-6xl">{project.name}</h1>
           <span className="mt-4 inline-flex w-fit items-center gap-1.5 rounded-full bg-onyx/60 px-3 py-1.5 text-xs text-onyx-foreground backdrop-blur">
-            <Images className="size-3.5" aria-hidden /> Tap to view {allImages.length} photos
+            <Images className="size-3.5" aria-hidden /> Tap to view {allImages.length} {allImages.length === 1 ? "photo" : "photos"}
           </span>
         </div>
       </section>

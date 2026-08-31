@@ -196,30 +196,46 @@ function ApplicationWizard() {
         }
       }
 
-      // Reuse the investor's most recent untouched draft instead of creating a
-      // new empty application every time the wizard is opened.
+      // Reuse the investor's most recent unsubmitted draft instead of creating a
+      // new application row every time the wizard is opened. Only drafts that were
+      // never submitted (no reference) are reusable.
       const { data: reusable } = await supabase
         .from("applications")
-        .select("id")
+        .select("*")
         .eq("investor_id", user!.id)
         .eq("status", "draft")
         .is("reference", null)
-        .is("project_id", null)
-        .is("property_id", null)
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
-      if (reusable && !search.project && !search.property) {
+      if (reusable) {
+        const seeded: DraftState = {
+          project_id: search.project ?? reusable.project_id,
+          property_id: search.project
+            ? (search.property ?? null)
+            : (search.property ?? reusable.property_id),
+          personal: {
+            full_name: profile?.full_name ?? "",
+            ...((reusable.personal ?? {}) as PersonalDetails),
+          },
+          contact: {
+            email: profile?.email ?? user?.email ?? "",
+            phone: profile?.phone ?? "",
+            ...((reusable.contact ?? {}) as ContactDetails),
+          },
+          investment: (reusable.investment ?? { units: 1 }) as InvestmentDetails,
+          payment_info: (reusable.payment_info ?? {}) as PaymentInfo,
+          declaration_accepted: !!reusable.declaration_accepted,
+          current_step: reusable.current_step ?? 1,
+        };
         setApplicationId(reusable.id);
-        setDraft({
-          ...EMPTY_DRAFT,
-          personal: { full_name: profile?.full_name ?? "" },
-          contact: { email: profile?.email ?? user?.email ?? "", phone: profile?.phone ?? "" },
-        });
+        setDraft(seeded);
+        setStep(seeded.current_step || 1);
         setInitialised(true);
         void navigate({ to: "/application", search: { id: reusable.id }, replace: true });
         return;
       }
+
 
       // create a fresh draft
 

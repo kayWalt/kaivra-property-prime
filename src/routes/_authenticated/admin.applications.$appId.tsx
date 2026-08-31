@@ -103,7 +103,11 @@ function ManageApplication() {
       .eq("id", appId);
     setBusy(false);
     if (error) {
-      toast.error("The status could not be updated. Please try again.");
+      toast.error(
+        error.message.includes("administrators")
+          ? "Only KAIVRA administrators can approve or reject an application."
+          : "The status could not be updated. Please try again.",
+      );
       return;
     }
     toast.success(`Status updated to ${STATUS_LABEL[next]}.`);
@@ -248,7 +252,9 @@ function ManageApplication() {
       <section className="mt-6 rounded-lg border border-border bg-card p-5 print:hidden">
         <h2 className="font-display text-2xl">Application status</h2>
         <div className="mt-4 flex flex-wrap gap-2">
-          {APPLICATION_STATUSES.filter((s) => s !== "draft").map((s) => (
+          {APPLICATION_STATUSES.filter(
+            (s) => s !== "draft" && (admin || (s !== "approved" && s !== "rejected")),
+          ).map((s) => (
             <AsyncButton
               key={s}
               size="sm"

@@ -30,6 +30,7 @@ import { Route as AuthenticatedApplicationsIndexRouteImport } from './routes/_au
 import { Route as AuthenticatedApplicationsAppIdRouteImport } from './routes/_authenticated/applications.$appId'
 import { Route as AuthenticatedInspectionsIndexRouteImport } from './routes/_authenticated/inspections.index'
 import { Route as AuthenticatedInspectionsNewRouteImport } from './routes/_authenticated/inspections.new'
+import { Route as AuthenticatedAdminApplicationsIndexRouteImport } from './routes/_authenticated/admin.applications.index'
 import { Route as AuthenticatedAdminApplicationsAppIdRouteImport } from './routes/_authenticated/admin.applications.$appId'
 import { Route as ApiPublicAvatarSplatRouteImport } from './routes/api/public/avatar.$'
 import { Route as ApiPublicProjectImageSplatRouteImport } from './routes/api/public/project-image.$'
@@ -150,6 +151,12 @@ const AuthenticatedInspectionsNewRoute =
     path: '/inspections/new',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminApplicationsIndexRoute =
+  AuthenticatedAdminApplicationsIndexRouteImport.update({
+    id: '/admin/applications/',
+    path: '/admin/applications/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminApplicationsAppIdRoute =
   AuthenticatedAdminApplicationsAppIdRouteImport.update({
     id: '/admin/applications/$appId',
@@ -192,6 +199,7 @@ export interface FileRoutesByFullPath {
   '/admin/applications/$appId': typeof AuthenticatedAdminApplicationsAppIdRoute
   '/api/public/avatar/$': typeof ApiPublicAvatarSplatRoute
   '/api/public/project-image/$': typeof ApiPublicProjectImageSplatRoute
+  '/admin/applications/': typeof AuthenticatedAdminApplicationsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -217,6 +225,7 @@ export interface FileRoutesByTo {
   '/admin/applications/$appId': typeof AuthenticatedAdminApplicationsAppIdRoute
   '/api/public/avatar/$': typeof ApiPublicAvatarSplatRoute
   '/api/public/project-image/$': typeof ApiPublicProjectImageSplatRoute
+  '/admin/applications': typeof AuthenticatedAdminApplicationsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -244,6 +253,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/applications/$appId': typeof AuthenticatedAdminApplicationsAppIdRoute
   '/api/public/avatar/$': typeof ApiPublicAvatarSplatRoute
   '/api/public/project-image/$': typeof ApiPublicProjectImageSplatRoute
+  '/_authenticated/admin/applications/': typeof AuthenticatedAdminApplicationsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -271,6 +281,7 @@ export interface FileRouteTypes {
     | '/admin/applications/$appId'
     | '/api/public/avatar/$'
     | '/api/public/project-image/$'
+    | '/admin/applications/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -296,6 +307,7 @@ export interface FileRouteTypes {
     | '/admin/applications/$appId'
     | '/api/public/avatar/$'
     | '/api/public/project-image/$'
+    | '/admin/applications'
   id:
     | '__root__'
     | '/'
@@ -322,6 +334,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/applications/$appId'
     | '/api/public/avatar/$'
     | '/api/public/project-image/$'
+    | '/_authenticated/admin/applications/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -483,6 +496,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedInspectionsNewRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/applications/': {
+      id: '/_authenticated/admin/applications/'
+      path: '/admin/applications'
+      fullPath: '/admin/applications/'
+      preLoaderRoute: typeof AuthenticatedAdminApplicationsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/applications/$appId': {
       id: '/_authenticated/admin/applications/$appId'
       path: '/admin/applications/$appId'
@@ -525,6 +545,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedApplicationsIndexRoute: typeof AuthenticatedApplicationsIndexRoute
   AuthenticatedInspectionsIndexRoute: typeof AuthenticatedInspectionsIndexRoute
   AuthenticatedAdminApplicationsAppIdRoute: typeof AuthenticatedAdminApplicationsAppIdRoute
+  AuthenticatedAdminApplicationsIndexRoute: typeof AuthenticatedAdminApplicationsIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -546,6 +567,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedInspectionsIndexRoute: AuthenticatedInspectionsIndexRoute,
   AuthenticatedAdminApplicationsAppIdRoute:
     AuthenticatedAdminApplicationsAppIdRoute,
+  AuthenticatedAdminApplicationsIndexRoute:
+    AuthenticatedAdminApplicationsIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
