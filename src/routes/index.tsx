@@ -13,6 +13,16 @@ import adviserAsset from "@/assets/kaivra-22-00-16.jpg.asset.json";
 import residenceAsset from "@/assets/kaivra-22-00-51.jpg.asset.json";
 import partnerHutuAsset from "@/assets/partner-hutu-prestige.jpg.asset.json";
 import partnerAbibeeAsset from "@/assets/partner-abibee.jpg.asset.json";
+import teamChairman from "@/assets/team-chairman.jpg.asset.json";
+import teamBenedicta from "@/assets/team-benedicta-elerewe.jpg.asset.json";
+import teamCharles from "@/assets/team-charles-agwam.jpg.asset.json";
+import teamRichard from "@/assets/team-richard-efem.jpg.asset.json";
+import teamJulient from "@/assets/team-julient-aliyu.jpg.asset.json";
+import teamWassim from "@/assets/team-wassim-kiwan.jpg.asset.json";
+import teamHassan from "@/assets/team-hassan-jaafar.jpg.asset.json";
+import teamJoseph from "@/assets/team-joseph-osoria.jpg.asset.json";
+import teamNkiruka from "@/assets/team-nkiruka-onyeugo.jpg.asset.json";
+import teamYarison from "@/assets/team-yarison-hope.jpg.asset.json";
 
 
 export const Route = createFileRoute("/")({
@@ -312,6 +322,105 @@ function Landing() {
               </Link>
             </Button>
           </div>
+          </LegacyReveal>
+        </div>
+      </section>
+
+      <section className="border-t border-border bg-card">
+        <div className="mx-auto grid w-full max-w-7xl items-start gap-10 px-5 py-20 sm:px-8 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+          <LegacyReveal>
+            <div className="kv-legacy mx-auto max-w-sm overflow-hidden rounded-lg border border-border" style={{ animationDelay: "0ms" }}>
+              <img
+                src={teamChairman.url}
+                alt="Chief Andy Elerewe, Chairman of AIBEN Group"
+                loading="lazy"
+                className="aspect-[7/10] size-full object-cover object-top"
+              />
+              <div className="surface-onyx p-5 text-center">
+                <p className="font-display text-xl text-gold">Chief Andy Elerewe</p>
+                <p className="eyebrow mt-1 text-onyx-foreground/60">Chairman, AIBEN Group</p>
+              </div>
+            </div>
+          </LegacyReveal>
+          <LegacyReveal>
+            <p className="eyebrow text-primary kv-legacy" style={{ animationDelay: "100ms" }}>Chairman's message</p>
+            <h2 className="mt-3 font-display text-4xl leading-tight sm:text-5xl kv-legacy" style={{ animationDelay: "200ms" }}>
+              Welcome to the future. Welcome to <span className="text-primary">Hutu Prestige.</span>
+            </h2>
+            <div className="mt-6 space-y-4 text-sm leading-relaxed text-muted-foreground sm:text-base">
+              <p className="kv-legacy" style={{ animationDelay: "300ms" }}>
+                It is with immense pride and vision that I present to you Hutu Prestige — featured within one of
+                Africa's most innovative mega city projects, HUTU Abuja City.
+              </p>
+              <p className="kv-legacy" style={{ animationDelay: "400ms" }}>
+                At AIBEN Properties Ltd, we have spent over a decade building more than houses; we construct
+                communities, foster connections, and curate lasting memories. Hutu Prestige is the culmination of
+                this philosophy: a next-generation African urban model that is self-sustaining, secure, future-ready,
+                and culturally expressive.
+              </p>
+              <p className="kv-legacy" style={{ animationDelay: "500ms" }}>
+                This is not just a residential estate — it is Africa's first Polo &amp; Golf Resort Estate, connected
+                by integrated power and sustainable living. A 1,300-hectare land space where natural beauty merges
+                with architectural excellence, lakefront living, and world-class security that ensures absolute peace
+                of mind.
+              </p>
+              <p className="kv-legacy" style={{ animationDelay: "600ms" }}>
+                Hutu Prestige embodies our commitment to building a stronger Nigeria and Africa. Through innovation,
+                sustainable practices and a dedication to excellence, we are creating a city where every resident can
+                truly say: <span className="font-semibold text-primary">this is home</span>.
+              </p>
+            </div>
+          </LegacyReveal>
+        </div>
+      </section>
+
+      <section className="border-t border-border">
+        <div className="mx-auto w-full max-w-7xl px-5 py-20 sm:px-8">
+          <LegacyReveal>
+            <div className="text-center">
+              <p className="eyebrow text-primary kv-legacy" style={{ animationDelay: "0ms" }}>Leadership</p>
+              <h2 className="mt-3 font-display text-4xl sm:text-5xl kv-legacy" style={{ animationDelay: "120ms" }}>
+                The Hutu team
+              </h2>
+              <p className="mx-auto mt-4 max-w-xl text-sm text-muted-foreground kv-legacy" style={{ animationDelay: "240ms" }}>
+                The people behind Hutu Prestige and AIBEN Group.
+              </p>
+            </div>
+            <div className="mt-12 grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-5">
+              {[
+                { asset: teamBenedicta, name: "Engr. Benedicta Izehi Elerewe", role: "Executive Director, AIBEN Group", cred: "FCIB" },
+                { asset: teamCharles, name: "QS Charles Agwam", role: "General Manager, AIBEN Group", cred: "MNIQS, RQS" },
+                { asset: teamRichard, name: "Engr. Richard Ibi Efem", role: "Project Manager, Hutu Prestige", cred: "MNSE, COREN" },
+                { asset: teamJulient, name: "Mrs Julient Aliyu", role: "Personnel & Human Resource" },
+                { asset: teamWassim, name: "Engr. Wassim Kiwan", role: "Director of Infrastructure, Hutu Prestige" },
+                { asset: teamHassan, name: "Arc. Hassan Jaafar", role: "Deputy Infrastructure Director, Hutu Prestige" },
+                { asset: teamJoseph, name: "Joseph Izonofe Osoria", role: "Head, Corporate & Business Development" },
+                { asset: teamNkiruka, name: "Nkiruka Peace Onyeugo", role: "Head of Marketing" },
+                { asset: teamYarison, name: "Yarison Hope", role: "Head, Media & Strategy", cred: "ARPA" },
+              ].map((member, idx) => (
+                <article
+                  key={member.name}
+                  className="kv-legacy group overflow-hidden rounded-lg border border-border bg-card text-center transition-transform duration-300 hover:-translate-y-1"
+                  style={{ animationDelay: `${300 + idx * 90}ms` }}
+                >
+                  <div className="aspect-[9/10] overflow-hidden">
+                    <img
+                      src={member.asset.url}
+                      alt={`${member.name}, ${member.role}`}
+                      loading="lazy"
+                      className="size-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
+                    />
+                  </div>
+                  <div className="p-3">
+                    <h3 className="text-sm font-semibold leading-tight">{member.name}</h3>
+                    <p className="mt-1 text-xs leading-snug text-muted-foreground">
+                      {member.role}
+                      {member.cred ? <span className="block text-gold">{member.cred}</span> : null}
+                    </p>
+                  </div>
+                </article>
+              ))}
+            </div>
           </LegacyReveal>
         </div>
       </section>
