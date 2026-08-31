@@ -156,6 +156,13 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
         </div>
         <div className="flex flex-wrap items-center gap-2 print:hidden">
           <StatusBadge status={record.status as ApplicationStatus} />
+          {record.status === "draft" && !manage ? (
+            <Button asChild>
+              <Link to="/application" search={{ id: appId }}>
+                Continue application
+              </Link>
+            </Button>
+          ) : null}
           <AsyncButton
             variant="outline"
             onClick={() => handleDownload()}
