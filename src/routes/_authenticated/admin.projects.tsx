@@ -1,8 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import { Plus, Save, X } from "lucide-react";
+import { Plus, Save, Trash2, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   GalleryUploadField,
@@ -16,8 +16,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useRoles, useSession, primaryRole } from "@/hooks/useAuth";
 import { formatNaira } from "@/lib/kaivra";
+
 
 
 
@@ -41,6 +53,7 @@ function ProjectManagement() {
   const role = primaryRole(roles);
   const canManage = role === "admin" || role === "super_admin";
 
+  const queryClient = useQueryClient();
   const [creating, setCreating] = useState(false);
   const [openProject, setOpenProject] = useState<string | null>(null);
   const [editProject, setEditProject] = useState<string | null>(null);
@@ -51,6 +64,7 @@ function ProjectManagement() {
   const projects = useQuery({
     queryKey: ["admin-projects"],
     enabled: canManage,
+    staleTime: 30_000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("projects")
@@ -60,6 +74,15 @@ function ProjectManagement() {
       return data ?? [];
     },
   });
+
+  // Targeted cache refresh: admin list + every investor-facing project view.
+  const refresh = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: ["admin-projects"] });
+    void queryClient.invalidateQueries({ queryKey: ["public-projects"] });
+    void queryClient.invalidateQueries({ queryKey: ["project"] });
+  }, [queryClient]);
+
+
 
   if (isLoading) {
     return (
@@ -83,49 +106,67 @@ function ProjectManagement() {
   }
 
   async function createProject() {
+    if (creating) return; // guards against duplicate submissions
     if (!form.name.trim()) {
       toast.error("Give the project a name.");
       return;
     }
-    setCreating(true);
-    const { error } = await supabase.from("projects").insert({
-      name: form.name.trim(),
-      location: form.location.trim(),
-      description: form.description.trim(),
-      hero_image: form.hero_image.trim() || (gallery[0]?.url ?? null),
-      gallery_images: gallery,
-    });
-    setCreating(false);
-    if (error) {
-      toast.error("The project could not be created. Please try again.");
+    if (!form.location.trim()) {
+      toast.error("Add the project location so investors know where it is.");
       return;
     }
-    toast.success("Project created.");
-    setForm({ name: "", location: "", description: "", hero_image: "" });
-    setGallery([]);
-    void projects.refetch();
+    setCreating(true);
+    try {
+      const { data, error } = await supabase
+        .from("projects")
+        .insert({
+          name: form.name.trim(),
+          location: form.location.trim(),
+          description: form.description.trim(),
+          hero_image: form.hero_image.trim() || (gallery[0]?.url ?? null),
+          gallery_images: gallery,
+        })
+        .select("*, properties(*)")
+        .single();
+      if (error) throw error;
+
+      // Show the new project instantly, then reconcile with the server.
+      queryClient.setQueryData(["admin-projects"], (current: unknown) =>
+        Array.isArray(current) ? [...current, data] : current,
+      );
+      toast.success("Project created.");
+      setForm({ name: "", location: "", description: "", hero_image: "" });
+      setGallery([]);
+      await refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "The project could not be created. Please try again.");
+    } finally {
+      setCreating(false);
+    }
   }
 
   async function toggleActive(id: string, isActive: boolean) {
     const { error } = await supabase.from("projects").update({ is_active: !isActive }).eq("id", id);
     if (error) {
-      toast.error("This project could not be updated.");
+      toast.error(error.message || "This project could not be updated.");
       return;
     }
-    void projects.refetch();
+    toast.success(isActive ? "Project deactivated — hidden from investors." : "Project activated and visible to investors.");
+    await refresh();
   }
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6">
+    <div className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
+        <div className="min-w-0">
           <p className="eyebrow text-primary">Administration</p>
-          <h1 className="mt-1 font-display text-4xl">Projects & properties</h1>
+          <h1 className="mt-1 font-display text-3xl sm:text-4xl">Projects &amp; properties</h1>
         </div>
         <Button asChild variant="outline">
           <Link to="/admin">Applications</Link>
         </Button>
       </div>
+
 
       <section className="mt-8 rounded-lg border border-border bg-card p-5">
         <h2 className="font-display text-2xl">Create project</h2>
@@ -174,20 +215,60 @@ function ProjectManagement() {
 
       <div className="mt-10 space-y-4">
         {projects.isLoading ? [0, 1].map((i) => <Skeleton key={i} className="h-40 rounded-lg" />) : null}
+        {projects.isError ? (
+          <p className="text-sm text-destructive">
+            Projects could not be loaded.{" "}
+            <button type="button" className="underline" onClick={() => void projects.refetch()}>
+              Try again
+            </button>
+          </p>
+        ) : null}
+        {!projects.isLoading && projects.data?.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No projects yet. Create your first project above.</p>
+        ) : null}
         {projects.data?.map((project) => (
-          <section key={project.id} className="rounded-lg border border-border bg-card p-5">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <h2 className="font-display text-2xl leading-tight">{project.name}</h2>
+          <section key={project.id} className="overflow-hidden rounded-lg border border-border bg-card p-4 sm:p-5">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0">
+                <h2 className="break-words font-display text-xl leading-tight sm:text-2xl">{project.name}</h2>
                 <p className="text-sm text-muted-foreground">{project.location}</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                <span className="mt-1 inline-block text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                   {project.is_active ? "Active" : "Inactive"}
                 </span>
-                <AsyncButton size="sm" variant="outline" pendingLabel="Updating…" onClick={() => toggleActive(project.id, project.is_active)}>
-                  {project.is_active ? "Deactivate" : "Activate"}
-                </AsyncButton>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                {project.is_active ? (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button size="sm" variant="outline">
+                        Deactivate
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Deactivate {project.name}?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          The project will be hidden from the investor directory. You can activate it again at any time.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => void toggleActive(project.id, true)}>
+                          Deactivate
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                ) : (
+                  <AsyncButton
+                    size="sm"
+                    variant="outline"
+                    pendingLabel="Updating…"
+                    onClick={() => toggleActive(project.id, false)}
+                  >
+                    Activate
+                  </AsyncButton>
+                )}
                 <Button
                   size="sm"
                   variant="ghost"
@@ -202,20 +283,22 @@ function ProjectManagement() {
                 >
                   {openProject === project.id ? "Hide properties" : "Properties"}
                 </Button>
+                <Button asChild size="sm" variant="ghost">
+                  <Link to="/projects/$projectId" params={{ projectId: project.id }}>
+                    Preview
+                  </Link>
+                </Button>
               </div>
             </div>
 
             {editProject === project.id ? (
-              <ProjectEditor
-                project={project}
-                onClose={() => setEditProject(null)}
-                onSaved={() => void projects.refetch()}
-              />
+              <ProjectEditor project={project} onClose={() => setEditProject(null)} onSaved={refresh} />
             ) : null}
 
             {openProject === project.id ? (
-              <PropertyManager projectId={project.id} onChanged={() => void projects.refetch()} properties={project.properties ?? []} />
+              <PropertyManager projectId={project.id} onChanged={refresh} properties={project.properties ?? []} />
             ) : null}
+
           </section>
         ))}
 
@@ -250,12 +333,27 @@ function PropertyManager({
   });
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState({ unit_price: 0, units_available: 0, size_label: "" });
+  const [editForm, setEditForm] = useState({
+    name: "",
+    property_type: "",
+    unit_price: 0,
+    units_available: 0,
+    size_label: "",
+  });
   const [editSaving, setEditSaving] = useState(false);
 
-  function startEdit(property: { id: string; unit_price: number; units_available: number | null; size_label: string | null }) {
+  function startEdit(property: {
+    id: string;
+    name: string;
+    property_type: string | null;
+    unit_price: number;
+    units_available: number | null;
+    size_label: string | null;
+  }) {
     setEditingId(property.id);
     setEditForm({
+      name: property.name,
+      property_type: property.property_type ?? "",
       unit_price: property.unit_price,
       units_available: property.units_available ?? 0,
       size_label: property.size_label ?? "",
@@ -263,6 +361,10 @@ function PropertyManager({
   }
 
   async function saveEdit(id: string) {
+    if (!editForm.name.trim()) {
+      toast.error("Enter a property name.");
+      return;
+    }
     if (editForm.unit_price <= 0) {
       toast.error("Enter a valid unit price (full naira amount, e.g. 22500000 for ₦22.5m).");
       return;
@@ -271,6 +373,8 @@ function PropertyManager({
     const { error } = await supabase
       .from("properties")
       .update({
+        name: editForm.name.trim(),
+        property_type: editForm.property_type.trim(),
         unit_price: editForm.unit_price,
         units_available: editForm.units_available,
         size_label: editForm.size_label.trim(),
@@ -278,13 +382,38 @@ function PropertyManager({
       .eq("id", id);
     setEditSaving(false);
     if (error) {
-      toast.error("The property could not be updated. Please try again.");
+      toast.error(error.message || "The property could not be updated. Please try again.");
       return;
     }
     toast.success("Property updated.");
     setEditingId(null);
     onChanged();
   }
+
+  async function togglePropertyActive(id: string, isActive: boolean) {
+    const { error } = await supabase.from("properties").update({ is_active: !isActive }).eq("id", id);
+    if (error) {
+      toast.error(error.message || "The property could not be updated.");
+      return;
+    }
+    toast.success(isActive ? "Property hidden from investors." : "Property is now visible to investors.");
+    onChanged();
+  }
+
+  async function removeProperty(id: string) {
+    const { error } = await supabase.from("properties").delete().eq("id", id);
+    if (error) {
+      toast.error(
+        error.message.includes("foreign key")
+          ? "This property is referenced by an application, so it cannot be deleted. Deactivate it instead."
+          : error.message || "The property could not be deleted.",
+      );
+      return;
+    }
+    toast.success("Property deleted.");
+    onChanged();
+  }
+
 
   async function addProperty() {
     if (!form.name.trim() || form.unit_price <= 0) {
@@ -317,21 +446,72 @@ function PropertyManager({
           <li className="text-sm text-muted-foreground">No properties yet for this project.</li>
         ) : null}
         {properties.map((property) => (
-          <li key={property.id} className="rounded-md border border-border px-4 py-2 text-sm">
-            <div className="flex items-center justify-between gap-2">
-              <span>
-                <strong>{property.name}</strong>
-                <span className="text-muted-foreground"> · {property.size_label ?? "—"}</span>
-              </span>
-              <span className="flex items-center gap-2">
-                {formatNaira(property.unit_price)} · {property.units_available ?? 0} units
-                <Button size="sm" variant="ghost" onClick={() => (editingId === property.id ? setEditingId(null) : startEdit(property))}>
+          <li key={property.id} className="rounded-md border border-border px-3 py-3 text-sm sm:px-4">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div className="min-w-0">
+                <strong className="break-words">{property.name}</strong>
+                <span className="text-muted-foreground"> · {property.size_label || "—"}</span>
+                <p className="text-muted-foreground">
+                  {formatNaira(property.unit_price)} · {property.units_available ?? 0} units
+                  {property.is_active ? "" : " · hidden"}
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-1">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => (editingId === property.id ? setEditingId(null) : startEdit(property))}
+                >
                   {editingId === property.id ? "Close" : "Edit"}
                 </Button>
-              </span>
+                <AsyncButton
+                  size="sm"
+                  variant="ghost"
+                  pendingLabel="Updating…"
+                  onClick={() => togglePropertyActive(property.id, property.is_active)}
+                >
+                  {property.is_active ? "Deactivate" : "Activate"}
+                </AsyncButton>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button size="sm" variant="ghost" aria-label={`Delete ${property.name}`}>
+                      <Trash2 className="size-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete {property.name}?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This permanently removes the property. If investors have already applied for it, deactivate it
+                        instead.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => void removeProperty(property.id)}>Delete</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             </div>
             {editingId === property.id ? (
-              <div className="mt-3 grid gap-3 border-t border-border pt-3 sm:grid-cols-3">
+              <div className="mt-3 grid gap-3 border-t border-border pt-3 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor={`e-name-${property.id}`}>Property name</Label>
+                  <Input
+                    id={`e-name-${property.id}`}
+                    value={editForm.name}
+                    onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor={`e-type-${property.id}`}>Property type</Label>
+                  <Input
+                    id={`e-type-${property.id}`}
+                    value={editForm.property_type}
+                    onChange={(e) => setEditForm({ ...editForm, property_type: e.target.value })}
+                  />
+                </div>
                 <div className="space-y-1.5">
                   <Label htmlFor={`e-size-${property.id}`}>Size</Label>
                   <Input
@@ -345,6 +525,7 @@ function PropertyManager({
                   <Input
                     id={`e-price-${property.id}`}
                     type="number"
+                    inputMode="numeric"
                     min={0}
                     value={editForm.unit_price || ""}
                     onChange={(e) => setEditForm({ ...editForm, unit_price: Number(e.target.value) || 0 })}
@@ -355,17 +536,19 @@ function PropertyManager({
                   <Input
                     id={`e-units-${property.id}`}
                     type="number"
+                    inputMode="numeric"
                     min={0}
                     value={editForm.units_available || ""}
                     onChange={(e) => setEditForm({ ...editForm, units_available: Number(e.target.value) || 0 })}
                   />
                 </div>
-                <div className="sm:col-span-3">
+                <div className="sm:col-span-2 lg:col-span-3">
                   <AsyncButton size="sm" onClick={() => saveEdit(property.id)} disabled={editSaving} pendingLabel="Saving…">
                     <Save className="mr-2 size-4" />
                     Save changes
                   </AsyncButton>
                 </div>
+
               </div>
             ) : null}
           </li>

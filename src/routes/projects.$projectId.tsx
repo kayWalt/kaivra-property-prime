@@ -1,12 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, MapPin } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { ArrowLeft, ChevronLeft, ChevronRight, MapPin, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { peekSession } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Brand } from "@/components/kaivra/Brand";
-import { parseGallery } from "@/components/kaivra/ProjectImageFields";
+import { parseGallery, type GalleryImage } from "@/components/kaivra/ProjectImageFields";
 import { formatNaira } from "@/lib/kaivra";
 
 export const Route = createFileRoute("/projects/$projectId")({
@@ -137,24 +138,11 @@ function ProjectDetail() {
 
         {gallery.length > 0 ? (
           <>
-            <h2 className="mt-16 font-display text-4xl">Gallery</h2>
-            <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {gallery.map((image, index) => (
-                <figure key={`${image.url}-${index}`} className="overflow-hidden rounded-lg border border-border bg-card">
-                  <img
-                    src={image.url}
-                    alt={image.caption || `${project.name} image ${index + 1}`}
-                    loading="lazy"
-                    className="aspect-[4/3] w-full object-cover"
-                  />
-                  {image.caption ? (
-                    <figcaption className="p-4 text-sm text-muted-foreground">{image.caption}</figcaption>
-                  ) : null}
-                </figure>
-              ))}
-            </div>
+            <h2 className="mt-16 font-display text-3xl sm:text-4xl">Gallery</h2>
+            <Lightbox images={gallery} projectName={project.name} />
           </>
         ) : null}
+
 
         <h2 className="mt-16 font-display text-4xl">Property options</h2>
         {properties.length === 0 ? (
@@ -200,5 +188,105 @@ function ProjectDetail() {
         </div>
       </section>
     </div>
+  );
+}
+
+/**
+ * Responsive gallery with a full-screen viewer. Supports keyboard arrows on
+ * desktop and horizontal swipe on touch devices.
+ */
+function Lightbox({ images, projectName }: { images: GalleryImage[]; projectName: string }) {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const touchStart = useRef<number | null>(null);
+
+  const step = useCallback(
+    (delta: number) =>
+      setOpenIndex((current) => (current === null ? current : (current + delta + images.length) % images.length)),
+    [images.length],
+  );
+
+  useEffect(() => {
+    if (openIndex === null) return;
+    function onKey(event: KeyboardEvent) {
+      if (event.key === "Escape") setOpenIndex(null);
+      if (event.key === "ArrowRight") step(1);
+      if (event.key === "ArrowLeft") step(-1);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [openIndex, step]);
+
+  const active = openIndex === null ? null : images[openIndex];
+
+  return (
+    <>
+      <div className="mt-8 grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+        {images.map((image, index) => (
+          <figure key={`${image.url}-${index}`} className="overflow-hidden rounded-lg border border-border bg-card">
+            <button
+              type="button"
+              className="block w-full"
+              onClick={() => setOpenIndex(index)}
+              aria-label={`Open image ${index + 1} full screen`}
+            >
+              <img
+                src={image.url}
+                alt={image.caption || `${projectName} image ${index + 1}`}
+                loading="lazy"
+                decoding="async"
+                className="aspect-[4/3] w-full object-cover transition-transform duration-300 hover:scale-[1.03]"
+              />
+            </button>
+            {image.caption ? (
+              <figcaption className="p-4 text-sm text-muted-foreground">{image.caption}</figcaption>
+            ) : null}
+          </figure>
+        ))}
+      </div>
+
+      {active ? (
+        <div
+          className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-onyx/95 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${projectName} gallery`}
+          onClick={() => setOpenIndex(null)}
+          onTouchStart={(e) => {
+            touchStart.current = e.touches[0]?.clientX ?? null;
+          }}
+          onTouchEnd={(e) => {
+            const start = touchStart.current;
+            const end = e.changedTouches[0]?.clientX ?? null;
+            if (start === null || end === null) return;
+            if (Math.abs(end - start) > 45) step(end < start ? 1 : -1);
+            touchStart.current = null;
+          }}
+        >
+          <img
+            src={active.url}
+            alt={active.caption || projectName}
+            className="max-h-[78vh] w-auto max-w-full rounded-lg object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+          {active.caption ? (
+            <p className="mt-4 max-w-2xl text-center text-sm text-onyx-foreground/80">{active.caption}</p>
+          ) : null}
+          <div className="mt-4 flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
+            <Button variant="outline" size="icon" aria-label="Previous image" onClick={() => step(-1)}>
+              <ChevronLeft className="size-5" />
+            </Button>
+            <span className="text-xs text-onyx-foreground/70">
+              {(openIndex ?? 0) + 1} / {images.length}
+            </span>
+            <Button variant="outline" size="icon" aria-label="Next image" onClick={() => step(1)}>
+              <ChevronRight className="size-5" />
+            </Button>
+            <Button variant="ghost" size="icon" aria-label="Close gallery" onClick={() => setOpenIndex(null)}>
+              <X className="size-5 text-onyx-foreground" />
+            </Button>
+          </div>
+        </div>
+      ) : null}
+    </>
   );
 }
