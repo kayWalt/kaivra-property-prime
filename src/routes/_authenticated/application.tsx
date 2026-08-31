@@ -244,7 +244,14 @@ function ApplicationWizard() {
           setInitialised(true);
           return;
         }
+        // An explicit application id that cannot be loaded means it was deleted
+        // or the caller has no access — never silently start a personal draft
+        // instead (that would hijack an assisted application).
+        bootRef.current = false;
+        toast.error("That application could not be opened. It may have been removed.");
+        return;
       }
+
 
       // Reuse the investor's most recent unsubmitted draft instead of creating a
       // new application row every time the wizard is opened. Only drafts that were
