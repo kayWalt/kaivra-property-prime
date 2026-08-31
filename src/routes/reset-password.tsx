@@ -76,7 +76,7 @@ function ResetPasswordPage() {
       if (error) throw error;
       setDone(true);
       toast.success("Your password has been updated.");
-      setTimeout(() => navigate({ to: "/dashboard", replace: true }), 900);
+      void navigate({ to: "/dashboard", replace: true });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not update your password. Please try again.");
     } finally {
