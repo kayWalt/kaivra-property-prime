@@ -262,3 +262,80 @@
     background: white;
   }
 }
+
+/* ---------------------------------------------------------------------------
+ * Mobile / native (Median.co) ergonomics.
+ * Layout and colours are unchanged — this only tunes touch behaviour, safe
+ * areas and keyboard handling for the Android / iOS wrapped app.
+ * ------------------------------------------------------------------------ */
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  overscroll-behavior-y: none;
+}
+
+/* Native shell: respect notches and home indicators. */
+html.median-app body {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+html.median-app .sticky,
+html.median-app .fixed {
+  scroll-margin-bottom: env(safe-area-inset-bottom);
+}
+
+/* Sticky wizard/action footers must clear the home indicator + keyboard. */
+.kv-safe-bottom {
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+}
+
+@media (pointer: coarse) {
+  /* Instant tap response: no 300ms delay, no grey flash. */
+  button,
+  a,
+  [role="button"],
+  label,
+  summary {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Comfortable touch targets. */
+  button,
+  [role="button"],
+  a.inline-flex {
+    min-height: 44px;
+  }
+
+  button[data-size="icon"],
+  .size-icon {
+    min-width: 44px;
+  }
+
+  /* 16px inputs stop iOS from zooming the viewport on focus. */
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+
+  /* Focused fields scroll clear of the on-screen keyboard. */
+  input:focus,
+  textarea:focus,
+  select:focus {
+    scroll-margin-block: 6rem;
+  }
+}
+
+/* Touch devices get no hover-only transforms (they stick after a tap). */
+@media (hover: none) {
+  .hover\:-translate-y-1:hover,
+  .hover\:-translate-y-0\.5:hover,
+  .hover\:scale-105:hover {
+    transform: none;
+  }
+}
