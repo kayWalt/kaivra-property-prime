@@ -139,7 +139,7 @@ function ProfilePage() {
           <input
             ref={fileRef}
             type="file"
-            accept="image/jpeg,image/png,image/webp"
+            accept="image/*"
             className="sr-only"
             aria-label="Upload profile picture"
             onChange={(e) => void handleFile(e.target.files?.[0])}

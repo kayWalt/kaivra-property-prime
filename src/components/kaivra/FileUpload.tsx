@@ -85,7 +85,7 @@ export async function openDocument(documentId: string) {
 export function UploadCard({
   title,
   hint,
-  accept = "image/jpeg,image/png,image/webp",
+  accept = "image/*",
   capture,
   applicationId,
   kind,

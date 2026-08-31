@@ -1467,7 +1467,7 @@ function StepDocuments({
       <UploadCard
         title="Proof of payment"
         hint="Photos, scans or PDF receipts. You can upload more than one."
-        accept="image/jpeg,image/png,image/webp,application/pdf"
+        accept="image/*,application/pdf"
         capture
         multiple
         applicationId={applicationId}
@@ -1480,7 +1480,7 @@ function StepDocuments({
       <UploadCard
         title="Additional documents"
         hint="Optional: National ID, international passport, driver's licence, voter's card, agreements."
-        accept="image/jpeg,image/png,image/webp,application/pdf"
+        accept="image/*,application/pdf"
         multiple
         applicationId={applicationId}
         kind="additional"

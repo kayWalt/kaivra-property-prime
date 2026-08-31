@@ -77,7 +77,7 @@ export function ImageUploadField({
         <input
           ref={inputRef}
           type="file"
-          accept="image/jpeg,image/png,image/webp"
+          accept="image/*"
           className="sr-only"
           aria-label="Upload project image"
           onChange={(e) => void handleFile(e.target.files?.[0])}
@@ -137,7 +137,7 @@ export function GalleryUploadField({
           ref={inputRef}
           type="file"
           multiple
-          accept="image/jpeg,image/png,image/webp"
+          accept="image/*"
           className="sr-only"
           aria-label="Upload gallery images"
           onChange={(e) => void handleFiles(e.target.files)}
