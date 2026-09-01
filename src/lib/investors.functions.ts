@@ -156,7 +156,15 @@ export const registerInvestor = createServerFn({ method: "POST" })
  */
 export const createAssistedApplication = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data) => z.object({ investorId: z.string().uuid() }).parse(data))
+  .inputValidator((data) =>
+    z
+      .object({
+        investorId: z.string().uuid(),
+        /** "continue" (default) reuses an open draft; "new" forces a fresh investment. */
+        mode: z.enum(["continue", "new"]).optional(),
+      })
+      .parse(data),
+  )
   .handler(async ({ data, context }) => {
     await assertRole(context.supabase as never, context.userId, true);
 
@@ -167,6 +175,19 @@ export const createAssistedApplication = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!profile) throw new Error("That investor could not be found.");
     const investor = profile as InvestorSummary;
+
+    // Duplicate protection: never open a second draft for the same investor.
+    if (data.mode !== "new") {
+      const { data: draft } = await context.supabase
+        .from("applications")
+        .select("id")
+        .eq("investor_id", data.investorId)
+        .in("status", ["draft", "requires_correction"])
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (draft?.id) return { applicationId: draft.id as string, resumed: true };
+    }
 
     const { data: actor } = await context.supabase
       .from("profiles")
