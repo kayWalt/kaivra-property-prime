@@ -7,7 +7,6 @@ import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { AsyncButton } from "@/components/kaivra/AsyncButton";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -172,13 +171,13 @@ function AdminSupport() {
       ) : tickets.isError ? (
         <EmptyState
           title="Support requests could not be loaded"
-          description="Please check your connection and try again."
+          body="Please check your connection and try again."
           action={<Button onClick={() => void tickets.refetch()}>Retry</Button>}
         />
       ) : rows.length === 0 ? (
         <EmptyState
           title="No support requests"
-          description="Requests raised through KAIVRA AI Assist appear here."
+          body="Requests raised through KAIVRA AI Assist appear here."
         />
       ) : (
         <div className="mt-6 space-y-3">
@@ -368,6 +367,3 @@ function TicketThread({ ticketId }: { ticketId: string }) {
     </div>
   );
 }
-
-/** Unused input placeholder kept out of the bundle. */
-export const _unused = Input;
