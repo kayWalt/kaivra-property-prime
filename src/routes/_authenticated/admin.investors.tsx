@@ -71,6 +71,7 @@ type Investor = {
   email: string;
   phone: string;
   applications: Row[];
+  drafts: number;
   value: number;
   latest: Row | undefined;
 };
@@ -102,7 +103,6 @@ function InvestorsPage() {
         .select(
           "id, reference, status, submitted_at, created_at, investor_id, personal, contact, investment, projects(name)",
         )
-        .neq("status", "draft")
         .order("submitted_at", { ascending: false, nullsFirst: false });
       if (error) throw error;
       return (data ?? []) as unknown as Row[];
@@ -130,10 +130,15 @@ function InvestorsPage() {
       const personal = (row.personal ?? {}) as { full_name?: string };
       const contact = (row.contact ?? {}) as { email?: string; phone?: string };
       const investment = (row.investment ?? {}) as { total_value?: number };
+      const isDraft = row.status === "draft";
       const existing = map.get(row.investor_id);
       if (existing) {
-        existing.applications.push(row);
-        existing.value += Number(investment.total_value ?? 0);
+        if (isDraft) existing.drafts += 1;
+        else {
+          existing.applications.push(row);
+          existing.value += Number(investment.total_value ?? 0);
+          if (!existing.latest) existing.latest = row;
+        }
         if (!existing.name && personal.full_name) existing.name = personal.full_name;
       } else {
         map.set(row.investor_id, {
@@ -142,9 +147,10 @@ function InvestorsPage() {
           name: personal.full_name ?? "Unnamed investor",
           email: contact.email ?? "—",
           phone: contact.phone ?? "—",
-          applications: [row],
-          value: Number(investment.total_value ?? 0),
-          latest: row,
+          applications: isDraft ? [] : [row],
+          drafts: isDraft ? 1 : 0,
+          value: isDraft ? 0 : Number(investment.total_value ?? 0),
+          latest: isDraft ? undefined : row,
         });
       }
     }
@@ -158,7 +164,8 @@ function InvestorsPage() {
         if (existing.email === "—" && profile.email) existing.email = profile.email;
         if (existing.phone === "—" && profile.phone) existing.phone = profile.phone;
       } else if (isAdmin) {
-        // Registered investors with no submitted investment yet.
+        // Registered investors with no application record at all. Kept out of the
+        // active directory below, but still reachable through search.
         map.set(profile.id, {
           id: profile.id,
           code: profile.investor_code,
@@ -166,6 +173,7 @@ function InvestorsPage() {
           email: profile.email ?? "—",
           phone: profile.phone ?? "—",
           applications: [],
+          drafts: 0,
           value: 0,
           latest: undefined,
         });
@@ -174,16 +182,20 @@ function InvestorsPage() {
 
     const list = [...map.values()].sort((a, b) => b.applications.length - a.applications.length);
     const needle = term.trim().toLowerCase();
-    return needle
-      ? list.filter((i) =>
-          `${i.code ?? ""} ${i.name} ${i.email} ${i.phone} ${i.applications
-            .map((a) => a.reference ?? "")
-            .join(" ")}`
-            .toLowerCase()
-            .includes(needle),
-        )
-      : list;
+    if (!needle) {
+      // The active directory only shows investors with a real investment record
+      // (submitted application or an in-progress draft).
+      return list.filter((i) => i.applications.length > 0 || i.drafts > 0);
+    }
+    return list.filter((i) =>
+      `${i.code ?? ""} ${i.name} ${i.email} ${i.phone} ${i.applications
+        .map((a) => a.reference ?? "")
+        .join(" ")}`
+        .toLowerCase()
+        .includes(needle),
+    );
   }, [query.data, profilesQuery.data, term, isAdmin]);
+
 
   const { avatars, isLoading: avatarsLoading } = usePassportAvatars(investors.map((i) => i.id));
 
@@ -333,7 +345,11 @@ function InvestorsPage() {
 
               <ul className="mt-4 space-y-2 border-t border-border pt-4 text-sm">
                 {investor.applications.length === 0 ? (
-                  <li className="text-muted-foreground">No investments recorded yet.</li>
+                  <li className="text-muted-foreground">
+                    {investor.drafts > 0
+                      ? `Application in progress — ${investor.drafts} draft${investor.drafts > 1 ? "s" : ""} not yet submitted.`
+                      : "Registered investor — no investment recorded yet."}
+                  </li>
                 ) : (
                   investor.applications.map((app) => (
                     <li key={app.id} className="flex min-w-0 items-center justify-between gap-3">
