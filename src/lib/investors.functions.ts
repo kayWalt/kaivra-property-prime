@@ -271,3 +271,95 @@ export const linkApplicationToInvestor = createServerFn({ method: "POST" })
 
     return { ok: true, unchanged: false };
   });
+
+export interface AssistApplicationSummary {
+  id: string;
+  reference: string | null;
+  status: string;
+  created_at: string;
+  submitted_at: string | null;
+  project_name: string | null;
+  property_name: string | null;
+  total_value: number;
+  paid: number;
+}
+
+/**
+ * Staff "Find / Assist Investor" lookup. Resolves ONE existing investor
+ * identity (Investor ID, email, phone or name) together with the applications
+ * and payment totals the signed-in staff member is already authorised to see.
+ * RLS does the authorisation — the Investor ID is only an identifier and never
+ * grants access on its own.
+ */
+export const lookupInvestorForAssist = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) => z.object({ term: z.string().trim().min(2).max(120) }).parse(data))
+  .handler(async ({ data, context }) => {
+    await assertRole(context.supabase as never, context.userId, true);
+    const term = data.term.replace(/[%,()]/g, " ").trim();
+    const like = `%${term}%`;
+
+    const { data: rows, error } = await context.supabase
+      .from("profiles")
+      .select(PROFILE_COLUMNS)
+      .or(
+        `investor_code.ilike.${like},email.ilike.${like},phone.ilike.${like},full_name.ilike.${like}`,
+      )
+      .limit(10);
+    if (error) throw new Error("Unable to retrieve the investor right now. Please try again.");
+
+    const matches = (rows ?? []) as InvestorSummary[];
+    if (matches.length === 0) {
+      throw new Error("No investor was found with this ID. Please check it and try again.");
+    }
+    const exact = matches.find(
+      (m) => (m.investor_code ?? "").toLowerCase() === term.toLowerCase(),
+    );
+    const investor = exact ?? matches[0]!;
+
+    const { data: apps } = await context.supabase
+      .from("applications")
+      .select(
+        "id, reference, status, created_at, submitted_at, investment, projects(name), properties(name), application_payments(amount, status)",
+      )
+      .eq("investor_id", investor.id)
+      .order("created_at", { ascending: false });
+
+    const applications: AssistApplicationSummary[] = (
+      (apps ?? []) as unknown as {
+        id: string;
+        reference: string | null;
+        status: string;
+        created_at: string;
+        submitted_at: string | null;
+        investment: { total_value?: number } | null;
+        projects: { name: string } | null;
+        properties: { name: string } | null;
+        application_payments: { amount: number | string; status: string }[] | null;
+      }[]
+    ).map((a) => ({
+      id: a.id,
+      reference: a.reference,
+      status: a.status,
+      created_at: a.created_at,
+      submitted_at: a.submitted_at,
+      project_name: a.projects?.name ?? null,
+      property_name: a.properties?.name ?? null,
+      total_value: Number(a.investment?.total_value ?? 0),
+      paid: (a.application_payments ?? [])
+        .filter((p) => p.status === "verified")
+        .reduce((sum, p) => sum + Number(p.amount ?? 0), 0),
+    }));
+
+    const draft = applications.find((a) => a.status === "draft" || a.status === "requires_correction");
+    const totalValue = applications.reduce((s, a) => s + a.total_value, 0);
+    const paid = applications.reduce((s, a) => s + a.paid, 0);
+
+    return {
+      investor,
+      applications,
+      draftApplicationId: draft?.id ?? null,
+      totals: { value: totalValue, paid, outstanding: Math.max(0, totalValue - paid) },
+      alternatives: matches.length > 1 ? matches.length : 0,
+    };
+  });
