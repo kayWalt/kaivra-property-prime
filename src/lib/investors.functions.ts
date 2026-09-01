@@ -223,7 +223,7 @@ export const createAssistedApplication = createServerFn({ method: "POST" })
       detail: `Investment created on behalf of ${investor.full_name ?? "investor"} (${investor.investor_code ?? "—"})`,
     });
 
-    return { applicationId: application.id as string };
+    return { applicationId: application.id as string, resumed: false };
   });
 
 /**
