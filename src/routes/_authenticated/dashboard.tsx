@@ -153,6 +153,19 @@ function Dashboard() {
         value={profile?.investor_code}
       />
 
+      {role === "investor" && profile?.investor_code ? (
+        <section className="mt-4 rounded-lg border border-border bg-card/60 p-4">
+          <h2 className="text-sm font-semibold">Need help completing your application?</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Give your KAIVRA Investor ID to your authorised Investment Adviser or Administrator.
+            They can securely continue your application without needing your password.
+          </p>
+          <div className="mt-3">
+            <ShareInvestorId code={profile.investor_code} />
+          </div>
+        </section>
+      ) : null}
+
       {role !== "investor" ? (
         <div className="mt-6 rounded-lg border border-border bg-card p-5">
           <p className="text-sm text-muted-foreground">
