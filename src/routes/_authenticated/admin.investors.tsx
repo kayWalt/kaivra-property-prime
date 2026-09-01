@@ -71,6 +71,7 @@ type Investor = {
   email: string;
   phone: string;
   applications: Row[];
+  drafts: number;
   value: number;
   latest: Row | undefined;
 };
