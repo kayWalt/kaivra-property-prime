@@ -114,6 +114,8 @@ function ApplicationWizard() {
   const queryClient = useQueryClient();
   const { user } = useSession();
   const { data: profile } = useProfile(user?.id);
+  const { data: staffRoles } = useRoles(user?.id);
+  const staffRole = primaryRole(staffRoles);
 
   const [applicationId, setApplicationId] = useState<string | null>(search.id ?? null);
   const [draft, setDraft] = useState<DraftState>(EMPTY_DRAFT);
