@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.touch_support_ticket() FROM PUBLIC, anon, authenticated;

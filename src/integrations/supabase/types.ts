@@ -148,24 +148,39 @@ export type Database = {
           enabled: boolean
           escalation_enabled: boolean
           id: boolean
+          support_email: string
+          support_hours: string
+          support_phone: string
           updated_at: string
           welcome_message: string
+          whatsapp_enabled: boolean
+          whatsapp_number: string
         }
         Insert: {
           categories?: Json
           enabled?: boolean
           escalation_enabled?: boolean
           id?: boolean
+          support_email?: string
+          support_hours?: string
+          support_phone?: string
           updated_at?: string
           welcome_message?: string
+          whatsapp_enabled?: boolean
+          whatsapp_number?: string
         }
         Update: {
           categories?: Json
           enabled?: boolean
           escalation_enabled?: boolean
           id?: boolean
+          support_email?: string
+          support_hours?: string
+          support_phone?: string
           updated_at?: string
           welcome_message?: string
+          whatsapp_enabled?: boolean
+          whatsapp_number?: string
         }
         Relationships: []
       }
@@ -723,27 +738,36 @@ export type Database = {
       }
       support_messages: {
         Row: {
+          attachment_name: string | null
+          attachment_path: string | null
           author_id: string | null
           body: string
           created_at: string
           id: string
           is_internal: boolean
+          read_at: string | null
           ticket_id: string
         }
         Insert: {
+          attachment_name?: string | null
+          attachment_path?: string | null
           author_id?: string | null
           body: string
           created_at?: string
           id?: string
           is_internal?: boolean
+          read_at?: string | null
           ticket_id: string
         }
         Update: {
+          attachment_name?: string | null
+          attachment_path?: string | null
           author_id?: string | null
           body?: string
           created_at?: string
           id?: string
           is_internal?: boolean
+          read_at?: string | null
           ticket_id?: string
         }
         Relationships: [
@@ -761,9 +785,12 @@ export type Database = {
           application_id: string | null
           assigned_to: string | null
           category: string
+          channel: string
+          closed_at: string | null
           created_at: string
           id: string
           investor_id: string
+          last_message_at: string
           message: string
           priority: string
           project_id: string | null
@@ -777,9 +804,12 @@ export type Database = {
           application_id?: string | null
           assigned_to?: string | null
           category?: string
+          channel?: string
+          closed_at?: string | null
           created_at?: string
           id?: string
           investor_id: string
+          last_message_at?: string
           message: string
           priority?: string
           project_id?: string | null
@@ -793,9 +823,12 @@ export type Database = {
           application_id?: string | null
           assigned_to?: string | null
           category?: string
+          channel?: string
+          closed_at?: string | null
           created_at?: string
           id?: string
           investor_id?: string
+          last_message_at?: string
           message?: string
           priority?: string
           project_id?: string | null
