@@ -198,7 +198,7 @@ function InvestorsPage() {
     }
     return list.filter((i) =>
       `${i.code ?? ""} ${i.name} ${i.email} ${i.phone} ${i.applications
-        .map((a) => a.reference ?? "")
+        .map((a) => `${a.reference ?? ""} ${a.projects?.name ?? ""}`)
         .join(" ")}`
         .toLowerCase()
         .includes(needle),
@@ -349,7 +349,7 @@ function InvestorsPage() {
               <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
                 <div className="min-w-0">
                   <dt className="text-xs uppercase tracking-widest text-muted-foreground">
-                    Applications
+                    Investments
                   </dt>
                   <dd className="font-semibold">{investor.applications.length}</dd>
                 </div>
