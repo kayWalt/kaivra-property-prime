@@ -333,7 +333,17 @@ function InvestorsPage() {
                     <p className="text-sm text-muted-foreground">{investor.phone}</p>
                   </div>
                 </div>
-                {investor.latest ? <StatusBadge status={investor.latest.status} /> : null}
+                {investor.latest ? (
+                  <StatusBadge status={investor.latest.status} />
+                ) : investor.drafts > 0 ? (
+                  <span className="whitespace-nowrap rounded-full border border-border px-3 py-1 text-xs uppercase tracking-widest text-muted-foreground">
+                    Draft
+                  </span>
+                ) : (
+                  <span className="whitespace-nowrap rounded-full border border-border px-3 py-1 text-xs uppercase tracking-widest text-muted-foreground">
+                    No investment yet
+                  </span>
+                )}
               </div>
 
               <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
