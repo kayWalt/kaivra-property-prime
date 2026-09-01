@@ -132,10 +132,13 @@ function InvestorsPage() {
       const contact = (row.contact ?? {}) as { email?: string; phone?: string };
       const investment = (row.investment ?? {}) as { total_value?: number };
       const isDraft = row.status === "draft";
-      // An empty bootstrap draft (no project chosen and no value entered) does
-      // not make somebody an investor; the record itself is left untouched.
+      // An empty bootstrap draft (no project/property chosen and no value
+      // entered) does not make somebody an investor; the record is untouched.
       const meaningfulDraft =
-        isDraft && (Boolean(row.projects?.name) || Number(investment.total_value ?? 0) > 0);
+        isDraft &&
+        (Boolean(row.project_id) ||
+          Boolean(row.property_id) ||
+          Number(investment.total_value ?? 0) > 0);
       const existing = map.get(row.investor_id);
       if (existing) {
         if (isDraft) {
