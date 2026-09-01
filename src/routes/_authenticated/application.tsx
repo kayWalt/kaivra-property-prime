@@ -10,6 +10,7 @@ import {
   Loader2,
   Plus,
   Save,
+  Sparkles,
   Trash2,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -50,6 +51,7 @@ import {
   type PaymentMethod,
   type PersonalDetails,
 } from "@/lib/kaivra";
+import { openAiAssist } from "@/lib/ai-assist";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/application")({
