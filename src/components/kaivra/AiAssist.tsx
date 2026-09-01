@@ -2,7 +2,16 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useRouterState } from "@tanstack/react-router";
-import { Bot, Headset, Loader2, MessageSquarePlus, Send, Sparkles, X } from "lucide-react";
+import {
+  Bot,
+  Headset,
+  Loader2,
+  MessageCircle,
+  MessageSquarePlus,
+  Send,
+  Sparkles,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
