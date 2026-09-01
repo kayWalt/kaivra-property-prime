@@ -31,7 +31,7 @@ import {
 import { UploadCard, uploadDocument, type UploadedDoc } from "@/components/kaivra/FileUpload";
 import { SignaturePad } from "@/components/kaivra/SignaturePad";
 import { PaymentBadge } from "@/components/kaivra/StatusBadge";
-import { useProfile, useSession } from "@/hooks/useAuth";
+import { useProfile, useRoles, useSession, primaryRole } from "@/hooks/useAuth";
 import {
   fetchDocuments,
   fetchPayments,
