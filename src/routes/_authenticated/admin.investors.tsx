@@ -90,6 +90,7 @@ function InvestorsPage() {
   const startAssisted = useServerFn(createAssistedApplication);
   const register = useServerFn(registerInvestor);
 
+  const [assistOpen, setAssistOpen] = useState(false);
   const [existingOpen, setExistingOpen] = useState(false);
   const [registerOpen, setRegisterOpen] = useState(false);
   const [picked, setPicked] = useState<InvestorSummary | null>(null);
