@@ -304,6 +304,23 @@ function InvestorsPage() {
           <Skeleton className="h-24 w-full" />
           <Skeleton className="h-24 w-full" />
         </div>
+      ) : query.isError || profilesQuery.isError ? (
+        <EmptyState
+          title="Unable to load investors right now"
+          body="Please check your connection and try again."
+          action={
+            <AsyncButton
+              variant="outline"
+              pendingLabel="Retrying…"
+              onClick={() => {
+                void query.refetch();
+                void profilesQuery.refetch();
+              }}
+            >
+              Retry
+            </AsyncButton>
+          }
+        />
       ) : investors.length === 0 ? (
         <EmptyState
           title="No investors yet"
