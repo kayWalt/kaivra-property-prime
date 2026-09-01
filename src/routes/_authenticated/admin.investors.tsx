@@ -30,7 +30,6 @@ import {
 } from "@/lib/investors.functions";
 import { formatNaira, formatDate, type ApplicationStatus } from "@/lib/kaivra";
 
-
 export const Route = createFileRoute("/_authenticated/admin/investors")({
   head: () => ({
     meta: [
@@ -131,10 +130,15 @@ function InvestorsPage() {
       const contact = (row.contact ?? {}) as { email?: string; phone?: string };
       const investment = (row.investment ?? {}) as { total_value?: number };
       const isDraft = row.status === "draft";
+      // An empty bootstrap draft (no project chosen and no value entered) does
+      // not make somebody an investor; the record itself is left untouched.
+      const meaningfulDraft =
+        isDraft && (Boolean(row.projects?.name) || Number(investment.total_value ?? 0) > 0);
       const existing = map.get(row.investor_id);
       if (existing) {
-        if (isDraft) existing.drafts += 1;
-        else {
+        if (isDraft) {
+          if (meaningfulDraft) existing.drafts += 1;
+        } else {
           existing.applications.push(row);
           existing.value += Number(investment.total_value ?? 0);
           if (!existing.latest) existing.latest = row;
@@ -148,7 +152,7 @@ function InvestorsPage() {
           email: contact.email ?? "—",
           phone: contact.phone ?? "—",
           applications: isDraft ? [] : [row],
-          drafts: isDraft ? 1 : 0,
+          drafts: meaningfulDraft ? 1 : 0,
           value: isDraft ? 0 : Number(investment.total_value ?? 0),
           latest: isDraft ? undefined : row,
         });
@@ -195,7 +199,6 @@ function InvestorsPage() {
         .includes(needle),
     );
   }, [query.data, profilesQuery.data, term, isAdmin]);
-
 
   const { avatars, isLoading: avatarsLoading } = usePassportAvatars(investors.map((i) => i.id));
 
@@ -455,4 +458,3 @@ function InvestorsPage() {
     </div>
   );
 }
-
