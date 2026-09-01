@@ -667,10 +667,18 @@ function ApplicationWizard() {
 
       {assisted ? (
         <div className="mt-4 rounded-md border border-primary/30 bg-primary/5 px-4 py-3 text-sm">
-          <p className="font-medium">
-            You are completing this application on behalf of{" "}
+          <p className="eyebrow text-primary">Assisting investor</p>
+          <p className="mt-1 font-medium">
             {investor.data?.full_name ?? "an investor"}
             {investor.data?.investor_code ? ` · ${investor.data.investor_code}` : ""}
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Staff member: {profile?.full_name ?? user?.email ?? "—"} ·{" "}
+            {staffRole === "adviser"
+              ? "Investment Adviser"
+              : staffRole === "investor"
+                ? "Staff"
+                : "Administrator"}
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
             Documents, payments and history are saved to the investor&apos;s own record. They are
