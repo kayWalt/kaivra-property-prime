@@ -63,7 +63,10 @@ Identity: always be transparent that you are an AI assistant. Never claim to be 
 
 Tone: warm, concise, professional. Short paragraphs, plain language, markdown-free plain text with simple dashes for lists. Never more than ~150 words unless the investor asks for detail.
 
-FACTS RULE (critical): never fabricate, guess, estimate or infer project names, locations, property sizes, prices, unit availability, payment plans, bank details, promotions, returns or timelines. Every investment fact you state MUST come from a tool result in THIS conversation turn, where the item carries source "live_database" and verified true. Do not reuse figures from earlier turns, from the investor's own message, or from your own knowledge — re-run the tool instead. If a tool returns nothing, or a field is null/unknown, say: "I don't have verified information about that at the moment." and offer to connect the investor with a KAIVRA adviser.
+FACTS RULE (critical): never fabricate, guess, estimate or infer project names, locations, property sizes, prices, unit availability, payment plans, bank details, promotions, returns or timelines. Every investment fact you state MUST come from a tool result in THIS conversation turn, where the item carries source "live_database" and verified true. Do not reuse figures from earlier turns, from the investor's own message, or from your own knowledge — re-run the tool instead. If a tool returns nothing, or a field is null/unknown, reply exactly: "I couldn't find that information in KAIVRA's current records. Please contact a KAIVRA adviser for confirmation." and offer to connect the investor with a KAIVRA adviser.
+
+TOOL USE: call list_projects / list_properties for ANY question about projects, properties, locations, sizes, prices, availability, cheapest option or payment plans — every time, even if you answered a similar question a moment ago, because administrators change this data live. Call my_profile for the investor's KAIVRA Investor ID, my_applications for status, my_payments for amounts paid and outstanding, my_documents for missing documents, and my_inspections for inspection dates. Availability and "cheapest" answers must be computed from the returned rows only.
+
 
 Hard rules:
 - Never state a unit count unless the live tool result gives a number for that exact property. Null/unknown means UNKNOWN — never zero, never "available".
@@ -157,11 +160,13 @@ async function handler({ request }: { request: Request }) {
     }),
     list_properties: tool({
       description:
-        "List the properties (type, size, price, units available) for a KAIVRA project. Use when asked about sizes, plots, duplexes or prices.",
+        "List the properties (type, size, price, units available) for a KAIVRA project. Use when asked about sizes, plots, duplexes, availability, cheapest option or prices. Optionally filter by a size term such as '400' or '4-bedroom'.",
       inputSchema: z.object({
         projectName: z.string().nullable(),
+        sizeOrType: z.string().nullable().optional(),
       }),
-      execute: async ({ projectName }) => {
+      execute: async ({ projectName, sizeOrType }) => {
+
         let query = supabase
           .from("properties")
           .select(
@@ -178,8 +183,17 @@ async function handler({ request }: { request: Request }) {
             .maybeSingle();
           if (project?.id) query = query.eq("project_id", project.id);
         }
+        if (sizeOrType) {
+          const term = sizeOrType.replace(/[%,]/g, " ").trim();
+          if (term) {
+            query = query.or(
+              `size_label.ilike.%${term}%,property_type.ilike.%${term}%,name.ilike.%${term}%`,
+            );
+          }
+        }
         const { data, error } = await query.limit(30);
         if (error) return { source: "live_database", verified: false, properties: [] };
+
         return {
           source: "live_database",
           verified: true,
@@ -213,7 +227,7 @@ async function handler({ request }: { request: Request }) {
           .eq("investor_id", userId!)
           .order("created_at", { ascending: false })
           .limit(10);
-        return { applications: data ?? [] };
+        return { source: "live_database", verified: true, applications: data ?? [] };
       },
     }),
     my_payments: tool({
@@ -246,7 +260,10 @@ async function handler({ request }: { request: Request }) {
           .filter((p) => p.status === "pending")
           .reduce((sum, p) => sum + Number(p.amount ?? 0), 0);
         return {
+          source: "live_database",
+          verified: true,
           currency: "NGN",
+
           totals: { invested, verifiedPaid: verified, pending, outstanding: invested - verified },
           payments: (payments ?? []).map(({ application_id, ...rest }) => ({
             ...rest,
@@ -267,10 +284,65 @@ async function handler({ request }: { request: Request }) {
           .eq("investor_id", userId!)
           .order("scheduled_date", { ascending: false })
           .limit(10);
-        return { inspections: data ?? [] };
+        return { source: "live_database", verified: true, inspections: data ?? [] };
+      },
+    }),
+    my_profile: tool({
+      description:
+        "The signed-in investor's own KAIVRA profile: permanent Investor ID (investor code), name, email and phone. Use for 'what is my investor ID?'.",
+      inputSchema: z.object({}),
+      execute: async () => {
+        const denied = requireUser();
+        if (denied) return denied;
+        const { data } = await supabase
+          .from("profiles")
+          .select("full_name, email, phone, investor_code")
+          .eq("id", userId!)
+          .maybeSingle();
+        if (!data) return { source: "live_database", verified: false, profile: null };
+        return { source: "live_database", verified: true, profile: data };
+      },
+    }),
+    my_documents: tool({
+      description:
+        "Documents already uploaded on the signed-in investor's applications, and which required documents are still missing (passport photograph and signature are required).",
+      inputSchema: z.object({}),
+      execute: async () => {
+        const denied = requireUser();
+        if (denied) return denied;
+        const { data: apps } = await supabase
+          .from("applications")
+          .select("id, reference, status")
+          .eq("investor_id", userId!)
+          .order("created_at", { ascending: false })
+          .limit(10);
+        const ids = (apps ?? []).map((a) => a.id);
+        if (ids.length === 0)
+          return { source: "live_database", verified: true, applications: [] };
+        const { data: docs } = await supabase
+          .from("application_documents")
+          .select("application_id, kind, label, file_name, created_at")
+          .in("application_id", ids);
+        return {
+          source: "live_database",
+          verified: true,
+          required_kinds: ["passport", "signature"],
+          recommended_kinds: ["proof_of_payment", "additional"],
+          applications: (apps ?? []).map((a) => {
+            const mine = (docs ?? []).filter((d) => d.application_id === a.id);
+            const kinds = new Set(mine.map((d) => d.kind));
+            return {
+              reference: a.reference,
+              status: a.status,
+              uploaded: mine.map(({ application_id: _ignored, ...rest }) => rest),
+              missing_required: ["passport", "signature"].filter((k) => !kinds.has(k as never)),
+            };
+          }),
+        };
       },
     }),
   };
+
 
   const ctx = body.context;
   const contextLine = ctx
