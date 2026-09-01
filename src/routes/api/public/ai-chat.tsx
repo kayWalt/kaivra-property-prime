@@ -257,7 +257,10 @@ async function handler({ request }: { request: Request }) {
           .filter((p) => p.status === "pending")
           .reduce((sum, p) => sum + Number(p.amount ?? 0), 0);
         return {
+          source: "live_database",
+          verified: true,
           currency: "NGN",
+
           totals: { invested, verifiedPaid: verified, pending, outstanding: invested - verified },
           payments: (payments ?? []).map(({ application_id, ...rest }) => ({
             ...rest,
