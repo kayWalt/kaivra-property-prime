@@ -345,7 +345,11 @@ function InvestorsPage() {
 
               <ul className="mt-4 space-y-2 border-t border-border pt-4 text-sm">
                 {investor.applications.length === 0 ? (
-                  <li className="text-muted-foreground">No investments recorded yet.</li>
+                  <li className="text-muted-foreground">
+                    {investor.drafts > 0
+                      ? `Application in progress — ${investor.drafts} draft${investor.drafts > 1 ? "s" : ""} not yet submitted.`
+                      : "Registered investor — no investment recorded yet."}
+                  </li>
                 ) : (
                   investor.applications.map((app) => (
                     <li key={app.id} className="flex min-w-0 items-center justify-between gap-3">
