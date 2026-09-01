@@ -153,25 +153,20 @@ function InvestorsPage() {
         map.set(row.investor_id, {
           id: row.investor_id,
           code: null,
-          name: personal.full_name ?? "Unnamed investor",
-          email: contact.email ?? "—",
-          phone: contact.phone ?? "—",
-          applications: isDraft ? [] : [row],
-          drafts: meaningfulDraft ? 1 : 0,
-          value: isDraft ? 0 : Number(investment.total_value ?? 0),
-          latest: isDraft ? undefined : row,
-        });
-      }
-    }
-
+          name: personal.full_name || "Unnamed investor",
+          email: contact.email || "—",
+          phone: contact.phone || "—",
+...
     for (const profile of profilesQuery.data ?? []) {
       const existing = map.get(profile.id);
       if (existing) {
         existing.code = profile.investor_code;
-        if (existing.name === "Unnamed investor" && profile.full_name)
+        if ((!existing.name || existing.name === "Unnamed investor") && profile.full_name)
           existing.name = profile.full_name;
-        if (existing.email === "—" && profile.email) existing.email = profile.email;
-        if (existing.phone === "—" && profile.phone) existing.phone = profile.phone;
+        if ((!existing.email || existing.email === "—") && profile.email)
+          existing.email = profile.email;
+        if ((!existing.phone || existing.phone === "—") && profile.phone)
+          existing.phone = profile.phone;
       } else if (isAdmin) {
         // Registered investors with no application record at all. Kept out of the
         // active directory below, but still reachable through search.
