@@ -164,14 +164,19 @@ export const updateSupportTicket = createServerFn({ method: "POST" })
       .parse(data),
   )
   .handler(async ({ data, context }) => {
-    const patch: Record<string, unknown> = {};
+    const patch: {
+      status?: SupportStatus;
+      resolved_at?: string | null;
+      priority?: string;
+      assigned_to?: string | null;
+    } = {};
     if (data.status) {
-      patch["status"] = data.status;
-      patch["resolved_at"] =
+      patch.status = data.status;
+      patch.resolved_at =
         data.status === "resolved" || data.status === "closed" ? new Date().toISOString() : null;
     }
-    if (data.priority) patch["priority"] = data.priority;
-    if (data.assignedTo !== undefined) patch["assigned_to"] = data.assignedTo;
+    if (data.priority) patch.priority = data.priority;
+    if (data.assignedTo !== undefined) patch.assigned_to = data.assignedTo;
     if (Object.keys(patch).length === 0) return { ok: true };
 
     const { error } = await context.supabase
