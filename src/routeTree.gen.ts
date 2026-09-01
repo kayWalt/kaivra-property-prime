@@ -26,11 +26,13 @@ import { Route as AuthenticatedAdminAdvisersRouteImport } from './routes/_authen
 import { Route as AuthenticatedAdminInspectionsRouteImport } from './routes/_authenticated/admin.inspections'
 import { Route as AuthenticatedAdminInvestorsRouteImport } from './routes/_authenticated/admin.investors'
 import { Route as AuthenticatedAdminProjectsRouteImport } from './routes/_authenticated/admin.projects'
+import { Route as AuthenticatedAdminSupportRouteImport } from './routes/_authenticated/admin.support'
 import { Route as AuthenticatedAdminTransactionsRouteImport } from './routes/_authenticated/admin.transactions'
 import { Route as AuthenticatedApplicationsIndexRouteImport } from './routes/_authenticated/applications.index'
 import { Route as AuthenticatedApplicationsAppIdRouteImport } from './routes/_authenticated/applications.$appId'
 import { Route as AuthenticatedInspectionsIndexRouteImport } from './routes/_authenticated/inspections.index'
 import { Route as AuthenticatedInspectionsNewRouteImport } from './routes/_authenticated/inspections.new'
+import { Route as ApiPublicAiChatRouteImport } from './routes/api/public/ai-chat'
 import { Route as AuthenticatedAdminApplicationsIndexRouteImport } from './routes/_authenticated/admin.applications.index'
 import { Route as AuthenticatedAdminApplicationsAppIdRouteImport } from './routes/_authenticated/admin.applications.$appId'
 import { Route as ApiPublicAvatarSplatRouteImport } from './routes/api/public/avatar.$'
@@ -127,6 +129,12 @@ const AuthenticatedAdminProjectsRoute =
     path: '/admin/projects',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminSupportRoute =
+  AuthenticatedAdminSupportRouteImport.update({
+    id: '/admin/support',
+    path: '/admin/support',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminTransactionsRoute =
   AuthenticatedAdminTransactionsRouteImport.update({
     id: '/admin/transactions',
@@ -157,6 +165,11 @@ const AuthenticatedInspectionsNewRoute =
     path: '/inspections/new',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiPublicAiChatRoute = ApiPublicAiChatRouteImport.update({
+  id: '/api/public/ai-chat',
+  path: '/api/public/ai-chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedAdminApplicationsIndexRoute =
   AuthenticatedAdminApplicationsIndexRouteImport.update({
     id: '/admin/applications/',
@@ -197,9 +210,11 @@ export interface FileRoutesByFullPath {
   '/admin/inspections': typeof AuthenticatedAdminInspectionsRoute
   '/admin/investors': typeof AuthenticatedAdminInvestorsRoute
   '/admin/projects': typeof AuthenticatedAdminProjectsRoute
+  '/admin/support': typeof AuthenticatedAdminSupportRoute
   '/admin/transactions': typeof AuthenticatedAdminTransactionsRoute
   '/applications/$appId': typeof AuthenticatedApplicationsAppIdRoute
   '/inspections/new': typeof AuthenticatedInspectionsNewRoute
+  '/api/public/ai-chat': typeof ApiPublicAiChatRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/applications/': typeof AuthenticatedApplicationsIndexRoute
   '/inspections/': typeof AuthenticatedInspectionsIndexRoute
@@ -224,9 +239,11 @@ export interface FileRoutesByTo {
   '/admin/inspections': typeof AuthenticatedAdminInspectionsRoute
   '/admin/investors': typeof AuthenticatedAdminInvestorsRoute
   '/admin/projects': typeof AuthenticatedAdminProjectsRoute
+  '/admin/support': typeof AuthenticatedAdminSupportRoute
   '/admin/transactions': typeof AuthenticatedAdminTransactionsRoute
   '/applications/$appId': typeof AuthenticatedApplicationsAppIdRoute
   '/inspections/new': typeof AuthenticatedInspectionsNewRoute
+  '/api/public/ai-chat': typeof ApiPublicAiChatRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/applications': typeof AuthenticatedApplicationsIndexRoute
   '/inspections': typeof AuthenticatedInspectionsIndexRoute
@@ -253,9 +270,11 @@ export interface FileRoutesById {
   '/_authenticated/admin/inspections': typeof AuthenticatedAdminInspectionsRoute
   '/_authenticated/admin/investors': typeof AuthenticatedAdminInvestorsRoute
   '/_authenticated/admin/projects': typeof AuthenticatedAdminProjectsRoute
+  '/_authenticated/admin/support': typeof AuthenticatedAdminSupportRoute
   '/_authenticated/admin/transactions': typeof AuthenticatedAdminTransactionsRoute
   '/_authenticated/applications/$appId': typeof AuthenticatedApplicationsAppIdRoute
   '/_authenticated/inspections/new': typeof AuthenticatedInspectionsNewRoute
+  '/api/public/ai-chat': typeof ApiPublicAiChatRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/applications/': typeof AuthenticatedApplicationsIndexRoute
   '/_authenticated/inspections/': typeof AuthenticatedInspectionsIndexRoute
@@ -282,9 +301,11 @@ export interface FileRouteTypes {
     | '/admin/inspections'
     | '/admin/investors'
     | '/admin/projects'
+    | '/admin/support'
     | '/admin/transactions'
     | '/applications/$appId'
     | '/inspections/new'
+    | '/api/public/ai-chat'
     | '/admin/'
     | '/applications/'
     | '/inspections/'
@@ -309,9 +330,11 @@ export interface FileRouteTypes {
     | '/admin/inspections'
     | '/admin/investors'
     | '/admin/projects'
+    | '/admin/support'
     | '/admin/transactions'
     | '/applications/$appId'
     | '/inspections/new'
+    | '/api/public/ai-chat'
     | '/admin'
     | '/applications'
     | '/inspections'
@@ -337,9 +360,11 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/inspections'
     | '/_authenticated/admin/investors'
     | '/_authenticated/admin/projects'
+    | '/_authenticated/admin/support'
     | '/_authenticated/admin/transactions'
     | '/_authenticated/applications/$appId'
     | '/_authenticated/inspections/new'
+    | '/api/public/ai-chat'
     | '/_authenticated/admin/'
     | '/_authenticated/applications/'
     | '/_authenticated/inspections/'
@@ -356,6 +381,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   ProjectsProjectIdRoute: typeof ProjectsProjectIdRoute
   ProjectsIndexRoute: typeof ProjectsIndexRoute
+  ApiPublicAiChatRoute: typeof ApiPublicAiChatRoute
   ApiPublicAvatarSplatRoute: typeof ApiPublicAvatarSplatRoute
   ApiPublicProjectImageSplatRoute: typeof ApiPublicProjectImageSplatRoute
 }
@@ -481,6 +507,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminProjectsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/support': {
+      id: '/_authenticated/admin/support'
+      path: '/admin/support'
+      fullPath: '/admin/support'
+      preLoaderRoute: typeof AuthenticatedAdminSupportRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/transactions': {
       id: '/_authenticated/admin/transactions'
       path: '/admin/transactions'
@@ -515,6 +548,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/inspections/new'
       preLoaderRoute: typeof AuthenticatedInspectionsNewRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/api/public/ai-chat': {
+      id: '/api/public/ai-chat'
+      path: '/api/public/ai-chat'
+      fullPath: '/api/public/ai-chat'
+      preLoaderRoute: typeof ApiPublicAiChatRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin/applications/': {
       id: '/_authenticated/admin/applications/'
@@ -558,6 +598,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminInspectionsRoute: typeof AuthenticatedAdminInspectionsRoute
   AuthenticatedAdminInvestorsRoute: typeof AuthenticatedAdminInvestorsRoute
   AuthenticatedAdminProjectsRoute: typeof AuthenticatedAdminProjectsRoute
+  AuthenticatedAdminSupportRoute: typeof AuthenticatedAdminSupportRoute
   AuthenticatedAdminTransactionsRoute: typeof AuthenticatedAdminTransactionsRoute
   AuthenticatedApplicationsAppIdRoute: typeof AuthenticatedApplicationsAppIdRoute
   AuthenticatedInspectionsNewRoute: typeof AuthenticatedInspectionsNewRoute
@@ -579,6 +620,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminInspectionsRoute: AuthenticatedAdminInspectionsRoute,
   AuthenticatedAdminInvestorsRoute: AuthenticatedAdminInvestorsRoute,
   AuthenticatedAdminProjectsRoute: AuthenticatedAdminProjectsRoute,
+  AuthenticatedAdminSupportRoute: AuthenticatedAdminSupportRoute,
   AuthenticatedAdminTransactionsRoute: AuthenticatedAdminTransactionsRoute,
   AuthenticatedApplicationsAppIdRoute: AuthenticatedApplicationsAppIdRoute,
   AuthenticatedInspectionsNewRoute: AuthenticatedInspectionsNewRoute,
@@ -601,6 +643,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   ProjectsProjectIdRoute: ProjectsProjectIdRoute,
   ProjectsIndexRoute: ProjectsIndexRoute,
+  ApiPublicAiChatRoute: ApiPublicAiChatRoute,
   ApiPublicAvatarSplatRoute: ApiPublicAvatarSplatRoute,
   ApiPublicProjectImageSplatRoute: ApiPublicProjectImageSplatRoute,
 }

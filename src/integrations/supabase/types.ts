@@ -86,6 +86,89 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_conversations: {
+        Row: {
+          created_at: string
+          id: string
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ai_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          role: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          role: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "ai_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_settings: {
+        Row: {
+          categories: Json
+          enabled: boolean
+          escalation_enabled: boolean
+          id: boolean
+          updated_at: string
+          welcome_message: string
+        }
+        Insert: {
+          categories?: Json
+          enabled?: boolean
+          escalation_enabled?: boolean
+          id?: boolean
+          updated_at?: string
+          welcome_message?: string
+        }
+        Update: {
+          categories?: Json
+          enabled?: boolean
+          escalation_enabled?: boolean
+          id?: boolean
+          updated_at?: string
+          welcome_message?: string
+        }
+        Relationships: []
+      }
       application_documents: {
         Row: {
           application_id: string
@@ -631,6 +714,107 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "properties_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      support_messages: {
+        Row: {
+          author_id: string | null
+          body: string
+          created_at: string
+          id: string
+          is_internal: boolean
+          ticket_id: string
+        }
+        Insert: {
+          author_id?: string | null
+          body: string
+          created_at?: string
+          id?: string
+          is_internal?: boolean
+          ticket_id: string
+        }
+        Update: {
+          author_id?: string | null
+          body?: string
+          created_at?: string
+          id?: string
+          is_internal?: boolean
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_messages_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "support_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      support_tickets: {
+        Row: {
+          application_id: string | null
+          assigned_to: string | null
+          category: string
+          created_at: string
+          id: string
+          investor_id: string
+          message: string
+          priority: string
+          project_id: string | null
+          reference: string | null
+          resolved_at: string | null
+          status: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          application_id?: string | null
+          assigned_to?: string | null
+          category?: string
+          created_at?: string
+          id?: string
+          investor_id: string
+          message: string
+          priority?: string
+          project_id?: string | null
+          reference?: string | null
+          resolved_at?: string | null
+          status?: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          application_id?: string | null
+          assigned_to?: string | null
+          category?: string
+          created_at?: string
+          id?: string
+          investor_id?: string
+          message?: string
+          priority?: string
+          project_id?: string | null
+          reference?: string | null
+          resolved_at?: string | null
+          status?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_tickets_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "support_tickets_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"

@@ -10,6 +10,7 @@ import {
   Loader2,
   Plus,
   Save,
+  Sparkles,
   Trash2,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -50,6 +51,7 @@ import {
   type PaymentMethod,
   type PersonalDetails,
 } from "@/lib/kaivra";
+import { openAiAssist } from "@/lib/ai-assist";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/application")({
@@ -666,7 +668,32 @@ function ApplicationWizard() {
             {APPLICATION_STEPS[step - 1]?.label ?? "Application"}
           </h1>
         </div>
-        <SaveIndicator state={saveState} />
+        <div className="flex shrink-0 items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              openAiAssist({
+                context: {
+                  route: "/application",
+                  step: APPLICATION_STEPS[step - 1]?.label ?? "Application",
+                  ...(existing.data?.reference
+                    ? { applicationReference: existing.data.reference }
+                    : {}),
+                  ...(selectedProject?.name ? { projectName: selectedProject.name } : {}),
+                  ...(selectedProperty?.name ? { propertyName: selectedProperty.name } : {}),
+                  ...(existing.data?.status ? { status: existing.data.status } : {}),
+                },
+                prompt: `Need help with the ${APPLICATION_STEPS[step - 1]?.label ?? "application"} step?`,
+              })
+            }
+          >
+            <Sparkles className="mr-1.5 h-4 w-4" /> Need help?
+          </Button>
+          <SaveIndicator state={saveState} />
+        </div>
+
       </div>
 
       {assisted ? (

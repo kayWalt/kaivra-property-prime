@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.assign_support_reference() FROM PUBLIC, anon, authenticated;
