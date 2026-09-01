@@ -57,6 +57,8 @@ type Row = {
   submitted_at: string | null;
   created_at: string;
   investor_id: string;
+  project_id: string | null;
+  property_id: string | null;
   personal: unknown;
   contact: unknown;
   investment: unknown;
