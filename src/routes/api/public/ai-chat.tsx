@@ -224,7 +224,7 @@ async function handler({ request }: { request: Request }) {
           .eq("investor_id", userId!)
           .order("created_at", { ascending: false })
           .limit(10);
-        return { applications: data ?? [] };
+        return { source: "live_database", verified: true, applications: data ?? [] };
       },
     }),
     my_payments: tool({
