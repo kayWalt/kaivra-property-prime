@@ -284,6 +284,10 @@ function InvestorsPage() {
           aria-label="Search investors"
         />
         <div className="flex flex-wrap gap-2">
+          <AsyncButton variant="outline" onClick={() => setAssistOpen(true)}>
+            <UserSearch className="mr-2 size-4" aria-hidden />
+            Find / assist investor
+          </AsyncButton>
           <AsyncButton
             variant="outline"
             onClick={() => {
