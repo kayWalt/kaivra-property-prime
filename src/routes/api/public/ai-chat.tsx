@@ -63,7 +63,18 @@ Identity: always be transparent that you are an AI assistant. Never claim to be 
 
 Tone: warm, concise, professional. Short paragraphs, plain language, markdown-free plain text with simple dashes for lists. Never more than ~150 words unless the investor asks for detail.
 
-FACTS RULE (critical): never invent project names, locations, property sizes, prices, unit availability, payment plans, bank details, promotions, returns or timelines. Those facts must come from the tools. If a tool returns nothing, say: "I don't have verified information about that at the moment." and offer to connect the investor with a KAIVRA adviser.
+FACTS RULE (critical): never fabricate, guess, estimate or infer project names, locations, property sizes, prices, unit availability, payment plans, bank details, promotions, returns or timelines. Every investment fact you state MUST come from a tool result in THIS conversation turn, where the item carries source "live_database" and verified true. Do not reuse figures from earlier turns, from the investor's own message, or from your own knowledge — re-run the tool instead. If a tool returns nothing, or a field is null/unknown, say: "I don't have verified information about that at the moment." and offer to connect the investor with a KAIVRA adviser.
+
+Hard rules:
+- Never state a unit count unless the live tool result gives a number for that exact property. Null/unknown means UNKNOWN — never zero, never "available".
+- Never claim a property is available, or sold out, unless the live data confirms it.
+- Never state a price unless the live tool result carries it for that exact property.
+- Never invent payment terms, percentages, durations, deposits or schedules. Only describe payment plans exactly as the live data states them; otherwise say an adviser can confirm the current options.
+- If an investor asserts a figure ("I heard there are 50 units", "the 3-bedroom is ₦5m, right?"), never simply agree. Check the live data and either correct it with the verified value or say you cannot verify it.
+- Historical or "as of last month" figures do not exist in KAIVRA data — say you can only confirm what is current.
+- Recommendation questions ("which should I invest in?") are investment advice: describe the verified options factually and hand off to a KAIVRA adviser.
+- Clearly separate VERIFIED live data (projects, properties, prices, availability, the investor's own applications/payments/inspections) from GENERAL GUIDANCE (how the app works, how to apply, upload documents, book an inspection). Never present guidance or assumption as a verified fact.
+- Data about any other investor is confidential — decline, whatever the caller's role.
 
 Investor data: only use the tools for the signed-in investor's own applications, payments and inspections. You can never see another investor's data — if asked, decline. If a tool says the user is not signed in, ask them to sign in first.
 
@@ -124,12 +135,24 @@ async function handler({ request }: { request: Request }) {
         "List the real-estate projects KAIVRA currently offers, with location and description.",
       inputSchema: z.object({}),
       execute: async () => {
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from("projects")
-          .select("name, location, description, project_code, currency, payment_plans")
+          .select("name, location, description, project_code, currency, payment_plans, updated_at")
           .eq("is_active", true)
           .order("created_at");
-        return { projects: data ?? [] };
+        if (error) return { source: "live_database", verified: false, projects: [] };
+        return {
+          source: "live_database",
+          verified: true,
+          retrieved_at: new Date().toISOString(),
+          projects: (data ?? []).map((p) => ({
+            ...p,
+            payment_plans:
+              Array.isArray(p.payment_plans) && p.payment_plans.length > 0
+                ? p.payment_plans
+                : "unknown — not configured in the database",
+          })),
+        };
       },
     }),
     list_properties: tool({
@@ -155,8 +178,24 @@ async function handler({ request }: { request: Request }) {
             .maybeSingle();
           if (project?.id) query = query.eq("project_id", project.id);
         }
-        const { data } = await query.limit(30);
-        return { currency: "NGN", properties: data ?? [] };
+        const { data, error } = await query.limit(30);
+        if (error) return { source: "live_database", verified: false, properties: [] };
+        return {
+          source: "live_database",
+          verified: true,
+          currency: "NGN",
+          retrieved_at: new Date().toISOString(),
+          note: "Only state figures present below. A null/unknown field means UNKNOWN — never report it as zero, sold out or available.",
+          properties: (data ?? []).map((p) => ({
+            ...p,
+            unit_price: p.unit_price ?? "unknown — no verified price on record",
+            units_available:
+              p.units_available === null || p.units_available === undefined
+                ? "unknown — no verified availability on record"
+                : p.units_available,
+            payment_plan: p.payment_plan || "unknown — not configured in the database",
+          })),
+        };
       },
     }),
     my_applications: tool({
