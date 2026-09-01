@@ -180,8 +180,17 @@ async function handler({ request }: { request: Request }) {
             .maybeSingle();
           if (project?.id) query = query.eq("project_id", project.id);
         }
+        if (sizeOrType) {
+          const term = sizeOrType.replace(/[%,]/g, " ").trim();
+          if (term) {
+            query = query.or(
+              `size_label.ilike.%${term}%,property_type.ilike.%${term}%,name.ilike.%${term}%`,
+            );
+          }
+        }
         const { data, error } = await query.limit(30);
         if (error) return { source: "live_database", verified: false, properties: [] };
+
         return {
           source: "live_database",
           verified: true,
