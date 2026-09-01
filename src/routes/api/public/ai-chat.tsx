@@ -157,11 +157,13 @@ async function handler({ request }: { request: Request }) {
     }),
     list_properties: tool({
       description:
-        "List the properties (type, size, price, units available) for a KAIVRA project. Use when asked about sizes, plots, duplexes or prices.",
+        "List the properties (type, size, price, units available) for a KAIVRA project. Use when asked about sizes, plots, duplexes, availability, cheapest option or prices. Optionally filter by a size term such as '400' or '4-bedroom'.",
       inputSchema: z.object({
         projectName: z.string().nullable(),
+        sizeOrType: z.string().nullable().optional(),
       }),
-      execute: async ({ projectName }) => {
+      execute: async ({ projectName, sizeOrType }) => {
+
         let query = supabase
           .from("properties")
           .select(
