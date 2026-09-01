@@ -278,10 +278,65 @@ async function handler({ request }: { request: Request }) {
           .eq("investor_id", userId!)
           .order("scheduled_date", { ascending: false })
           .limit(10);
-        return { inspections: data ?? [] };
+        return { source: "live_database", verified: true, inspections: data ?? [] };
+      },
+    }),
+    my_profile: tool({
+      description:
+        "The signed-in investor's own KAIVRA profile: permanent Investor ID (investor code), name, email and phone. Use for 'what is my investor ID?'.",
+      inputSchema: z.object({}),
+      execute: async () => {
+        const denied = requireUser();
+        if (denied) return denied;
+        const { data } = await supabase
+          .from("profiles")
+          .select("full_name, email, phone, investor_code")
+          .eq("id", userId!)
+          .maybeSingle();
+        if (!data) return { source: "live_database", verified: false, profile: null };
+        return { source: "live_database", verified: true, profile: data };
+      },
+    }),
+    my_documents: tool({
+      description:
+        "Documents already uploaded on the signed-in investor's applications, and which required documents are still missing (passport photograph and signature are required).",
+      inputSchema: z.object({}),
+      execute: async () => {
+        const denied = requireUser();
+        if (denied) return denied;
+        const { data: apps } = await supabase
+          .from("applications")
+          .select("id, reference, status")
+          .eq("investor_id", userId!)
+          .order("created_at", { ascending: false })
+          .limit(10);
+        const ids = (apps ?? []).map((a) => a.id);
+        if (ids.length === 0)
+          return { source: "live_database", verified: true, applications: [] };
+        const { data: docs } = await supabase
+          .from("application_documents")
+          .select("application_id, kind, label, file_name, created_at")
+          .in("application_id", ids);
+        return {
+          source: "live_database",
+          verified: true,
+          required_kinds: ["passport", "signature"],
+          recommended_kinds: ["proof_of_payment", "additional"],
+          applications: (apps ?? []).map((a) => {
+            const mine = (docs ?? []).filter((d) => d.application_id === a.id);
+            const kinds = new Set(mine.map((d) => d.kind));
+            return {
+              reference: a.reference,
+              status: a.status,
+              uploaded: mine.map(({ application_id: _ignored, ...rest }) => rest),
+              missing_required: ["passport", "signature"].filter((k) => !kinds.has(k as never)),
+            };
+          }),
+        };
       },
     }),
   };
+
 
   const ctx = body.context;
   const contextLine = ctx
