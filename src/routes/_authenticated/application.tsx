@@ -246,7 +246,6 @@ function ApplicationWizard() {
     },
   });
 
-
   // ---------- bootstrap: load or create the draft ----------
   useEffect(() => {
     if (initialised || bootRef.current || !user) return;
@@ -297,7 +296,6 @@ function ApplicationWizard() {
         toast.error("That application could not be opened. It may have been removed.");
         return;
       }
-
 
       // Reuse the investor's most recent unsubmitted draft instead of creating a
       // new application row every time the wizard is opened. Only drafts that were
@@ -356,8 +354,16 @@ function ApplicationWizard() {
     }
 
     void boot();
-  }, [user, profile, search.id, search.project, search.property, initialised, navigate, startFreshDraft]);
-
+  }, [
+    user,
+    profile,
+    search.id,
+    search.project,
+    search.property,
+    initialised,
+    navigate,
+    startFreshDraft,
+  ]);
 
   // ---------- autosave ----------
   const persist = useCallback(
@@ -532,9 +538,7 @@ function ApplicationWizard() {
         .single();
       if (error || !data) throw error ?? new Error("submit failed");
 
-      const actorName = assisted
-        ? (profile?.full_name ?? user.email ?? "KAIVRA staff")
-        : undefined;
+      const actorName = assisted ? (profile?.full_name ?? user.email ?? "KAIVRA staff") : undefined;
       await logEvent(
         applicationId,
         "application_submitted",
@@ -580,7 +584,6 @@ function ApplicationWizard() {
       />
     );
   }
-
 
   if (!initialised) {
     return (
@@ -652,7 +655,6 @@ function ApplicationWizard() {
     );
   }
 
-
   return (
     <div className="mx-auto w-full max-w-4xl px-4 pb-32 pt-8 sm:px-6">
       <div className="flex items-center justify-between gap-4">
@@ -694,7 +696,6 @@ function ApplicationWizard() {
           This application has been submitted and can no longer be edited.
         </p>
       ) : null}
-
 
       <ol className="mt-6 flex gap-1 overflow-x-auto pb-2" aria-label="Application progress">
         {APPLICATION_STEPS.map((s) => (

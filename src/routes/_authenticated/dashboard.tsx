@@ -72,7 +72,9 @@ function Dashboard() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("applications")
-        .select("id, status, project_id, property_id, investment, application_payments(amount, status)")
+        .select(
+          "id, status, project_id, property_id, investment, application_payments(amount, status)",
+        )
         .eq("investor_id", user!.id)
         .neq("status", "draft");
       if (error) throw error;
@@ -93,10 +95,19 @@ function Dashboard() {
     };
     const channel = supabase
       .channel(`portfolio-${user.id}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "application_payments" }, recalculate)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "applications", filter: `investor_id=eq.${user.id}` },
+        { event: "*", schema: "public", table: "application_payments" },
+        recalculate,
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "applications",
+          filter: `investor_id=eq.${user.id}`,
+        },
         recalculate,
       )
       .subscribe();
@@ -127,12 +138,10 @@ function Dashboard() {
     { value: 0, paid: 0, pending: 0, outstanding: 0, count: 0 },
   );
   const progress = portfolio.value > 0 ? Math.round((portfolio.paid / portfolio.value) * 100) : 0;
-  const projectCount = new Set(
-    portfolioRows.map((a) => a.project_id).filter(Boolean) as string[],
-  ).size;
-  const propertyCount = new Set(
-    portfolioRows.map((a) => a.property_id).filter(Boolean) as string[],
-  ).size;
+  const projectCount = new Set(portfolioRows.map((a) => a.project_id).filter(Boolean) as string[])
+    .size;
+  const propertyCount = new Set(portfolioRows.map((a) => a.property_id).filter(Boolean) as string[])
+    .size;
 
   const nextInspection = (inspections.data ?? [])
     .filter((i) => isUpcoming(i.status, i.scheduled_date, i.scheduled_time))
@@ -206,12 +215,9 @@ function Dashboard() {
           ].map(([label, value]) => (
             <div key={label} className="rounded-lg border border-border bg-card p-4">
               <p className="eyebrow text-muted-foreground">{label}</p>
-              <p className="mt-2 font-display text-2xl">
-                {portfolioQuery.isLoading ? "—" : value}
-              </p>
+              <p className="mt-2 font-display text-2xl">{portfolioQuery.isLoading ? "—" : value}</p>
             </div>
           ))}
-
         </div>
         <div className="mt-4 rounded-lg border border-border bg-card p-5">
           <div className="flex items-center justify-between text-sm">

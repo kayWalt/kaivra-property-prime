@@ -234,9 +234,7 @@ export const createAssistedApplication = createServerFn({ method: "POST" })
 export const linkApplicationToInvestor = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) =>
-    z
-      .object({ applicationId: z.string().uuid(), investorId: z.string().uuid() })
-      .parse(data),
+    z.object({ applicationId: z.string().uuid(), investorId: z.string().uuid() }).parse(data),
   )
   .handler(async ({ data, context }) => {
     await assertRole(context.supabase as never, context.userId);
@@ -333,9 +331,7 @@ export const lookupInvestorForAssist = createServerFn({ method: "POST" })
     if (matches.length === 0) {
       throw new Error("No investor was found with this ID. Please check it and try again.");
     }
-    const exact = matches.find(
-      (m) => (m.investor_code ?? "").toLowerCase() === term.toLowerCase(),
-    );
+    const exact = matches.find((m) => (m.investor_code ?? "").toLowerCase() === term.toLowerCase());
     const investor = exact ?? matches[0]!;
 
     const { data: apps } = await context.supabase
@@ -372,7 +368,9 @@ export const lookupInvestorForAssist = createServerFn({ method: "POST" })
         .reduce((sum, p) => sum + Number(p.amount ?? 0), 0),
     }));
 
-    const draft = applications.find((a) => a.status === "draft" || a.status === "requires_correction");
+    const draft = applications.find(
+      (a) => a.status === "draft" || a.status === "requires_correction",
+    );
     const totalValue = applications.reduce((s, a) => s + a.total_value, 0);
     const paid = applications.reduce((s, a) => s + a.paid, 0);
 

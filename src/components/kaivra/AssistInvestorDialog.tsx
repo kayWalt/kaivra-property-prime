@@ -84,9 +84,7 @@ export function AssistInvestorDialog({
       reset();
       void navigate({ to: "/application", search: { id: applicationId } });
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "The application could not be opened.",
-      );
+      toast.error(error instanceof Error ? error.message : "The application could not be opened.");
     }
   }
 
