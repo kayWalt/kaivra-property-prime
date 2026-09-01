@@ -277,7 +277,7 @@ function Bubble({ role, content }: ChatMessage) {
   );
 }
 
-/** Human escalation: contact options plus a tracked KAIVRA support request. */
+/** Human escalation: live agent chat, WhatsApp, or a tracked support request. */
 function HandoffPanel({
   onBack,
   context,
@@ -288,10 +288,16 @@ function HandoffPanel({
   const { user } = useSession();
   const queryClient = useQueryClient();
   const create = useServerFn(createSupportTicket);
+  const startLive = useServerFn(startLiveSupportChat);
+  const settings = useSupportSettings();
+  const profile = useProfile(user?.id);
   const [subject, setSubject] = useState("");
   const [category, setCategory] = useState<string>(SUPPORT_CATEGORIES[0]);
   const [priority, setPriority] = useState("normal");
   const [message, setMessage] = useState("");
+  const [liveTicketId, setLiveTicketId] = useState<string | null>(null);
+  const [liveMessage, setLiveMessage] = useState("");
+  const [mode, setMode] = useState<"choose" | "live" | "ticket">("choose");
 
   const tickets = useQuery({
     queryKey: ["support-tickets", user?.id],
@@ -307,6 +313,34 @@ function HandoffPanel({
     },
   });
 
+  const whatsappHref = buildWhatsAppLink(settings.whatsapp_number, {
+    name: profile.data?.full_name,
+    investorCode: profile.data?.investor_code,
+    reference: context?.applicationReference ?? null,
+    page: context?.route ?? null,
+    topic: context?.projectName ?? null,
+  });
+
+  const openLive = useMutation({
+    mutationFn: async () =>
+      startLive({
+        data: {
+          topic: context?.projectName
+            ? `Live chat · ${context.projectName}`
+            : "Live chat with a KAIVRA agent",
+          message: liveMessage.trim(),
+          category,
+        },
+      }),
+    onSuccess: (ticket) => {
+      setLiveTicketId(ticket.id);
+      setLiveMessage("");
+      setMode("live");
+      void queryClient.invalidateQueries({ queryKey: ["support-tickets"] });
+    },
+    onError: () => toast.error("The live chat could not be started. Please try again."),
+  });
+
   const submit = useMutation({
     mutationFn: async () =>
       create({
@@ -315,140 +349,204 @@ function HandoffPanel({
           category,
           message: message.trim(),
           priority: priority as "low" | "normal" | "high" | "urgent",
-          ...(context?.projectName ? {} : {}),
         },
       }),
     onSuccess: (ticket) => {
       toast.success(`Request created · ${ticket.reference ?? ""}`.trim());
       setSubject("");
       setMessage("");
+      setMode("choose");
       void queryClient.invalidateQueries({ queryKey: ["support-tickets"] });
     },
     onError: () => toast.error("Your support request could not be created. Please try again."),
   });
+
+  if (mode === "live" && liveTicketId && user) {
+    return (
+      <div className="flex min-h-0 flex-1 flex-col px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+        <div className="flex items-center justify-between gap-2 pb-2">
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold">KAIVRA agent</p>
+            <p className="truncate text-xs text-muted-foreground">
+              A team member will reply here · {settings.support_hours}
+            </p>
+          </div>
+          <Button variant="ghost" size="sm" onClick={() => setMode("choose")}>
+            Back
+          </Button>
+        </div>
+        <SupportThread
+          ticketId={liveTicketId}
+          viewerId={user.id}
+          placeholder="Message a KAIVRA agent…"
+          emptyLabel="Your conversation starts here."
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 space-y-4 overflow-y-auto px-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
       <div>
         <p className="eyebrow text-primary">Connect with KAIVRA</p>
         <p className="mt-1 text-sm text-muted-foreground">
-          You are being connected to a KAIVRA team member. Reach us directly, or raise a tracked
-          support request below.
+          Chat with a KAIVRA agent in the app, continue on WhatsApp, or raise a tracked request.
+          Support hours: {settings.support_hours}.
         </p>
       </div>
 
+      {user ? (
+        <div className="space-y-2 rounded-md border border-border p-3">
+          <p className="flex items-center gap-1.5 text-sm font-semibold">
+            <Headset className="h-4 w-4 text-primary" /> Chat with an agent
+          </p>
+          <Textarea
+            rows={2}
+            value={liveMessage}
+            onChange={(e) => setLiveMessage(e.target.value)}
+            placeholder="Briefly, what do you need help with?"
+            aria-label="Message to a KAIVRA agent"
+          />
+          <Button
+            className="w-full"
+            disabled={openLive.isPending || liveMessage.trim().length < 3}
+            onClick={() => openLive.mutate()}
+          >
+            {openLive.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+            Start live chat
+          </Button>
+        </div>
+      ) : (
+        <p className="rounded-md border border-border bg-muted/40 p-3 text-sm text-muted-foreground">
+          Sign in to chat with a KAIVRA agent, or reach us on WhatsApp below.
+        </p>
+      )}
+
       <div className="grid gap-2">
+        {settings.whatsapp_enabled ? (
+          <a
+            href={whatsappHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 rounded-md border border-primary/40 bg-primary/5 px-3 py-2 text-sm font-medium text-foreground hover:bg-primary/10"
+          >
+            <MessageCircle className="h-4 w-4 text-primary" /> Continue on WhatsApp
+          </a>
+        ) : null}
         <a
-          href="tel:+2347058926912"
+          href={`tel:${settings.support_phone.replace(/\s/g, "")}`}
           className="rounded-md border border-border bg-card px-3 py-2 text-sm hover:border-primary/40"
         >
-          Investment Adviser · +234 705 892 6912
+          Call KAIVRA · {settings.support_phone}
         </a>
         <a
-          href="tel:+2349125067938"
+          href={`mailto:${settings.support_email}`}
           className="rounded-md border border-border bg-card px-3 py-2 text-sm hover:border-primary/40"
         >
-          Administrator · +234 912 506 7938
-        </a>
-        <a
-          href="mailto:support@kaivra.com"
-          className="rounded-md border border-border bg-card px-3 py-2 text-sm hover:border-primary/40"
-        >
-          Customer Support · support@kaivra.com
+          Email · {settings.support_email}
         </a>
       </div>
 
       {user ? (
-        <div className="space-y-3 rounded-md border border-border p-3">
-          <p className="flex items-center gap-1.5 text-sm font-semibold">
-            <MessageSquarePlus className="h-4 w-4 text-primary" /> Create a support request
-          </p>
-          <div className="space-y-1.5">
-            <Label htmlFor="ai-subject">Subject</Label>
-            <Input
-              id="ai-subject"
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              placeholder="Brief summary"
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-2">
+        mode === "ticket" ? (
+          <div className="space-y-3 rounded-md border border-border p-3">
+            <p className="flex items-center gap-1.5 text-sm font-semibold">
+              <MessageSquarePlus className="h-4 w-4 text-primary" /> Create a support request
+            </p>
             <div className="space-y-1.5">
-              <Label>Category</Label>
-              <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {SUPPORT_CATEGORIES.map((c) => (
-                    <SelectItem key={c} value={c}>
-                      {c}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label htmlFor="ai-subject">Subject</Label>
+              <Input
+                id="ai-subject"
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                placeholder="Brief summary"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1.5">
+                <Label>Category</Label>
+                <Select value={category} onValueChange={setCategory}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SUPPORT_CATEGORIES.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {c}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Priority</Label>
+                <Select value={priority} onValueChange={setPriority}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {["low", "normal", "high", "urgent"].map((p) => (
+                      <SelectItem key={p} value={p} className="capitalize">
+                        {p}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <div className="space-y-1.5">
-              <Label>Priority</Label>
-              <Select value={priority} onValueChange={setPriority}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {["low", "normal", "high", "urgent"].map((p) => (
-                    <SelectItem key={p} value={p} className="capitalize">
-                      {p}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label htmlFor="ai-message">Message</Label>
+              <Textarea
+                id="ai-message"
+                rows={3}
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder="Tell us what you need help with"
+              />
             </div>
+            <Button
+              className="w-full"
+              disabled={submit.isPending || subject.trim().length < 3 || message.trim().length < 5}
+              onClick={() => submit.mutate()}
+            >
+              {submit.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Send to KAIVRA
+            </Button>
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="ai-message">Message</Label>
-            <Textarea
-              id="ai-message"
-              rows={3}
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Tell us what you need help with"
-            />
-          </div>
-          <Button
-            className="w-full"
-            disabled={submit.isPending || subject.trim().length < 3 || message.trim().length < 5}
-            onClick={() => submit.mutate()}
-          >
-            {submit.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-            Send to KAIVRA
+        ) : (
+          <Button variant="outline" className="w-full" onClick={() => setMode("ticket")}>
+            <MessageSquarePlus className="mr-2 h-4 w-4" /> Raise a tracked request
           </Button>
+        )
+      ) : null}
 
-          {tickets.data && tickets.data.length > 0 ? (
-            <div className="space-y-2 border-t border-border pt-3">
-              <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                My requests
-              </p>
-              {tickets.data.map((t) => (
-                <div key={t.id} className="text-xs">
-                  <p className="font-medium text-foreground">{t.subject}</p>
-                  <p className="text-muted-foreground">
-                    {t.reference} ·{" "}
-                    {SUPPORT_STATUS_LABEL[(t.status as SupportStatus) ?? "open"] ?? t.status}
-                  </p>
-                </div>
-              ))}
-            </div>
-          ) : null}
+      {tickets.data && tickets.data.length > 0 ? (
+        <div className="space-y-2 rounded-md border border-border p-3">
+          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">My requests</p>
+          {tickets.data.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => {
+                setLiveTicketId(t.id);
+                setMode("live");
+              }}
+              className="block w-full rounded-md border border-transparent px-1 py-1 text-left text-xs hover:border-border hover:bg-muted/40"
+            >
+              <span className="block font-medium text-foreground">{t.subject}</span>
+              <span className="block text-muted-foreground">
+                {t.reference} ·{" "}
+                {SUPPORT_STATUS_LABEL[(t.status as SupportStatus) ?? "open"] ?? t.status}
+              </span>
+            </button>
+          ))}
         </div>
-      ) : (
-        <p className="rounded-md border border-border bg-muted/40 p-3 text-sm text-muted-foreground">
-          Sign in to raise a tracked support request that a KAIVRA adviser can follow up on.
-        </p>
-      )}
+      ) : null}
 
-      <Button variant="outline" className="w-full" onClick={onBack}>
+      <Button variant="ghost" className="w-full" onClick={onBack}>
         Back to KAIVRA AI Assist
       </Button>
     </div>
   );
 }
+
