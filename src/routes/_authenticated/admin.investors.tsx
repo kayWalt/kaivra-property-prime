@@ -57,6 +57,8 @@ type Row = {
   submitted_at: string | null;
   created_at: string;
   investor_id: string;
+  project_id: string | null;
+  property_id: string | null;
   personal: unknown;
   contact: unknown;
   investment: unknown;
@@ -100,7 +102,7 @@ function InvestorsPage() {
       const { data, error } = await supabase
         .from("applications")
         .select(
-          "id, reference, status, submitted_at, created_at, investor_id, personal, contact, investment, projects(name)",
+          "id, reference, status, submitted_at, created_at, investor_id, project_id, property_id, personal, contact, investment, projects(name)",
         )
         .order("submitted_at", { ascending: false, nullsFirst: false });
       if (error) throw error;
@@ -130,10 +132,13 @@ function InvestorsPage() {
       const contact = (row.contact ?? {}) as { email?: string; phone?: string };
       const investment = (row.investment ?? {}) as { total_value?: number };
       const isDraft = row.status === "draft";
-      // An empty bootstrap draft (no project chosen and no value entered) does
-      // not make somebody an investor; the record itself is left untouched.
+      // An empty bootstrap draft (no project/property chosen and no value
+      // entered) does not make somebody an investor; the record is untouched.
       const meaningfulDraft =
-        isDraft && (Boolean(row.projects?.name) || Number(investment.total_value ?? 0) > 0);
+        isDraft &&
+        (Boolean(row.project_id) ||
+          Boolean(row.property_id) ||
+          Number(investment.total_value ?? 0) > 0);
       const existing = map.get(row.investor_id);
       if (existing) {
         if (isDraft) {
@@ -328,7 +333,17 @@ function InvestorsPage() {
                     <p className="text-sm text-muted-foreground">{investor.phone}</p>
                   </div>
                 </div>
-                {investor.latest ? <StatusBadge status={investor.latest.status} /> : null}
+                {investor.latest ? (
+                  <StatusBadge status={investor.latest.status} />
+                ) : investor.drafts > 0 ? (
+                  <span className="whitespace-nowrap rounded-full border border-border px-3 py-1 text-xs uppercase tracking-widest text-muted-foreground">
+                    Draft
+                  </span>
+                ) : (
+                  <span className="whitespace-nowrap rounded-full border border-border px-3 py-1 text-xs uppercase tracking-widest text-muted-foreground">
+                    No investment yet
+                  </span>
+                )}
               </div>
 
               <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
