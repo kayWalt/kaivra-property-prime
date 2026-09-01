@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { InspectionBadge, PaymentBadge, StatusBadge } from "@/components/kaivra/StatusBadge";
 import { EmptyState } from "@/components/kaivra/EmptyState";
 import { ReferenceChip } from "@/components/kaivra/ReferenceChip";
+import { ShareInvestorId } from "@/components/kaivra/ShareInvestorId";
 import { useProfile, useRoles, useSession, primaryRole } from "@/hooks/useAuth";
 import { APPLICATION_SELECT, totals } from "@/lib/applications";
 import { formatDate, formatNaira, type ApplicationStatus } from "@/lib/kaivra";
