@@ -3,7 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { UserPlus, PlusCircle } from "lucide-react";
+import { UserPlus, PlusCircle, UserSearch } from "lucide-react";
+import { AssistInvestorDialog } from "@/components/kaivra/AssistInvestorDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -89,6 +90,7 @@ function InvestorsPage() {
   const startAssisted = useServerFn(createAssistedApplication);
   const register = useServerFn(registerInvestor);
 
+  const [assistOpen, setAssistOpen] = useState(false);
   const [existingOpen, setExistingOpen] = useState(false);
   const [registerOpen, setRegisterOpen] = useState(false);
   const [picked, setPicked] = useState<InvestorSummary | null>(null);
@@ -282,6 +284,10 @@ function InvestorsPage() {
           aria-label="Search investors"
         />
         <div className="flex flex-wrap gap-2">
+          <AsyncButton variant="outline" onClick={() => setAssistOpen(true)}>
+            <UserSearch className="mr-2 size-4" aria-hidden />
+            Find / assist investor
+          </AsyncButton>
           <AsyncButton
             variant="outline"
             onClick={() => {
@@ -421,6 +427,8 @@ function InvestorsPage() {
           ))}
         </div>
       )}
+
+      <AssistInvestorDialog open={assistOpen} onOpenChange={setAssistOpen} onView={setTerm} />
 
       <Dialog open={existingOpen} onOpenChange={setExistingOpen}>
         <DialogContent className="sm:max-w-lg">

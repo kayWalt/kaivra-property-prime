@@ -31,7 +31,7 @@ import {
 import { UploadCard, uploadDocument, type UploadedDoc } from "@/components/kaivra/FileUpload";
 import { SignaturePad } from "@/components/kaivra/SignaturePad";
 import { PaymentBadge } from "@/components/kaivra/StatusBadge";
-import { useProfile, useSession } from "@/hooks/useAuth";
+import { useProfile, useRoles, useSession, primaryRole } from "@/hooks/useAuth";
 import {
   fetchDocuments,
   fetchPayments,
@@ -114,6 +114,8 @@ function ApplicationWizard() {
   const queryClient = useQueryClient();
   const { user } = useSession();
   const { data: profile } = useProfile(user?.id);
+  const { data: staffRoles } = useRoles(user?.id);
+  const staffRole = primaryRole(staffRoles);
 
   const [applicationId, setApplicationId] = useState<string | null>(search.id ?? null);
   const [draft, setDraft] = useState<DraftState>(EMPTY_DRAFT);
@@ -244,7 +246,6 @@ function ApplicationWizard() {
     },
   });
 
-
   // ---------- bootstrap: load or create the draft ----------
   useEffect(() => {
     if (initialised || bootRef.current || !user) return;
@@ -295,7 +296,6 @@ function ApplicationWizard() {
         toast.error("That application could not be opened. It may have been removed.");
         return;
       }
-
 
       // Reuse the investor's most recent unsubmitted draft instead of creating a
       // new application row every time the wizard is opened. Only drafts that were
@@ -354,8 +354,16 @@ function ApplicationWizard() {
     }
 
     void boot();
-  }, [user, profile, search.id, search.project, search.property, initialised, navigate, startFreshDraft]);
-
+  }, [
+    user,
+    profile,
+    search.id,
+    search.project,
+    search.property,
+    initialised,
+    navigate,
+    startFreshDraft,
+  ]);
 
   // ---------- autosave ----------
   const persist = useCallback(
@@ -530,9 +538,7 @@ function ApplicationWizard() {
         .single();
       if (error || !data) throw error ?? new Error("submit failed");
 
-      const actorName = assisted
-        ? (profile?.full_name ?? user.email ?? "KAIVRA staff")
-        : undefined;
+      const actorName = assisted ? (profile?.full_name ?? user.email ?? "KAIVRA staff") : undefined;
       await logEvent(
         applicationId,
         "application_submitted",
@@ -578,7 +584,6 @@ function ApplicationWizard() {
       />
     );
   }
-
 
   if (!initialised) {
     return (
@@ -650,7 +655,6 @@ function ApplicationWizard() {
     );
   }
 
-
   return (
     <div className="mx-auto w-full max-w-4xl px-4 pb-32 pt-8 sm:px-6">
       <div className="flex items-center justify-between gap-4">
@@ -667,10 +671,18 @@ function ApplicationWizard() {
 
       {assisted ? (
         <div className="mt-4 rounded-md border border-primary/30 bg-primary/5 px-4 py-3 text-sm">
-          <p className="font-medium">
-            You are completing this application on behalf of{" "}
+          <p className="eyebrow text-primary">Assisting investor</p>
+          <p className="mt-1 font-medium">
             {investor.data?.full_name ?? "an investor"}
             {investor.data?.investor_code ? ` · ${investor.data.investor_code}` : ""}
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Staff member: {profile?.full_name ?? user?.email ?? "—"} ·{" "}
+            {staffRole === "adviser"
+              ? "Investment Adviser"
+              : staffRole === "investor"
+                ? "Staff"
+                : "Administrator"}
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
             Documents, payments and history are saved to the investor&apos;s own record. They are
@@ -684,7 +696,6 @@ function ApplicationWizard() {
           This application has been submitted and can no longer be edited.
         </p>
       ) : null}
-
 
       <ol className="mt-6 flex gap-1 overflow-x-auto pb-2" aria-label="Application progress">
         {APPLICATION_STEPS.map((s) => (
