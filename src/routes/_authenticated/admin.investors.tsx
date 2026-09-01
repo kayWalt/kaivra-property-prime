@@ -30,7 +30,6 @@ import {
 } from "@/lib/investors.functions";
 import { formatNaira, formatDate, type ApplicationStatus } from "@/lib/kaivra";
 
-
 export const Route = createFileRoute("/_authenticated/admin/investors")({
   head: () => ({
     meta: [
@@ -158,7 +157,6 @@ function InvestorsPage() {
           latest: isDraft ? undefined : row,
         });
       }
-
     }
 
     for (const profile of profilesQuery.data ?? []) {
@@ -201,7 +199,6 @@ function InvestorsPage() {
         .includes(needle),
     );
   }, [query.data, profilesQuery.data, term, isAdmin]);
-
 
   const { avatars, isLoading: avatarsLoading } = usePassportAvatars(investors.map((i) => i.id));
 
@@ -461,4 +458,3 @@ function InvestorsPage() {
     </div>
   );
 }
-
