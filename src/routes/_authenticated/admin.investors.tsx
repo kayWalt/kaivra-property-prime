@@ -428,6 +428,8 @@ function InvestorsPage() {
         </div>
       )}
 
+      <AssistInvestorDialog open={assistOpen} onOpenChange={setAssistOpen} onView={setTerm} />
+
       <Dialog open={existingOpen} onOpenChange={setExistingOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
