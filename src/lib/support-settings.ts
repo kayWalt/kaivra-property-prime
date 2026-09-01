@@ -41,12 +41,13 @@ export function useSupportSettings() {
 export function buildWhatsAppLink(
   number: string,
   parts: {
-    name?: string | null;
-    investorCode?: string | null;
-    reference?: string | null;
-    page?: string | null;
-    topic?: string | null;
+    name?: string | null | undefined;
+    investorCode?: string | null | undefined;
+    reference?: string | null | undefined;
+    page?: string | null | undefined;
+    topic?: string | null | undefined;
   },
+
 ) {
   const digits = (number || FALLBACK.whatsapp_number).replace(/[^0-9]/g, "");
   const lines = [
