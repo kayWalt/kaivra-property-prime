@@ -135,12 +135,24 @@ async function handler({ request }: { request: Request }) {
         "List the real-estate projects KAIVRA currently offers, with location and description.",
       inputSchema: z.object({}),
       execute: async () => {
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from("projects")
-          .select("name, location, description, project_code, currency, payment_plans")
+          .select("name, location, description, project_code, currency, payment_plans, updated_at")
           .eq("is_active", true)
           .order("created_at");
-        return { projects: data ?? [] };
+        if (error) return { source: "live_database", verified: false, projects: [] };
+        return {
+          source: "live_database",
+          verified: true,
+          retrieved_at: new Date().toISOString(),
+          projects: (data ?? []).map((p) => ({
+            ...p,
+            payment_plans:
+              Array.isArray(p.payment_plans) && p.payment_plans.length > 0
+                ? p.payment_plans
+                : "unknown — not configured in the database",
+          })),
+        };
       },
     }),
     list_properties: tool({
@@ -166,8 +178,24 @@ async function handler({ request }: { request: Request }) {
             .maybeSingle();
           if (project?.id) query = query.eq("project_id", project.id);
         }
-        const { data } = await query.limit(30);
-        return { currency: "NGN", properties: data ?? [] };
+        const { data, error } = await query.limit(30);
+        if (error) return { source: "live_database", verified: false, properties: [] };
+        return {
+          source: "live_database",
+          verified: true,
+          currency: "NGN",
+          retrieved_at: new Date().toISOString(),
+          note: "Only state figures present below. A null/unknown field means UNKNOWN — never report it as zero, sold out or available.",
+          properties: (data ?? []).map((p) => ({
+            ...p,
+            unit_price: p.unit_price ?? "unknown — no verified price on record",
+            units_available:
+              p.units_available === null || p.units_available === undefined
+                ? "unknown — no verified availability on record"
+                : p.units_available,
+            payment_plan: p.payment_plan || "unknown — not configured in the database",
+          })),
+        };
       },
     }),
     my_applications: tool({
