@@ -102,7 +102,7 @@ function InvestorsPage() {
       const { data, error } = await supabase
         .from("applications")
         .select(
-          "id, reference, status, submitted_at, created_at, investor_id, personal, contact, investment, projects(name)",
+          "id, reference, status, submitted_at, created_at, investor_id, project_id, property_id, personal, contact, investment, projects(name)",
         )
         .order("submitted_at", { ascending: false, nullsFirst: false });
       if (error) throw error;
