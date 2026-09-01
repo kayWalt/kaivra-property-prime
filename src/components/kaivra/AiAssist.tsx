@@ -25,12 +25,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useSession } from "@/hooks/useAuth";
+import { useProfile, useSession } from "@/hooks/useAuth";
 import { closeAiAssist, openAiAssist, useAiAssistState } from "@/lib/ai-assist";
+import { SupportThread } from "@/components/kaivra/SupportChat";
+import { buildWhatsAppLink, useSupportSettings } from "@/lib/support-settings";
 import {
   SUPPORT_CATEGORIES,
   SUPPORT_STATUS_LABEL,
   createSupportTicket,
+  startLiveSupportChat,
   type SupportStatus,
 } from "@/lib/support.functions";
 import { cn } from "@/lib/utils";
