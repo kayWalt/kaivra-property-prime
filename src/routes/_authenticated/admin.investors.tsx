@@ -153,9 +153,9 @@ function InvestorsPage() {
         map.set(row.investor_id, {
           id: row.investor_id,
           code: null,
-          name: personal.full_name ?? "Unnamed investor",
-          email: contact.email ?? "—",
-          phone: contact.phone ?? "—",
+          name: personal.full_name || "Unnamed investor",
+          email: contact.email || "—",
+          phone: contact.phone || "—",
           applications: isDraft ? [] : [row],
           drafts: meaningfulDraft ? 1 : 0,
           value: isDraft ? 0 : Number(investment.total_value ?? 0),
@@ -168,10 +168,12 @@ function InvestorsPage() {
       const existing = map.get(profile.id);
       if (existing) {
         existing.code = profile.investor_code;
-        if (existing.name === "Unnamed investor" && profile.full_name)
+        if ((!existing.name || existing.name === "Unnamed investor") && profile.full_name)
           existing.name = profile.full_name;
-        if (existing.email === "—" && profile.email) existing.email = profile.email;
-        if (existing.phone === "—" && profile.phone) existing.phone = profile.phone;
+        if ((!existing.email || existing.email === "—") && profile.email)
+          existing.email = profile.email;
+        if ((!existing.phone || existing.phone === "—") && profile.phone)
+          existing.phone = profile.phone;
       } else if (isAdmin) {
         // Registered investors with no application record at all. Kept out of the
         // active directory below, but still reachable through search.
@@ -198,7 +200,7 @@ function InvestorsPage() {
     }
     return list.filter((i) =>
       `${i.code ?? ""} ${i.name} ${i.email} ${i.phone} ${i.applications
-        .map((a) => a.reference ?? "")
+        .map((a) => `${a.reference ?? ""} ${a.projects?.name ?? ""}`)
         .join(" ")}`
         .toLowerCase()
         .includes(needle),
@@ -304,6 +306,23 @@ function InvestorsPage() {
           <Skeleton className="h-24 w-full" />
           <Skeleton className="h-24 w-full" />
         </div>
+      ) : query.isError || profilesQuery.isError ? (
+        <EmptyState
+          title="Unable to load investors right now"
+          body="Please check your connection and try again."
+          action={
+            <AsyncButton
+              variant="outline"
+              pendingLabel="Retrying…"
+              onClick={() => {
+                void query.refetch();
+                void profilesQuery.refetch();
+              }}
+            >
+              Retry
+            </AsyncButton>
+          }
+        />
       ) : investors.length === 0 ? (
         <EmptyState
           title="No investors yet"
@@ -349,7 +368,7 @@ function InvestorsPage() {
               <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
                 <div className="min-w-0">
                   <dt className="text-xs uppercase tracking-widest text-muted-foreground">
-                    Applications
+                    Investments
                   </dt>
                   <dd className="font-semibold">{investor.applications.length}</dd>
                 </div>
