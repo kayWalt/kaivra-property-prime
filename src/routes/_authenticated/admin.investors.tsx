@@ -156,7 +156,14 @@ function InvestorsPage() {
           name: personal.full_name || "Unnamed investor",
           email: contact.email || "—",
           phone: contact.phone || "—",
-...
+          applications: isDraft ? [] : [row],
+          drafts: meaningfulDraft ? 1 : 0,
+          value: isDraft ? 0 : Number(investment.total_value ?? 0),
+          latest: isDraft ? undefined : row,
+        });
+      }
+    }
+
     for (const profile of profilesQuery.data ?? []) {
       const existing = map.get(profile.id);
       if (existing) {
