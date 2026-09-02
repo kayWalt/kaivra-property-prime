@@ -127,21 +127,11 @@ export function AppShell({ children }: { children: ReactNode }) {
       <header className="no-print sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
         <div className="mx-auto flex h-16 w-full max-w-7xl items-center gap-4 px-4 sm:px-6">
           <Brand />
-          {/* Admin roles carry many links; below lg the sheet menu takes over.
-              On lg+ the bar scrolls horizontally instead of wrapping into the
-              actions, so links can never overlap the QR / bell / avatar. */}
-          <nav className="no-scrollbar ml-6 hidden min-w-0 flex-1 flex-nowrap items-center gap-1 overflow-x-auto lg:flex">
-            {items.map((item) => (
-              <Link
-                key={item.to}
-                to={item.to}
-                className="shrink-0 whitespace-nowrap rounded-md px-2.5 py-2 text-[0.8rem] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-                activeProps={{ className: "bg-accent text-foreground" }}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
+          {/* Primary navigation measures itself and folds any items that do not
+              fit into a "More" menu, so links can never wrap, clip, or intrude
+              into the utility actions (QR / bell / avatar) at any width. */}
+          <DesktopNav items={items} />
+
           <div className="ml-auto flex shrink-0 items-center gap-1 lg:ml-0">
             {role === "admin" || role === "super_admin" ? <ShareQrButton /> : null}
             <Button
