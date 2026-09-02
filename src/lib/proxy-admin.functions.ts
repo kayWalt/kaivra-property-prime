@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { ADMIN_ACTIONS, ADMIN_MODULES, RESTRICTED_MESSAGE } from "@/lib/proxy-admin";
+import { ADMIN_ACTIONS, ADMIN_MODULES, RESTRICTED_MESSAGE, type ProxyGrant } from "@/lib/proxy-admin";
 
 /**
  * Super Admin-only management of Proxy Admins.
@@ -80,7 +80,7 @@ async function audit(
 
 export type ProxyAdminRow = {
   user_id: string;
-  grant: Record<string, unknown>;
+  grant: ProxyGrant;
   full_name: string | null;
   email: string | null;
   avatar_url: string | null;
@@ -134,7 +134,7 @@ export const listProxyAdmins = createServerFn({ method: "POST" })
         const granter = g.granted_by ? byId.get(g.granted_by) : undefined;
         return {
           user_id: g.user_id,
-          grant: g as unknown as Record<string, unknown>,
+          grant: g as unknown as ProxyGrant,
           full_name: profile?.full_name ?? null,
           email: profile?.email ?? null,
           avatar_url: profile?.avatar_url ?? null,
@@ -277,16 +277,25 @@ export const updateProxyAdmin = createServerFn({ method: "POST" })
       .maybeSingle();
     if (beforeError || !before) throw new Error("That proxy admin could not be found.");
 
-    const patch: Record<string, unknown> = {};
-    if (data.permissions) patch["permissions"] = data.permissions;
-    if (data.startsAt) patch["starts_at"] = data.startsAt;
-    if (data.expiresAt !== undefined) patch["expires_at"] = data.expiresAt;
-    if (data.note !== undefined) patch["note"] = data.note;
+    type GrantPatch = {
+      permissions?: typeof data.permissions;
+      starts_at?: string;
+      expires_at?: string | null;
+      note?: string | null;
+      status?: string;
+      revoked_at?: string | null;
+      revoked_by?: string | null;
+    };
+    const patch: GrantPatch = {};
+    if (data.permissions) patch.permissions = data.permissions;
+    if (data.startsAt) patch.starts_at = data.startsAt;
+    if (data.expiresAt !== undefined) patch.expires_at = data.expiresAt;
+    if (data.note !== undefined) patch.note = data.note;
     if (data.status) {
-      patch["status"] = data.status;
+      patch.status = data.status;
       if (data.status === "active") {
-        patch["revoked_at"] = null;
-        patch["revoked_by"] = null;
+        patch.revoked_at = null;
+        patch.revoked_by = null;
       }
     }
     if (Object.keys(patch).length === 0) return { ok: true };
