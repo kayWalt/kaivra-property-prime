@@ -37,9 +37,21 @@ const BodySchema = z.object({
     .optional(),
 });
 
+function env(...names: string[]): string | undefined {
+  for (const name of names) {
+    const runtime =
+      typeof process !== "undefined" && process.env ? process.env[name] : undefined;
+    if (runtime) return runtime;
+    const inlined = (import.meta.env as Record<string, string | undefined>)[name];
+    if (inlined) return inlined;
+  }
+  return undefined;
+}
+
 function supabaseFor(token?: string) {
-  const url = process.env["SUPABASE_URL"]!;
-  const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;
+  // Self-hosted (GitHub -> Cloudflare) builds only carry the VITE_* variables.
+  const url = env("SUPABASE_URL", "VITE_SUPABASE_URL")!;
+  const key = env("SUPABASE_PUBLISHABLE_KEY", "VITE_SUPABASE_PUBLISHABLE_KEY")!;
   return createClient<Database>(url, key, {
     auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
     global: {
@@ -102,8 +114,15 @@ async function handler({ request }: { request: Request }) {
     return new Response("Invalid request", { status: 400 });
   }
 
-  const apiKey = process.env["LOVABLE_API_KEY"];
-  if (!apiKey) return new Response("KAIVRA AI Assist is not configured.", { status: 503 });
+  const apiKey = env("LOVABLE_API_KEY", "AI_GATEWAY_API_KEY");
+  if (!apiKey) {
+    console.error("[ai-chat] LOVABLE_API_KEY is not set on this deployment.");
+    return new Response("KAIVRA AI Assist is not configured.", { status: 503 });
+  }
+  if (!env("SUPABASE_URL", "VITE_SUPABASE_URL") || !env("SUPABASE_PUBLISHABLE_KEY", "VITE_SUPABASE_PUBLISHABLE_KEY")) {
+    console.error("[ai-chat] Supabase environment is not configured on this deployment.");
+    return new Response("KAIVRA AI Assist is not configured.", { status: 503 });
+  }
 
   const authHeader = request.headers.get("authorization") ?? "";
   const token =

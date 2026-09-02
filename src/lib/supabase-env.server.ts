@@ -9,8 +9,14 @@
  */
 function pick(...names: string[]): string | undefined {
   for (const name of names) {
-    const value = process.env[name];
-    if (value) return value;
+    // Runtime env (Lovable hosting / Cloudflare Worker bindings).
+    const runtime =
+      typeof process !== "undefined" && process.env ? process.env[name] : undefined;
+    if (runtime) return runtime;
+    // Build-time inlined env (self-hosted GitHub -> Cloudflare builds only
+    // carry the VITE_* variables, and only through import.meta.env).
+    const inlined = (import.meta.env as Record<string, string | undefined>)[name];
+    if (inlined) return inlined;
   }
   return undefined;
 }
