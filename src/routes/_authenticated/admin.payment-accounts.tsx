@@ -262,14 +262,16 @@ function AdminPaymentAccounts() {
   }
 
   async function reveal(account: PaymentAccount) {
-    const { data, error } = await supabase.rpc("admin_payment_account_number", {
-      _account_id: account.id,
-    });
-    if (error) {
-      toast.error("You are not authorised to view this account number.");
-      return;
+    try {
+      const { accountNumber } = await revealAccountNumber({ data: { accountId: account.id } });
+      setRevealed((prev) => ({ ...prev, [account.id]: accountNumber || "—" }));
+    } catch (err) {
+      toast.error(
+        err instanceof Error && err.message
+          ? err.message
+          : "You are not authorised to view this account number.",
+      );
     }
-    setRevealed((prev) => ({ ...prev, [account.id]: (data as string) ?? "—" }));
   }
 
   if (rolesLoading) {
