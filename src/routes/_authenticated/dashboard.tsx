@@ -1,5 +1,6 @@
 import { useEffect } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { ADMIN_MODULES, buildAdminAccess, useMyProxyGrant } from "@/lib/proxy-admin";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowRight, CalendarDays, CreditCard, FileText, Layers } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
