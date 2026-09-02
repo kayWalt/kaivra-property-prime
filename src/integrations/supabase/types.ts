@@ -1040,6 +1040,54 @@ export type Database = {
           },
         ]
       }
+      proxy_admin_grants: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          granted_by: string | null
+          id: string
+          last_activity_at: string | null
+          note: string | null
+          permissions: Json
+          revoked_at: string | null
+          revoked_by: string | null
+          starts_at: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          granted_by?: string | null
+          id?: string
+          last_activity_at?: string | null
+          note?: string | null
+          permissions?: Json
+          revoked_at?: string | null
+          revoked_by?: string | null
+          starts_at?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          granted_by?: string | null
+          id?: string
+          last_activity_at?: string | null
+          note?: string | null
+          permissions?: Json
+          revoked_at?: string | null
+          revoked_by?: string | null
+          starts_at?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       support_messages: {
         Row: {
           attachment_name: string | null

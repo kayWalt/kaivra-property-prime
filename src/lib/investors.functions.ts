@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { assertAdminCan } from "@/lib/admin-permissions.server";
 
 /**
  * Investor identity helpers.
@@ -111,7 +112,9 @@ export const registerInvestor = createServerFn({ method: "POST" })
       .parse(data),
   )
   .handler(async ({ data, context }) => {
-    await assertRole(context.supabase as never, context.userId);
+    // Privileged: creates an auth user with the service role, so a Proxy Admin
+    // must explicitly hold `investors.create`.
+    await assertAdminCan(context.supabase as never, context.userId, "investors", "create");
     const email = data.email.toLowerCase();
 
     const { data: existing } = await context.supabase

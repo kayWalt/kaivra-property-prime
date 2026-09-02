@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { assertAdminCan } from "@/lib/admin-permissions.server";
 
 const inviteSchema = z.object({
   email: z.string().trim().email().max(255),
@@ -19,13 +20,9 @@ export const sendAdviserInvitation = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) => inviteSchema.parse(data))
   .handler(async ({ data, context }) => {
-    const { data: roles, error: rolesError } = await context.supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", context.userId);
-    if (rolesError) throw new Error("You do not have permission to perform this action.");
-    const isAdmin = (roles ?? []).some((r) => r.role === "admin" || r.role === "super_admin");
-    if (!isAdmin) throw new Error("You do not have permission to perform this action.");
+    // Privileged: issues an auth invitation with the service role, so a Proxy
+    // Admin must explicitly hold `advisers.manage`.
+    await assertAdminCan(context.supabase as never, context.userId, "advisers", "manage");
 
     const email = data.email.toLowerCase();
 
