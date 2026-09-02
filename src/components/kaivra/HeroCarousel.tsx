@@ -182,7 +182,7 @@ export function HeroCarousel({ className }: { className?: string }) {
           type="button"
           onClick={() => setPlaying((p) => !p)}
           aria-label={playing ? "Pause automatic image rotation" : "Resume automatic image rotation"}
-          className="inline-flex size-10 items-center justify-center rounded-full border border-onyx-foreground/30 bg-onyx/40 text-onyx-foreground backdrop-blur-md transition-colors hover:bg-onyx/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
+          className="hidden size-10 items-center justify-center rounded-full border border-onyx-foreground/30 bg-onyx/40 text-onyx-foreground backdrop-blur-md transition-colors hover:bg-onyx/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold sm:inline-flex"
         >
           {playing ? <Pause className="size-4" aria-hidden /> : <Play className="size-4" aria-hidden />}
         </button>
