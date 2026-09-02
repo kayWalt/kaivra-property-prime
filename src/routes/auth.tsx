@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Brand } from "@/components/kaivra/Brand";
+
 import { useSession } from "@/hooks/useAuth";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { assetUrl } from "@/lib/media";
