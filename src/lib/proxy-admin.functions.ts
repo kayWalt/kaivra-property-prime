@@ -83,10 +83,15 @@ export type ProxyAdminRow = {
   grant: ProxyGrant;
   full_name: string | null;
   email: string | null;
+  phone: string | null;
   avatar_url: string | null;
   granted_by_name: string | null;
   last_sign_in_at: string | null;
+  /** Auth identity state — drives the invitation / activation UI. */
+  invited_at: string | null;
+  activated_at: string | null;
 };
+
 
 /** Lists every proxy admin with their grant, profile and last sign-in. */
 export const listProxyAdmins = createServerFn({ method: "POST" })
