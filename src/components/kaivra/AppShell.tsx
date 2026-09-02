@@ -272,6 +272,10 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   function signOut() {
     clearPushExternalUserId();
+    if (access.isProxyAdmin) {
+      // Recorded before the session is torn down; best-effort only.
+      void recordProxyAdminSessionEvent({ data: { event: "LOGOUT" } }).catch(() => {});
+    }
     // Navigate first so the click feels instant; tear down caches and the
     // Supabase session right after, without blocking the transition.
     void navigate({ to: "/auth", replace: true });
@@ -279,6 +283,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     queryClient.clear();
     void supabase.auth.signOut();
   }
+
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
