@@ -13,7 +13,6 @@ import { usePassportAvatars } from "@/hooks/usePassportAvatars";
 import { useRoles, useSession, primaryRole, isStaffRole } from "@/hooks/useAuth";
 import { totals } from "@/lib/applications";
 import {
-import { RequireModule } from "@/components/kaivra/RequireModule";
   APPLICATION_STATUSES,
   STATUS_LABEL,
   formatCompact,
@@ -21,6 +20,7 @@ import { RequireModule } from "@/components/kaivra/RequireModule";
   formatNaira,
   type ApplicationStatus,
 } from "@/lib/kaivra";
+import { RequireModule } from "@/components/kaivra/RequireModule";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
   head: () => ({

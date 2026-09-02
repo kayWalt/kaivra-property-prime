@@ -40,11 +40,11 @@ import {
   type CorrectionStatus,
 } from "@/lib/corrections";
 import {
-import { RequireModule } from "@/components/kaivra/RequireModule";
   applyCorrectionRequest,
   getCorrectionDocumentUrl,
   manageCorrectionRequest,
 } from "@/lib/corrections.functions";
+import { RequireModule } from "@/components/kaivra/RequireModule";
 
 export const Route = createFileRoute("/_authenticated/admin/corrections")({
   head: () => ({

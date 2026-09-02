@@ -38,12 +38,12 @@ import { ApplicationDetailView } from "./applications.$appId";
 import { useRoles, useSession, primaryRole, isStaffRole } from "@/hooks/useAuth";
 import { fetchPayments, logEvent, notify } from "@/lib/applications";
 import {
-import { RequireModule } from "@/components/kaivra/RequireModule";
   APPLICATION_STATUSES,
   STATUS_LABEL,
   formatNaira,
   type ApplicationStatus,
 } from "@/lib/kaivra";
+import { RequireModule } from "@/components/kaivra/RequireModule";
 
 
 export const Route = createFileRoute("/_authenticated/admin/applications/$appId")({
