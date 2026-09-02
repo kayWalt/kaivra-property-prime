@@ -645,6 +645,20 @@ function Landing() {
                 </a>
               </div>
             </div>
+            <div className="flex items-start gap-3">
+              <MapPin className="mt-0.5 size-4 text-gold" aria-hidden />
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wider text-onyx-foreground/60">
+                  Explore
+                </p>
+                <Link
+                  to="/real-estate-investment-abuja"
+                  className="mt-1 block text-sm text-onyx-foreground hover:text-gold"
+                >
+                  Real estate investment in Abuja
+                </Link>
+              </div>
+            </div>
           </div>
           <p className="text-xs text-onyx-foreground/60 lg:self-center">
             © {new Date().getFullYear()} KAIVRA. All rights reserved.
