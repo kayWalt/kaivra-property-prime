@@ -302,7 +302,7 @@ export const updateProxyAdmin = createServerFn({ method: "POST" })
 
     const { error } = await context.supabase
       .from("proxy_admin_grants")
-      .update(patch)
+      .update(patch as Record<string, never>)
       .eq("user_id", data.userId);
     if (error) {
       console.error("[proxy-admin] update failed", error.message);
