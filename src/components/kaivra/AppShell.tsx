@@ -1,11 +1,13 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Bell, LogOut, Menu, User } from "lucide-react";
-import { useEffect, useState, type ReactNode } from "react";
+import { Bell, ChevronDown, LogOut, Menu, User } from "lucide-react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Brand } from "./Brand";
 import { Button } from "@/components/ui/button";
+
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -57,6 +59,106 @@ const NAV: Record<"investor" | "adviser", NavItem[]> = {
     { to: "/admin/enquiries", label: "Enquiries" },
   ],
 };
+
+const LINK_CLASS =
+  "shrink-0 whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background";
+
+/**
+ * Primary desktop navigation. The full item list is rendered once in a hidden
+ * measuring row; the visible row then shows only the items that genuinely fit
+ * and folds the remainder into a "More" dropdown. Pure layout measurement —
+ * no absolute positioning, negative margins, or z-index tricks — so the
+ * utility actions on the right can never be overlapped, whatever the width or
+ * however many modules a role is allowed to see.
+ */
+function DesktopNav({ items }: { items: NavItem[] }) {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const measureRef = useRef<HTMLDivElement | null>(null);
+  const [visibleCount, setVisibleCount] = useState(items.length);
+
+  const recalc = useCallback(() => {
+    const container = containerRef.current;
+    const measure = measureRef.current;
+    if (!container || !measure) return;
+    const available = container.clientWidth;
+    const widths = Array.from(measure.children).map(
+      (child) => (child as HTMLElement).getBoundingClientRect().width,
+    );
+    const moreWidth = widths.pop() ?? 0; // last child is the More button probe
+    const GAP = 4;
+    let used = 0;
+    let count = 0;
+    for (let i = 0; i < widths.length; i += 1) {
+      const next = used + (i === 0 ? 0 : GAP) + (widths[i] ?? 0);
+      const needsMore = i < widths.length - 1;
+      if (next + (needsMore ? GAP + moreWidth : 0) > available) break;
+      used = next;
+      count += 1;
+    }
+    setVisibleCount(count);
+  }, []);
+
+  useLayoutEffect(() => {
+    recalc();
+    const container = containerRef.current;
+    if (!container || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(() => recalc());
+    ro.observe(container);
+    return () => ro.disconnect();
+  }, [recalc, items]);
+
+  const visible = items.slice(0, visibleCount);
+  const overflow = items.slice(visibleCount);
+
+  return (
+    <div ref={containerRef} className="ml-8 hidden min-w-0 flex-1 lg:block">
+      {/* hidden probe row used only for width measurement */}
+      <div
+        ref={measureRef}
+        aria-hidden
+        className="pointer-events-none invisible absolute flex flex-nowrap items-center gap-1"
+      >
+        {items.map((item) => (
+          <span key={item.to} className={LINK_CLASS}>
+            {item.label}
+          </span>
+        ))}
+        <span className={LINK_CLASS}>More</span>
+      </div>
+      <nav aria-label="Primary" className="flex min-w-0 flex-nowrap items-center gap-1">
+        {visible.map((item) => (
+          <Link
+            key={item.to}
+            to={item.to}
+            className={LINK_CLASS}
+            activeProps={{ className: "bg-accent text-foreground" }}
+          >
+            {item.label}
+          </Link>
+        ))}
+        {overflow.length > 0 ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className={LINK_CLASS}>
+                More
+                <ChevronDown className="ml-1 size-4" aria-hidden />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-56">
+              {overflow.map((item) => (
+                <DropdownMenuItem key={item.to} asChild>
+                  <Link to={item.to} activeProps={{ className: "bg-accent text-foreground" }}>
+                    {item.label}
+                  </Link>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : null}
+      </nav>
+    </div>
+  );
+}
 
 
 function useUnreadCount(userId?: string) {
@@ -125,21 +227,11 @@ export function AppShell({ children }: { children: ReactNode }) {
       <header className="no-print sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
         <div className="mx-auto flex h-16 w-full max-w-7xl items-center gap-4 px-4 sm:px-6">
           <Brand />
-          {/* Admin roles carry many links; below lg the sheet menu takes over.
-              On lg+ the bar scrolls horizontally instead of wrapping into the
-              actions, so links can never overlap the QR / bell / avatar. */}
-          <nav className="no-scrollbar ml-6 hidden min-w-0 flex-1 flex-nowrap items-center gap-1 overflow-x-auto lg:flex">
-            {items.map((item) => (
-              <Link
-                key={item.to}
-                to={item.to}
-                className="shrink-0 whitespace-nowrap rounded-md px-2.5 py-2 text-[0.8rem] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-                activeProps={{ className: "bg-accent text-foreground" }}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
+          {/* Primary navigation measures itself and folds any items that do not
+              fit into a "More" menu, so links can never wrap, clip, or intrude
+              into the utility actions (QR / bell / avatar) at any width. */}
+          <DesktopNav items={items} />
+
           <div className="ml-auto flex shrink-0 items-center gap-1 lg:ml-0">
             {role === "admin" || role === "super_admin" ? <ShareQrButton /> : null}
             <Button
