@@ -36,6 +36,7 @@ import { Route as AuthenticatedApplicationsAppIdRouteImport } from './routes/_au
 import { Route as AuthenticatedInspectionsIndexRouteImport } from './routes/_authenticated/inspections.index'
 import { Route as AuthenticatedInspectionsNewRouteImport } from './routes/_authenticated/inspections.new'
 import { Route as ApiPublicAiChatRouteImport } from './routes/api/public/ai-chat'
+import { Route as ApiPublicContactRouteImport } from './routes/api/public/contact'
 import { Route as AuthenticatedAdminApplicationsIndexRouteImport } from './routes/_authenticated/admin.applications.index'
 import { Route as AuthenticatedAdminApplicationsAppIdRouteImport } from './routes/_authenticated/admin.applications.$appId'
 import { Route as ApiPublicAvatarSplatRouteImport } from './routes/api/public/avatar.$'
@@ -190,6 +191,11 @@ const ApiPublicAiChatRoute = ApiPublicAiChatRouteImport.update({
   path: '/api/public/ai-chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicContactRoute = ApiPublicContactRouteImport.update({
+  id: '/api/public/contact',
+  path: '/api/public/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedAdminApplicationsIndexRoute =
   AuthenticatedAdminApplicationsIndexRouteImport.update({
     id: '/admin/applications/',
@@ -238,6 +244,7 @@ export interface FileRoutesByFullPath {
   '/applications/$appId': typeof AuthenticatedApplicationsAppIdRoute
   '/inspections/new': typeof AuthenticatedInspectionsNewRoute
   '/api/public/ai-chat': typeof ApiPublicAiChatRoute
+  '/api/public/contact': typeof ApiPublicContactRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/applications/': typeof AuthenticatedApplicationsIndexRoute
   '/inspections/': typeof AuthenticatedInspectionsIndexRoute
@@ -270,6 +277,7 @@ export interface FileRoutesByTo {
   '/applications/$appId': typeof AuthenticatedApplicationsAppIdRoute
   '/inspections/new': typeof AuthenticatedInspectionsNewRoute
   '/api/public/ai-chat': typeof ApiPublicAiChatRoute
+  '/api/public/contact': typeof ApiPublicContactRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/applications': typeof AuthenticatedApplicationsIndexRoute
   '/inspections': typeof AuthenticatedInspectionsIndexRoute
@@ -304,6 +312,7 @@ export interface FileRoutesById {
   '/_authenticated/applications/$appId': typeof AuthenticatedApplicationsAppIdRoute
   '/_authenticated/inspections/new': typeof AuthenticatedInspectionsNewRoute
   '/api/public/ai-chat': typeof ApiPublicAiChatRoute
+  '/api/public/contact': typeof ApiPublicContactRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/applications/': typeof AuthenticatedApplicationsIndexRoute
   '/_authenticated/inspections/': typeof AuthenticatedInspectionsIndexRoute
@@ -338,6 +347,7 @@ export interface FileRouteTypes {
     | '/applications/$appId'
     | '/inspections/new'
     | '/api/public/ai-chat'
+    | '/api/public/contact'
     | '/admin/'
     | '/applications/'
     | '/inspections/'
@@ -370,6 +380,7 @@ export interface FileRouteTypes {
     | '/applications/$appId'
     | '/inspections/new'
     | '/api/public/ai-chat'
+    | '/api/public/contact'
     | '/admin'
     | '/applications'
     | '/inspections'
@@ -403,6 +414,7 @@ export interface FileRouteTypes {
     | '/_authenticated/applications/$appId'
     | '/_authenticated/inspections/new'
     | '/api/public/ai-chat'
+    | '/api/public/contact'
     | '/_authenticated/admin/'
     | '/_authenticated/applications/'
     | '/_authenticated/inspections/'
@@ -422,6 +434,7 @@ export interface RootRouteChildren {
   ProjectsProjectIdRoute: typeof ProjectsProjectIdRoute
   ProjectsIndexRoute: typeof ProjectsIndexRoute
   ApiPublicAiChatRoute: typeof ApiPublicAiChatRoute
+  ApiPublicContactRoute: typeof ApiPublicContactRoute
   ApiPublicAvatarSplatRoute: typeof ApiPublicAvatarSplatRoute
   ApiPublicProjectImageSplatRoute: typeof ApiPublicProjectImageSplatRoute
 }
@@ -617,6 +630,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicAiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/contact': {
+      id: '/api/public/contact'
+      path: '/api/public/contact'
+      fullPath: '/api/public/contact'
+      preLoaderRoute: typeof ApiPublicContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/admin/applications/': {
       id: '/_authenticated/admin/applications/'
       path: '/admin/applications'
@@ -709,6 +729,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProjectsProjectIdRoute: ProjectsProjectIdRoute,
   ProjectsIndexRoute: ProjectsIndexRoute,
   ApiPublicAiChatRoute: ApiPublicAiChatRoute,
+  ApiPublicContactRoute: ApiPublicContactRoute,
   ApiPublicAvatarSplatRoute: ApiPublicAvatarSplatRoute,
   ApiPublicProjectImageSplatRoute: ApiPublicProjectImageSplatRoute,
 }
