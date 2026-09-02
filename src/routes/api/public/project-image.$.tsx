@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { downloadStorageObject } from "@/lib/supabase-env.server";
 
 const BUCKET = "project-images";
 
@@ -9,16 +10,19 @@ export const Route = createFileRoute("/api/public/project-image/$")({
         const path = (params as { _splat?: string })._splat ?? "";
         if (!path || path.includes("..")) return new Response("Not found", { status: 404 });
 
-        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        const { data, error } = await supabaseAdmin.storage.from(BUCKET).download(path);
-        if (error || !data) return new Response("Not found", { status: 404 });
-
-        return new Response(await data.arrayBuffer(), {
-          headers: {
-            "Content-Type": data.type || "image/jpeg",
-            "Cache-Control": "public, max-age=31536000, immutable",
-          },
-        });
+        try {
+          const file = await downloadStorageObject(BUCKET, path);
+          if (!file) return new Response("Not found", { status: 404 });
+          return new Response(file.body, {
+            headers: {
+              "Content-Type": file.contentType,
+              "Cache-Control": "public, max-age=31536000, immutable",
+            },
+          });
+        } catch (err) {
+          console.error("[project-image] download failed", err);
+          return new Response("Not found", { status: 404 });
+        }
       },
     },
   },
