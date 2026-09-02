@@ -148,7 +148,33 @@ export function AddPaymentDialog({
         </DialogHeader>
 
         <div className="grid gap-4">
+          <div>
+            <Label htmlFor="pay-account">Account paid into</Label>
+            <select
+              id="pay-account"
+              className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+              value={accountId}
+              onChange={(e) => setAccountId(e.target.value)}
+              disabled={accounts.isLoading}
+            >
+              <option value="">
+                {accounts.isLoading ? "Loading accounts…" : "Select the account you paid into"}
+              </option>
+              {(accounts.data ?? []).map((a) => (
+                <option key={a.id} value={a.id}>
+                  {accountLabel(a)}
+                </option>
+              ))}
+            </select>
+            {!accounts.isLoading && (accounts.data ?? []).length === 0 ? (
+              <p className="mt-1 text-xs text-muted-foreground">
+                No payment accounts are published yet — please contact your adviser.
+              </p>
+            ) : null}
+          </div>
+
           <div className="grid gap-2 sm:grid-cols-2">
+
             <div>
               <Label htmlFor="pay-amount">Amount paid (₦)</Label>
               <Input
