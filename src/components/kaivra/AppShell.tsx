@@ -141,7 +141,6 @@ export function AppShell({ children }: { children: ReactNode }) {
             ))}
           </nav>
           <div className="ml-auto flex shrink-0 items-center gap-1 lg:ml-0">
-          <div className="ml-auto flex items-center gap-1">
             {role === "admin" || role === "super_admin" ? <ShareQrButton /> : null}
             <Button
               asChild
