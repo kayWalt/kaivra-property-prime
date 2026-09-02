@@ -37,9 +37,21 @@ const BodySchema = z.object({
     .optional(),
 });
 
+function env(...names: string[]): string | undefined {
+  for (const name of names) {
+    const runtime =
+      typeof process !== "undefined" && process.env ? process.env[name] : undefined;
+    if (runtime) return runtime;
+    const inlined = (import.meta.env as Record<string, string | undefined>)[name];
+    if (inlined) return inlined;
+  }
+  return undefined;
+}
+
 function supabaseFor(token?: string) {
-  const url = process.env["SUPABASE_URL"]!;
-  const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;
+  // Self-hosted (GitHub -> Cloudflare) builds only carry the VITE_* variables.
+  const url = env("SUPABASE_URL", "VITE_SUPABASE_URL")!;
+  const key = env("SUPABASE_PUBLISHABLE_KEY", "VITE_SUPABASE_PUBLISHABLE_KEY")!;
   return createClient<Database>(url, key, {
     auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
     global: {
