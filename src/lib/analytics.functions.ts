@@ -7,44 +7,24 @@ import { resolveRange, type DateRangeKey } from "@/lib/analytics";
  * Read side of the digital footprint system.
  *
  * Authority is re-derived on every call from the caller's own RLS-scoped
- * client. Analytics is a Super Admin function: an ordinary admin sees nothing
- * unless a Super Admin has explicitly granted the `analytics` module on their
- * proxy grant, and even then identity-level detail stays masked.
+ * client. Analytics is STRICTLY a Super Admin function: ordinary admins and
+ * proxy admins are denied on every read, export and settings call.
  */
 
 const RESTRICTED = "Access restricted. Visitor analytics is a KAIVRA Super Admin function.";
 
 type Caller = { supabase: any; userId: string };
 
-async function requireAnalytics(context: Caller, action: "view" | "export" | "manage" = "view") {
+async function requireAnalytics(context: Caller, _action: "view" | "export" | "manage" = "view") {
   const { data: roleRows, error } = await context.supabase
     .from("user_roles")
     .select("role")
     .eq("user_id", context.userId);
   if (error) throw new Error(RESTRICTED);
   const roles = ((roleRows ?? []) as { role: string }[]).map((r) => r.role);
-  if (roles.includes("super_admin")) return { isSuperAdmin: true };
-
-  if (!roles.includes("admin")) throw new Error(RESTRICTED);
-  const { data: grant } = await context.supabase
-    .from("proxy_admin_grants")
-    .select("permissions, status, starts_at, expires_at")
-    .eq("user_id", context.userId)
-    .maybeSingle();
-  const g = grant as
-    | { permissions: Record<string, string[]> | null; status: string; starts_at: string; expires_at: string | null }
-    | null;
-  const now = Date.now();
-  const active =
-    !!g &&
-    g.status === "active" &&
-    new Date(g.starts_at).getTime() <= now &&
-    (!g.expires_at || new Date(g.expires_at).getTime() > now);
-  // Plain admins are NOT implicitly allowed here: analytics must be granted.
-  if (!active || !(g!.permissions?.["analytics"] ?? []).includes(action)) {
-    throw new Error(RESTRICTED);
-  }
-  return { isSuperAdmin: false };
+  // Strictly Super Admin: no grant, payload, header or role claim can widen it.
+  if (!roles.includes("super_admin")) throw new Error(RESTRICTED);
+  return { isSuperAdmin: true };
 }
 
 const rangeSchema = z.object({
