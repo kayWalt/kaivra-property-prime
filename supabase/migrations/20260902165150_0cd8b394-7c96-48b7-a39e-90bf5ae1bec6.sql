@@ -1,0 +1,1 @@
+DROP FUNCTION IF EXISTS public.admin_can(text, text);

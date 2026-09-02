@@ -1245,10 +1245,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      admin_can: {
-        Args: { _action: string; _module: string }
-        Returns: boolean
-      }
+      [_ in never]: never
     }
     Enums: {
       app_role: "super_admin" | "admin" | "adviser" | "investor"
