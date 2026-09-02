@@ -58,6 +58,8 @@ type Row = {
   verified_at: string | null;
   verified_by: string | null;
   rejection_reason: string | null;
+  payment_account_snapshot?: unknown;
+
   application_id: string;
   applications: {
     id: string;
