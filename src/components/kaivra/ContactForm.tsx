@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Loader2, Send } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { submitContactEnquiry } from "@/lib/contact.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,19 +10,21 @@ import { Textarea } from "@/components/ui/textarea";
 /**
  * Public KAIVRA enquiry form.
  *
- * Writes to `public.contact_enquiries`, which allows anonymous inserts but
- * only lets KAIVRA staff read the enquiries back, so nothing submitted here is
- * silently discarded and nothing is exposed to other visitors.
+ * Submission goes through a server function that validates every field,
+ * applies spam/abuse protection, stores the enquiry in
+ * `public.contact_enquiries` (staff-read only) and emails the KAIVRA support
+ * mailbox. The visitor only sees success once the enquiry is safely stored.
  */
 export function ContactForm() {
   const [sending, setSending] = useState(false);
-  const [sent, setSent] = useState(false);
+  const [reference, setReference] = useState<string | null>(null);
   const [form, setForm] = useState({
     full_name: "",
     email: "",
     phone: "",
     subject: "",
     message: "",
+    company: "",
   });
 
   const set = (key: keyof typeof form) => (value: string) =>
@@ -32,22 +34,37 @@ export function ContactForm() {
     event.preventDefault();
     if (sending) return;
     setSending(true);
-    const { error } = await supabase.from("contact_enquiries").insert({
-      full_name: form.full_name.trim(),
-      email: form.email.trim(),
-      phone: form.phone.trim() || null,
-      subject: form.subject.trim(),
-      message: form.message.trim(),
-      source_page: typeof window !== "undefined" ? window.location.pathname : null,
-    });
-    setSending(false);
-    if (error) {
-      toast.error(error.message || "Your enquiry could not be sent. Please try again.");
-      return;
+    try {
+      const res = await submitContactEnquiry({
+        data: {
+          full_name: form.full_name.trim(),
+          email: form.email.trim(),
+          phone: form.phone.trim() || null,
+          subject: form.subject.trim(),
+          message: form.message.trim(),
+          source_page: typeof window !== "undefined" ? window.location.pathname : null,
+          company: form.company,
+        },
+      });
+      setReference(res.reference);
+      setForm({
+        full_name: "",
+        email: "",
+        phone: "",
+        subject: "",
+        message: "",
+        company: "",
+      });
+      toast.success("Thank you — a KAIVRA adviser will be in touch.");
+    } catch (err) {
+      toast.error(
+        err instanceof Error && err.message
+          ? err.message
+          : "Your enquiry could not be sent. Please try again.",
+      );
+    } finally {
+      setSending(false);
     }
-    setSent(true);
-    setForm({ full_name: "", email: "", phone: "", subject: "", message: "" });
-    toast.success("Thank you — a KAIVRA adviser will be in touch.");
   }
 
   return (
@@ -57,6 +74,7 @@ export function ContactForm() {
         <Input
           id="contact-name"
           required
+          minLength={2}
           maxLength={120}
           value={form.full_name}
           onChange={(e) => set("full_name")(e.target.value)}
@@ -87,6 +105,7 @@ export function ContactForm() {
         <Input
           id="contact-subject"
           required
+          minLength={2}
           maxLength={160}
           value={form.subject}
           onChange={(e) => set("subject")(e.target.value)}
@@ -98,12 +117,24 @@ export function ContactForm() {
           id="contact-message"
           required
           rows={4}
+          minLength={10}
           maxLength={2000}
           value={form.message}
           onChange={(e) => set("message")(e.target.value)}
         />
       </div>
-      <div className="flex items-center gap-3 sm:col-span-2">
+      {/* Honeypot — hidden from humans, ignored server-side when filled. */}
+      <div className="hidden" aria-hidden>
+        <label htmlFor="contact-company">Company</label>
+        <input
+          id="contact-company"
+          tabIndex={-1}
+          autoComplete="off"
+          value={form.company}
+          onChange={(e) => set("company")(e.target.value)}
+        />
+      </div>
+      <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
         <Button type="submit" disabled={sending}>
           {sending ? (
             <Loader2 className="size-4 animate-spin" aria-hidden />
@@ -112,9 +143,10 @@ export function ContactForm() {
           )}
           Send enquiry
         </Button>
-        {sent ? (
+        {reference ? (
           <p className="text-sm text-muted-foreground">
-            Your enquiry has been received by the KAIVRA team.
+            Enquiry received — your reference is{" "}
+            <span className="font-medium text-foreground">{reference}</span>.
           </p>
         ) : null}
       </div>
