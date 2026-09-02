@@ -1704,6 +1704,31 @@ function StepPayment({
           <div className="mt-6 rounded-lg border border-border bg-card p-4">
             <p className="eyebrow text-primary">Add payment</p>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              <div className="sm:col-span-2">
+                <Field label="Account paid into" htmlFor="payment_account">
+                  <select
+                    id="payment_account"
+                    className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                    value={form.payment_account_id}
+                    disabled={accounts.isLoading}
+                    onChange={(e) => setForm({ ...form, payment_account_id: e.target.value })}
+                  >
+                    <option value="">
+                      {accounts.isLoading
+                        ? "Loading accounts…"
+                        : accountRequired
+                          ? "Select the account you paid into"
+                          : "No payment accounts published"}
+                    </option>
+                    {(accounts.data ?? []).map((a) => (
+                      <option key={a.id} value={a.id}>
+                        {accountLabel(a)}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+              </div>
+
               <Field label="Amount (₦)" htmlFor="amount">
                 <Input
                   id="amount"
