@@ -20,7 +20,7 @@ export const createProjectImageUploadTicket = createServerFn({ method: "POST" })
       .parse(data),
   )
   .handler(async ({ data, context }) => {
-    await assertAdminCan(context.supabase as never, context.userId, "projects", "edit");
+    await assertAdminCan(context.supabase as never, context.userId, "projects", "manage");
 
     const path = `${data.scope}/${crypto.randomUUID()}-${safeName(data.fileName)}`;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
