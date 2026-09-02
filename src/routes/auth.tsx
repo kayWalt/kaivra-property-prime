@@ -10,7 +10,8 @@ import { Label } from "@/components/ui/label";
 import { Brand } from "@/components/kaivra/Brand";
 import { useSession } from "@/hooks/useAuth";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
-import { FALLBACK_PROPERTY_IMAGE } from "@/lib/media";
+import { assetUrl } from "@/lib/media";
+import authHero from "@/assets/kaivra-duplex-option-1.jpg.asset.json";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -159,8 +160,8 @@ function AuthPage() {
     <div className="grid min-h-screen lg:grid-cols-2">
       <div className="relative hidden lg:block">
         <img
-          src={FALLBACK_PROPERTY_IMAGE}
-          alt="Lakefront luxury estate at sunset"
+          src={assetUrl(authHero.url)}
+          alt="Proposed five bedroom KAIVRA duplex, option one architectural renders"
           className="absolute inset-0 size-full object-cover"
           width={1920}
           height={1088}
