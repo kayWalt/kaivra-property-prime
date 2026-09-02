@@ -431,6 +431,51 @@ export type Database = {
           },
         ]
       }
+      contact_enquiries: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string
+          handled: boolean
+          handled_at: string | null
+          handled_by: string | null
+          id: string
+          message: string
+          phone: string | null
+          source_page: string | null
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          full_name: string
+          handled?: boolean
+          handled_at?: string | null
+          handled_by?: string | null
+          id?: string
+          message: string
+          phone?: string | null
+          source_page?: string | null
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          full_name?: string
+          handled?: boolean
+          handled_at?: string | null
+          handled_by?: string | null
+          id?: string
+          message?: string
+          phone?: string | null
+          source_page?: string | null
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       inspection_appointments: {
         Row: {
           admin_note: string | null
