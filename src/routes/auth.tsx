@@ -11,7 +11,7 @@ import { Brand } from "@/components/kaivra/Brand";
 import { useSession } from "@/hooks/useAuth";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { assetUrl } from "@/lib/media";
-import authHero from "@/assets/kaivra-duplex-option-1.jpg.asset.json";
+import authHero from "@/assets/kaivra-auth-hero-2026-09-02.jpg.asset.json";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -161,7 +161,7 @@ function AuthPage() {
       <div className="relative hidden lg:block">
         <img
           src={assetUrl(authHero.url)}
-          alt="Proposed five bedroom KAIVRA duplex, option one architectural renders"
+          alt="Modern luxury KAIVRA residence with illuminated terraces and landscaped grounds"
           className="absolute inset-0 size-full object-cover"
           width={1920}
           height={1088}
