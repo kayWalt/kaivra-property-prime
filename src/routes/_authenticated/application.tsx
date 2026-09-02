@@ -1557,6 +1557,8 @@ function StepPayment({
     bank: string | null;
     reference: string | null;
     status: string;
+    payment_account_snapshot?: unknown;
+
   }[];
   onAdd: (payment: PaymentDraft) => Promise<boolean>;
   onRemove: (id: string) => Promise<void>;
