@@ -24,6 +24,7 @@ import teamJoseph from "@/assets/team-joseph-osoria.jpg.asset.json";
 import teamNkiruka from "@/assets/team-nkiruka-onyeugo.jpg.asset.json";
 import teamYarison from "@/assets/team-yarison-hope.jpg.asset.json";
 import { mediaSrc } from "@/lib/media";
+import { ContactForm } from "@/components/kaivra/ContactForm";
 
 export const Route = createFileRoute("/")({
   head: () => ({
