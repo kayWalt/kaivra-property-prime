@@ -26,6 +26,7 @@ import { Route as ProjectsProjectIdRouteImport } from './routes/projects.$projec
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedAdminAccessRouteImport } from './routes/_authenticated/admin.access'
 import { Route as AuthenticatedAdminAdvisersRouteImport } from './routes/_authenticated/admin.advisers'
+import { Route as AuthenticatedAdminAnalyticsRouteImport } from './routes/_authenticated/admin.analytics'
 import { Route as AuthenticatedAdminCorrectionsRouteImport } from './routes/_authenticated/admin.corrections'
 import { Route as AuthenticatedAdminEnquiriesRouteImport } from './routes/_authenticated/admin.enquiries'
 import { Route as AuthenticatedAdminInspectionsRouteImport } from './routes/_authenticated/admin.inspections'
@@ -137,6 +138,12 @@ const AuthenticatedAdminAdvisersRoute =
   AuthenticatedAdminAdvisersRouteImport.update({
     id: '/admin/advisers',
     path: '/admin/advisers',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminAnalyticsRoute =
+  AuthenticatedAdminAnalyticsRouteImport.update({
+    id: '/admin/analytics',
+    path: '/admin/analytics',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedAdminCorrectionsRoute =
@@ -283,6 +290,7 @@ export interface FileRoutesByFullPath {
   '/projects/': typeof ProjectsIndexRoute
   '/admin/access': typeof AuthenticatedAdminAccessRoute
   '/admin/advisers': typeof AuthenticatedAdminAdvisersRoute
+  '/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
   '/admin/corrections': typeof AuthenticatedAdminCorrectionsRoute
   '/admin/enquiries': typeof AuthenticatedAdminEnquiriesRoute
   '/admin/inspections': typeof AuthenticatedAdminInspectionsRoute
@@ -323,6 +331,7 @@ export interface FileRoutesByTo {
   '/projects': typeof ProjectsIndexRoute
   '/admin/access': typeof AuthenticatedAdminAccessRoute
   '/admin/advisers': typeof AuthenticatedAdminAdvisersRoute
+  '/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
   '/admin/corrections': typeof AuthenticatedAdminCorrectionsRoute
   '/admin/enquiries': typeof AuthenticatedAdminEnquiriesRoute
   '/admin/inspections': typeof AuthenticatedAdminInspectionsRoute
@@ -365,6 +374,7 @@ export interface FileRoutesById {
   '/projects/': typeof ProjectsIndexRoute
   '/_authenticated/admin/access': typeof AuthenticatedAdminAccessRoute
   '/_authenticated/admin/advisers': typeof AuthenticatedAdminAdvisersRoute
+  '/_authenticated/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
   '/_authenticated/admin/corrections': typeof AuthenticatedAdminCorrectionsRoute
   '/_authenticated/admin/enquiries': typeof AuthenticatedAdminEnquiriesRoute
   '/_authenticated/admin/inspections': typeof AuthenticatedAdminInspectionsRoute
@@ -407,6 +417,7 @@ export interface FileRouteTypes {
     | '/projects/'
     | '/admin/access'
     | '/admin/advisers'
+    | '/admin/analytics'
     | '/admin/corrections'
     | '/admin/enquiries'
     | '/admin/inspections'
@@ -447,6 +458,7 @@ export interface FileRouteTypes {
     | '/projects'
     | '/admin/access'
     | '/admin/advisers'
+    | '/admin/analytics'
     | '/admin/corrections'
     | '/admin/enquiries'
     | '/admin/inspections'
@@ -488,6 +500,7 @@ export interface FileRouteTypes {
     | '/projects/'
     | '/_authenticated/admin/access'
     | '/_authenticated/admin/advisers'
+    | '/_authenticated/admin/analytics'
     | '/_authenticated/admin/corrections'
     | '/_authenticated/admin/enquiries'
     | '/_authenticated/admin/inspections'
@@ -651,6 +664,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/advisers'
       fullPath: '/admin/advisers'
       preLoaderRoute: typeof AuthenticatedAdminAdvisersRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/analytics': {
+      id: '/_authenticated/admin/analytics'
+      path: '/admin/analytics'
+      fullPath: '/admin/analytics'
+      preLoaderRoute: typeof AuthenticatedAdminAnalyticsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin/corrections': {
@@ -819,6 +839,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedTransactionsRoute: typeof AuthenticatedTransactionsRoute
   AuthenticatedAdminAccessRoute: typeof AuthenticatedAdminAccessRoute
   AuthenticatedAdminAdvisersRoute: typeof AuthenticatedAdminAdvisersRoute
+  AuthenticatedAdminAnalyticsRoute: typeof AuthenticatedAdminAnalyticsRoute
   AuthenticatedAdminCorrectionsRoute: typeof AuthenticatedAdminCorrectionsRoute
   AuthenticatedAdminEnquiriesRoute: typeof AuthenticatedAdminEnquiriesRoute
   AuthenticatedAdminInspectionsRoute: typeof AuthenticatedAdminInspectionsRoute
@@ -845,6 +866,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedTransactionsRoute: AuthenticatedTransactionsRoute,
   AuthenticatedAdminAccessRoute: AuthenticatedAdminAccessRoute,
   AuthenticatedAdminAdvisersRoute: AuthenticatedAdminAdvisersRoute,
+  AuthenticatedAdminAnalyticsRoute: AuthenticatedAdminAnalyticsRoute,
   AuthenticatedAdminCorrectionsRoute: AuthenticatedAdminCorrectionsRoute,
   AuthenticatedAdminEnquiriesRoute: AuthenticatedAdminEnquiriesRoute,
   AuthenticatedAdminInspectionsRoute: AuthenticatedAdminInspectionsRoute,

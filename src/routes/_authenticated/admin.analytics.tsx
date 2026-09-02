@@ -390,7 +390,7 @@ function AnalyticsDashboard({ canExport }: { canExport: boolean }) {
           {feed.isLoading ? (
             <Skeleton className="h-64 w-full" />
           ) : (feed.data?.items ?? []).length === 0 ? (
-            <EmptyState title="No activity" description="No events match these filters yet." />
+            <EmptyState title="No activity" body="No events match these filters yet." />
           ) : (
             <div className="overflow-x-auto rounded-lg border">
               <table className="w-full text-sm">
