@@ -41,8 +41,11 @@ export const Route = createFileRoute("/")({
         content: "Invest in the future you can own. Premium real-estate investment management.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://kaivraa.com/" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    // Canonical host is the apex domain; www serves the same app.
+    links: [{ rel: "canonical", href: "https://kaivraa.com/" }],
   }),
   component: Landing,
 });

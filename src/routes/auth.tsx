@@ -27,8 +27,10 @@ export const Route = createFileRoute("/auth")({
         content: "Sign in to manage your real-estate investments with KAIVRA.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://kaivraa.com/auth" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: "https://kaivraa.com/auth" }],
   }),
   component: AuthPage,
 });
