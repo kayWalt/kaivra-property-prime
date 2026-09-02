@@ -1550,7 +1550,7 @@ function StepPayment({
     reference: string | null;
     status: string;
   }[];
-  onAdd: (payment: PaymentDraft) => Promise<void>;
+  onAdd: (payment: PaymentDraft) => Promise<boolean>;
   onRemove: (id: string) => Promise<void>;
   paid: number;
   outstanding: number;
