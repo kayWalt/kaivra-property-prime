@@ -15,13 +15,13 @@ export async function resolvePaymentAccountNumber(
   userId: string,
   accountId: string,
 ): Promise<string | null | "forbidden"> {
-  const { data: roles, error: roleError } = await supabase
-    .from("user_roles")
-    .select("role")
-    .eq("user_id", userId);
-  if (roleError) return "forbidden";
-  const isAdmin = (roles ?? []).some((r) => r.role === "admin" || r.role === "super_admin");
-  if (!isAdmin) return "forbidden";
+  // Module permission and the Proxy Admin access window, both server-derived.
+  try {
+    const { assertAdminCan } = await import("@/lib/admin-permissions.server");
+    await assertAdminCan(supabase as never, userId, "payment_accounts", "view");
+  } catch {
+    return "forbidden";
+  }
 
   try {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
