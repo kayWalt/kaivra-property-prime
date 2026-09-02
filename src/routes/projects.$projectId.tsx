@@ -11,7 +11,7 @@ import { parseGallery, type GalleryImage } from "@/components/kaivra/ProjectImag
 import { formatNaira } from "@/lib/kaivra";
 import { mediaSrc, FALLBACK_PROPERTY_IMAGE } from "@/lib/media";
 
-const SITE_URL = "https://kaivraa-com.lovable.app";
+const SITE_URL = "https://kaivraa.com";
 
 export const Route = createFileRoute("/projects/$projectId")({
   loader: async ({ params }) => {

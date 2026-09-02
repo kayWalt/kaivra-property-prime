@@ -23,7 +23,7 @@ import teamHassan from "@/assets/team-hassan-jaafar.jpg.asset.json";
 import teamJoseph from "@/assets/team-joseph-osoria.jpg.asset.json";
 import teamNkiruka from "@/assets/team-nkiruka-onyeugo.jpg.asset.json";
 import teamYarison from "@/assets/team-yarison-hope.jpg.asset.json";
-import { mediaSrc } from "@/lib/media";
+import { mediaSrc, assetUrl } from "@/lib/media";
 import { ContactForm } from "@/components/kaivra/ContactForm";
 
 export const Route = createFileRoute("/")({
@@ -117,7 +117,7 @@ function Landing() {
 
       <section className="relative min-h-[92svh] w-full">
         <img
-          src={heroAsset.url}
+          src={assetUrl(heroAsset.url)}
           alt="Contemporary KAIVRA residences with landscaped courtyards at dusk"
           className="absolute inset-0 size-full object-cover"
           width={1280}
@@ -290,7 +290,7 @@ function Landing() {
         <div className="mx-auto grid w-full max-w-7xl items-center gap-10 px-5 py-20 sm:px-8 md:grid-cols-2">
           <div className="relative overflow-hidden rounded-lg border border-border bg-onyx">
             <img
-              src={adviserAsset.url}
+              src={assetUrl(adviserAsset.url)}
               alt="A KAIVRA investment adviser"
               loading="lazy"
               width={1119}
@@ -323,7 +323,7 @@ function Landing() {
 
       <section className="relative">
         <img
-          src={residenceAsset.url}
+          src={assetUrl(residenceAsset.url)}
           alt="Signature KAIVRA residence exterior"
           loading="lazy"
           width={952}
@@ -388,7 +388,7 @@ function Landing() {
               style={{ animationDelay: "0ms" }}
             >
               <img
-                src={teamChairman.url}
+                src={assetUrl(teamChairman.url)}
                 alt="Chief Andy Elerewe, Chairman of AIBEN Group"
                 loading="lazy"
                 className="aspect-[7/10] size-full object-cover object-top"
@@ -512,7 +512,7 @@ function Landing() {
                 >
                   <div className="aspect-[9/10] overflow-hidden">
                     <img
-                      src={member.asset.url}
+                      src={assetUrl(member.asset.url)}
                       alt={`${member.name}, ${member.role}`}
                       loading="lazy"
                       className="size-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
@@ -575,7 +575,7 @@ function Landing() {
                 >
                   <div className="relative aspect-[4/3] overflow-hidden">
                     <img
-                      src={partner.asset.url}
+                      src={assetUrl(partner.asset.url)}
                       alt={partner.alt}
                       loading="lazy"
                       className="size-full object-cover transition-transform duration-700 group-hover:scale-105"

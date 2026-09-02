@@ -40,7 +40,7 @@ const schema = z.object({
 });
 
 const googleAuth = createLovableAuth({
-  oauthBrokerUrl: "https://kaivra-property-prime.lovable.app/~oauth/initiate",
+  oauthBrokerUrl: "https://kaivraa-com.lovable.app/~oauth/initiate",
 });
 
 function AuthPage() {

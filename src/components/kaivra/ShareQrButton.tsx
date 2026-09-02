@@ -12,7 +12,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-const APP_URL = "https://kaivra-property-prime.lovable.app";
+const APP_URL = "https://kaivraa.com";
 
 export function ShareQrButton() {
   const [copied, setCopied] = useState(false);
