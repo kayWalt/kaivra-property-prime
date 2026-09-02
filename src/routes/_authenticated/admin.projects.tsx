@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useRoles, useSession, primaryRole } from "@/hooks/useAuth";
 import { formatNaira } from "@/lib/kaivra";
+import { RequireModule } from "@/components/kaivra/RequireModule";
 
 export const Route = createFileRoute("/_authenticated/admin/projects")({
   head: () => ({
@@ -45,7 +46,11 @@ export const Route = createFileRoute("/_authenticated/admin/projects")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: ProjectManagement,
+  component: () => (
+    <RequireModule module="projects">
+      <ProjectManagement />
+    </RequireModule>
+  ),
 });
 
 function ProjectManagement() {

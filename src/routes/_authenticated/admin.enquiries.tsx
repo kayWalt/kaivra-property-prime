@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { useRoles, useSession, primaryRole, isStaffRole } from "@/hooks/useAuth";
 import { formatDate } from "@/lib/kaivra";
+import { RequireModule } from "@/components/kaivra/RequireModule";
 
 export const Route = createFileRoute("/_authenticated/admin/enquiries")({
   head: () => ({
@@ -37,7 +38,11 @@ export const Route = createFileRoute("/_authenticated/admin/enquiries")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: AdminEnquiries,
+  component: () => (
+    <RequireModule module="enquiries" allowAdviser>
+      <AdminEnquiries />
+    </RequireModule>
+  ),
 });
 
 const STATUSES = ["new", "in_progress", "replied", "closed"] as const;

@@ -1,5 +1,6 @@
 import { useEffect } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { ADMIN_MODULES, buildAdminAccess, useMyProxyGrant } from "@/lib/proxy-admin";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowRight, CalendarDays, CreditCard, FileText, Layers } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -47,6 +48,24 @@ function Dashboard() {
   const { data: profile } = useProfile(user?.id);
   const { data: roles } = useRoles(user?.id);
   const role = primaryRole(roles);
+  const navigate = useNavigate();
+  const { data: grant, isLoading: grantLoading } = useMyProxyGrant(
+    role === "admin" ? user?.id : undefined,
+  );
+  const access = buildAdminAccess(role, grant ?? null);
+
+  // Administrators land in their own workspace; a Proxy Admin is sent to the
+  // first module their grant actually allows. Expired grants stay here.
+  useEffect(() => {
+    if (role !== "admin" && role !== "super_admin") return;
+    if (role === "admin" && grantLoading) return;
+    if (access.accessExpired) return;
+    const target = access.can("applications", "view")
+      ? "/admin"
+      : (ADMIN_MODULES.find((m) => access.modules.includes(m.key))?.to ?? null);
+    if (target) void navigate({ to: target, replace: true });
+  }, [role, grantLoading, access.accessExpired, access.modules.join(","), navigate]);
+
 
   const apps = useQuery({
     queryKey: ["my-applications", user?.id],

@@ -32,6 +32,7 @@ import {
   toDateKey,
   type InspectionStatus,
 } from "@/lib/inspections";
+import { RequireModule } from "@/components/kaivra/RequireModule";
 
 export const Route = createFileRoute("/_authenticated/admin/inspections")({
   head: () => ({
@@ -47,7 +48,11 @@ export const Route = createFileRoute("/_authenticated/admin/inspections")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: AdminInspections,
+  component: () => (
+    <RequireModule module="inspections" allowAdviser>
+      <AdminInspections />
+    </RequireModule>
+  ),
 });
 
 type Row = {

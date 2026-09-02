@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { assertAdminCan } from "@/lib/admin-permissions.server";
 import { CORRECTION_STATUSES } from "./corrections";
 
 /**
@@ -19,15 +20,8 @@ const CORRECTION_SELECT =
   "id, reference, investor_id, application_id, section, field_label, current_value, requested_value, reason, status, investor_response, admin_response, admin_note, resolution_details, acknowledged_at, applied_at, resolved_at, created_at, updated_at";
 
 async function assertAdmin(context: Ctx) {
-  const { data: roles, error } = await context.supabase
-    .from("user_roles")
-    .select("role")
-    .eq("user_id", context.userId);
-  if (error) throw new Error("Your permissions could not be verified.");
-  const ok = (roles ?? []).some(
-    (r: { role: string }) => r.role === "admin" || r.role === "super_admin",
-  );
-  if (!ok) throw new Error("You are not authorised to manage correction requests.");
+  // Module permission + active access window, both re-derived server-side.
+  await assertAdminCan(context.supabase as never, context.userId, "corrections", "resolve");
 }
 
 function requestMeta() {

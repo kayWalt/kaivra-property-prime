@@ -44,6 +44,7 @@ import {
   getCorrectionDocumentUrl,
   manageCorrectionRequest,
 } from "@/lib/corrections.functions";
+import { RequireModule } from "@/components/kaivra/RequireModule";
 
 export const Route = createFileRoute("/_authenticated/admin/corrections")({
   head: () => ({
@@ -59,7 +60,11 @@ export const Route = createFileRoute("/_authenticated/admin/corrections")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: AdminCorrections,
+  component: () => (
+    <RequireModule module="corrections">
+      <AdminCorrections />
+    </RequireModule>
+  ),
 });
 
 type Row = CorrectionRequestRow & { admin_note: string | null };

@@ -20,6 +20,7 @@ import {
   formatNaira,
   type ApplicationStatus,
 } from "@/lib/kaivra";
+import { RequireModule } from "@/components/kaivra/RequireModule";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
   head: () => ({
@@ -35,7 +36,11 @@ export const Route = createFileRoute("/_authenticated/admin/")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: AdminDashboard,
+  component: () => (
+    <RequireModule module="applications" allowAdviser>
+      <AdminDashboard />
+    </RequireModule>
+  ),
 });
 
 const PAGE_SIZE = 20;

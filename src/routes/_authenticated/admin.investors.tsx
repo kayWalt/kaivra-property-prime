@@ -30,6 +30,7 @@ import {
   type InvestorSummary,
 } from "@/lib/investors.functions";
 import { formatNaira, formatDate, type ApplicationStatus } from "@/lib/kaivra";
+import { RequireModule } from "@/components/kaivra/RequireModule";
 
 export const Route = createFileRoute("/_authenticated/admin/investors")({
   head: () => ({
@@ -48,7 +49,11 @@ export const Route = createFileRoute("/_authenticated/admin/investors")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: InvestorsPage,
+  component: () => (
+    <RequireModule module="investors" allowAdviser>
+      <InvestorsPage />
+    </RequireModule>
+  ),
 });
 
 type Row = {

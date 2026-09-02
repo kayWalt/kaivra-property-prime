@@ -43,6 +43,7 @@ import {
   formatNaira,
   type ApplicationStatus,
 } from "@/lib/kaivra";
+import { RequireModule } from "@/components/kaivra/RequireModule";
 
 
 export const Route = createFileRoute("/_authenticated/admin/applications/$appId")({
@@ -59,7 +60,11 @@ export const Route = createFileRoute("/_authenticated/admin/applications/$appId"
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: ManageApplication,
+  component: () => (
+    <RequireModule module="applications" allowAdviser>
+      <ManageApplication />
+    </RequireModule>
+  ),
 });
 
 function ManageApplication() {

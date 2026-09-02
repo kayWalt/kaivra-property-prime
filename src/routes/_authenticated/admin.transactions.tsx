@@ -25,6 +25,7 @@ import { useProfile, useRoles, useSession, primaryRole, isStaffRole } from "@/ho
 import { logEvent, notify } from "@/lib/applications";
 import { snapshotLabel } from "@/lib/payment-accounts";
 import { formatDate, formatNaira, type PaymentStatus } from "@/lib/kaivra";
+import { RequireModule } from "@/components/kaivra/RequireModule";
 
 export const Route = createFileRoute("/_authenticated/admin/transactions")({
   head: () => ({
@@ -40,7 +41,11 @@ export const Route = createFileRoute("/_authenticated/admin/transactions")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: AdminTransactions,
+  component: () => (
+    <RequireModule module="transactions" allowAdviser>
+      <AdminTransactions />
+    </RequireModule>
+  ),
 });
 
 type Row = {
