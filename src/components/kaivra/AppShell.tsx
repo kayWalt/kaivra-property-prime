@@ -95,11 +95,25 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { data: roles } = useRoles(user?.id);
   const { data: profile } = useProfile(user?.id);
   const role = primaryRole(roles);
-  const items = NAV[role];
+  const { data: grant } = useMyProxyGrant(role === "admin" ? user?.id : undefined);
+  const access = buildAdminAccess(role, grant ?? null);
+  // Proxy admins only ever see the modules their active grant allows; the
+  // database re-checks every operation regardless of what the menu shows.
+  const items =
+    role === "admin" || role === "super_admin"
+      ? [
+          ...ADMIN_MODULES.filter((m) => access.can(m.key, "view")).map((m) => ({
+            to: m.to,
+            label: m.label,
+          })),
+          ...(access.isSuperAdmin ? [{ to: "/admin/access", label: "Admin Access" }] : []),
+        ]
+      : NAV[role];
   const unread = useUnreadCount(user?.id);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
+
 
   // Native shell only: register the signed-in user for push. Every call is a
   // no-op in a normal browser, so nothing changes on the web.
