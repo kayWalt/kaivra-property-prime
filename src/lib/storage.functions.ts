@@ -1,7 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
+import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { DOCS_BUCKET, buildDocPath } from "./storage.server";
+import { LOVABLE_ORIGIN, isLovableOrigin } from "./origin-fallback";
 
 export const createUploadTicket = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -38,18 +40,34 @@ export const getDocumentUrl = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) => z.object({ documentId: z.string().uuid() }).parse(data))
   .handler(async ({ data, context }) => {
-    const { data: doc, error } = await context.supabase
-      .from("application_documents")
-      .select("id, file_path, file_name, mime_type")
-      .eq("id", data.documentId)
-      .maybeSingle();
-    if (error) throw new Error("Document could not be loaded.");
-    if (!doc) throw new Error("Document not found or you do not have access to it.");
+    const { resolveDocumentUrl } = await import("./storage.server");
+    const doc = await resolveDocumentUrl(context.supabase as never, data.documentId);
+    if (doc) return doc;
 
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: signed, error: signError } = await supabaseAdmin.storage
-      .from(DOCS_BUCKET)
-      .createSignedUrl(doc.file_path, 120);
-    if (signError || !signed) throw new Error("Document link could not be created.");
-    return { url: signed.signedUrl, fileName: doc.file_name, mimeType: doc.mime_type };
+    // Signing unavailable locally (custom domain without service-role secret) —
+    // relay to the Lovable-hosted origin with the caller's own credentials.
+    try {
+      const request = getRequest();
+      if (request && !isLovableOrigin(request)) {
+        const auth = request.headers.get("authorization");
+        if (auth) {
+          const res = await fetch(`${LOVABLE_ORIGIN}/api/public/document-url`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: auth },
+            body: JSON.stringify({ documentId: data.documentId }),
+          });
+          if (res.ok) {
+            return (await res.json()) as {
+              url: string;
+              fileName: string | null;
+              mimeType: string | null;
+            };
+          }
+        }
+      }
+    } catch (err) {
+      console.error("[storage] document relay failed", err);
+    }
+
+    throw new Error("Document link could not be created.");
   });
