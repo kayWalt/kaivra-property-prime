@@ -51,6 +51,8 @@ import {
   type PaymentMethod,
   type PersonalDetails,
 } from "@/lib/kaivra";
+import { accountLabel, snapshotLabel, useActivePaymentAccounts } from "@/lib/payment-accounts";
+
 import { openAiAssist } from "@/lib/ai-assist";
 import { cn } from "@/lib/utils";
 import { mediaSrc, FALLBACK_PROPERTY_IMAGE } from "@/lib/media";
