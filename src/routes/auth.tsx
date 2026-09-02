@@ -186,9 +186,9 @@ function AuthPage() {
             <img
               src={assetUrl(kaivraLogo.url)}
               alt="KAIVRA"
-              className="h-20 w-auto object-contain"
-              width={1024}
-              height={1024}
+              className="h-16 w-auto object-contain"
+              width={76}
+              height={74}
               loading="lazy"
               decoding="async"
             />
