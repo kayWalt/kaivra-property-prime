@@ -43,7 +43,8 @@ export const getPassportAvatars = createServerFn({ method: "POST" })
     // Signing needs the privileged client. If this deployment has no service
     // role configured, fall back to no photographs (initials placeholder)
     // instead of failing the whole directory request.
-    let signed: { path?: string | null; signedUrl: string; error?: string | null }[] | null = null;
+    let signed: { path?: string | null; signedUrl?: string | null; error?: string | null }[] | null =
+      null;
     try {
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const res = await supabaseAdmin.storage
