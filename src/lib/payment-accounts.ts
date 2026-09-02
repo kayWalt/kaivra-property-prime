@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
  *
  * The client can only ever read the masked last four digits: the full account
  * number is withheld by column-level grants in the database and revealed to
- * administrators through the `admin_payment_account_number` guarded function.
+ * administrators only by the `revealPaymentAccountNumber` server function.
  */
 export interface PaymentAccount {
   id: string;
