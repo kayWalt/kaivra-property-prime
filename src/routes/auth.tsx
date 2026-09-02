@@ -193,8 +193,8 @@ function AuthPage() {
               decoding="async"
             />
             <div className="flex flex-col leading-none">
-              <span className="font-display text-2xl tracking-[0.22em]">KAIVRA</span>
-              <span className="eyebrow mt-1 text-[0.6rem] text-muted-foreground">
+              <span className="font-display text-2xl tracking-[0.18em]">KAIVRA</span>
+              <span className="eyebrow mt-1.5 text-[0.55rem] font-medium uppercase tracking-[0.22em] text-muted-foreground">
                 Real Estate Investment Management
               </span>
             </div>
