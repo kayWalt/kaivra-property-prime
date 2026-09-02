@@ -62,6 +62,9 @@ export function RequireModule({
   if (permitted) return <>{children}</>;
 
   const expired = access.accessExpired;
+  // Send them somewhere they can actually open.
+  const firstAllowed = ADMIN_MODULES.find((m) => access.modules.includes(m.key));
+  const fallbackTo = firstAllowed ? firstAllowed.to : "/dashboard";
   return (
     <div className="mx-auto flex w-full max-w-xl flex-col items-center gap-4 px-4 py-20 text-center sm:px-6">
       <div className="flex size-14 items-center justify-center rounded-full bg-muted">
