@@ -131,6 +131,24 @@ function AuthPage() {
     if (busy) return;
     setAction("google");
     try {
+      // The Lovable OAuth broker (/~oauth/*) only exists on Lovable-hosted
+      // origins. On our own domain we go straight to Supabase's Google
+      // provider, which is the same auth backend and the same user records.
+      const host = window.location.hostname;
+      const brokerHost =
+        host === "localhost" ||
+        /(^|\.)(lovable\.app|lovableproject\.com|lovable\.dev|gptengineer\.run)$/i.test(host);
+      if (!brokerHost) {
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: "google",
+          options: { redirectTo: `${window.location.origin}/auth` },
+        });
+        if (error) {
+          setAction(null);
+          toast.error("Google sign-in could not be completed. Please try again.");
+        }
+        return; // browser navigates to Google
+      }
       // Return to this lightweight public route (not the image-heavy landing
       // page) so the session lands and forwards to the dashboard immediately.
       const result = await lovable.auth.signInWithOAuth("google", {
