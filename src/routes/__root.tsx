@@ -89,14 +89,20 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
       { name: "format-detection", content: "telephone=no" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "KAIVRA | Smart Real Estate Investment Management" },
+      {
+        name: "description",
+        content:
+          "Premium real-estate investment management — projects, subscriptions, payments and documents in one secure platform.",
+      },
+      { name: "author", content: "KAIVRA" },
+      { property: "og:title", content: "KAIVRA | Smart Real Estate Investment Management" },
+      {
+        property: "og:description",
+        content: "Invest in the future you can own.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
       {
