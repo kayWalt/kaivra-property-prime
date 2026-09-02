@@ -287,6 +287,8 @@ export type Database = {
           id: string
           method: Database["public"]["Enums"]["payment_method"]
           paid_on: string | null
+          payment_account_id: string | null
+          payment_account_snapshot: Json | null
           payment_reference: string
           reference: string | null
           rejection_reason: string | null
@@ -305,6 +307,8 @@ export type Database = {
           id?: string
           method?: Database["public"]["Enums"]["payment_method"]
           paid_on?: string | null
+          payment_account_id?: string | null
+          payment_account_snapshot?: Json | null
           payment_reference?: string
           reference?: string | null
           rejection_reason?: string | null
@@ -323,6 +327,8 @@ export type Database = {
           id?: string
           method?: Database["public"]["Enums"]["payment_method"]
           paid_on?: string | null
+          payment_account_id?: string | null
+          payment_account_snapshot?: Json | null
           payment_reference?: string
           reference?: string | null
           rejection_reason?: string | null
@@ -337,6 +343,13 @@ export type Database = {
             columns: ["application_id"]
             isOneToOne: false
             referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "application_payments_payment_account_id_fkey"
+            columns: ["payment_account_id"]
+            isOneToOne: false
+            referencedRelation: "developer_payment_accounts"
             referencedColumns: ["id"]
           },
         ]
@@ -485,6 +498,54 @@ export type Database = {
         }
         Relationships: []
       }
+      developer_payment_accounts: {
+        Row: {
+          account_last4: string | null
+          account_name: string
+          account_number: string
+          archived_at: string | null
+          bank_name: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          developer_name: string
+          id: string
+          status: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          account_last4?: string | null
+          account_name: string
+          account_number: string
+          archived_at?: string | null
+          bank_name: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          developer_name: string
+          id?: string
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          account_last4?: string | null
+          account_name?: string
+          account_number?: string
+          archived_at?: string | null
+          bank_name?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          developer_name?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       inspection_appointments: {
         Row: {
           admin_note: string | null
@@ -620,6 +681,50 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      payment_account_audit_log: {
+        Row: {
+          action: string
+          admin_email: string | null
+          admin_user_id: string | null
+          created_at: string
+          id: string
+          metadata: Json
+          new_values: Json | null
+          payment_account_id: string | null
+          previous_values: Json | null
+        }
+        Insert: {
+          action: string
+          admin_email?: string | null
+          admin_user_id?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json
+          new_values?: Json | null
+          payment_account_id?: string | null
+          previous_values?: Json | null
+        }
+        Update: {
+          action?: string
+          admin_email?: string | null
+          admin_user_id?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json
+          new_values?: Json | null
+          payment_account_id?: string | null
+          previous_values?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_account_audit_log_payment_account_id_fkey"
+            columns: ["payment_account_id"]
+            isOneToOne: false
+            referencedRelation: "developer_payment_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
