@@ -12,6 +12,7 @@ import { ReferenceChip } from "@/components/kaivra/ReferenceChip";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useProfile, useRoles, useSession, primaryRole } from "@/hooks/useAuth";
+import { useAvatarSrc } from "@/hooks/useAvatarSrc";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({
@@ -39,6 +40,7 @@ function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const { src: avatarSrc, onError: onAvatarError } = useAvatarSrc(avatarUrl);
 
   useEffect(() => {
     setFullName(profile?.full_name ?? "");
@@ -127,11 +129,12 @@ function ProfilePage() {
 
       <div className="mt-8 space-y-5 rounded-lg border border-border bg-card p-5">
         <div className="flex flex-wrap items-center gap-4">
-          {avatarUrl ? (
+          {avatarSrc ? (
             <img
               loading="lazy"
               decoding="async"
-              src={avatarUrl}
+              src={avatarSrc}
+              onError={onAvatarError}
               alt={fullName ? `${fullName}'s profile picture` : "Profile picture"}
               className="size-20 rounded-full border border-border object-cover"
             />
