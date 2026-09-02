@@ -2,6 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { Textarea } from "@/components/ui/textarea";
+import { AsyncButton } from "@/components/kaivra/AsyncButton";
+import { acknowledgeComplaint, resolveComplaint } from "@/lib/corrections.functions";
 import { ArrowLeft, MessageCircle, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -78,6 +81,7 @@ function AdminSupport() {
   const [filter, setFilter] = useState<string>("open");
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [resolution, setResolution] = useState("");
 
   const tickets = useQuery({
     queryKey: ["admin-support-tickets"],
@@ -384,6 +388,48 @@ function AdminSupport() {
                     </Select>
                   ) : null}
                 </div>
+
+                {isAdmin && selected.channel === "complaint" ? (
+                  <div className="mb-3 space-y-2 rounded-md border border-border bg-muted/30 p-3">
+                    <p className="eyebrow text-muted-foreground">Complaint resolution</p>
+                    <Textarea
+                      value={resolution}
+                      onChange={(e) => setResolution(e.target.value)}
+                      rows={2}
+                      placeholder="Resolution shared with the investor…"
+                    />
+                    <div className="flex flex-wrap gap-2">
+                      <AsyncButton
+                        size="sm"
+                        variant="outline"
+                        onClick={async () => {
+                          await acknowledgeComplaint({ data: { ticketId: selected.id } });
+                          toast.success("Complaint acknowledged.");
+                          void queryClient.invalidateQueries({ queryKey: ["admin-support-tickets"] });
+                        }}
+                      >
+                        Acknowledge
+                      </AsyncButton>
+                      <AsyncButton
+                        size="sm"
+                        onClick={async () => {
+                          if (resolution.trim().length < 5) {
+                            toast.error("Add a resolution note first.");
+                            return;
+                          }
+                          await resolveComplaint({
+                            data: { ticketId: selected.id, resolution: resolution.trim() },
+                          });
+                          setResolution("");
+                          toast.success("Complaint resolved.");
+                          void queryClient.invalidateQueries({ queryKey: ["admin-support-tickets"] });
+                        }}
+                      >
+                        Resolve complaint
+                      </AsyncButton>
+                    </div>
+                  </div>
+                ) : null}
 
                 <p className="rounded-md border border-border bg-muted/40 p-3 text-sm">
                   {selected.message}

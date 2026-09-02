@@ -25,6 +25,7 @@ import { Route as ProjectsIndexRouteImport } from './routes/projects.index'
 import { Route as ProjectsProjectIdRouteImport } from './routes/projects.$projectId'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedAdminAdvisersRouteImport } from './routes/_authenticated/admin.advisers'
+import { Route as AuthenticatedAdminCorrectionsRouteImport } from './routes/_authenticated/admin.corrections'
 import { Route as AuthenticatedAdminEnquiriesRouteImport } from './routes/_authenticated/admin.enquiries'
 import { Route as AuthenticatedAdminInspectionsRouteImport } from './routes/_authenticated/admin.inspections'
 import { Route as AuthenticatedAdminInvestorsRouteImport } from './routes/_authenticated/admin.investors'
@@ -128,6 +129,12 @@ const AuthenticatedAdminAdvisersRoute =
   AuthenticatedAdminAdvisersRouteImport.update({
     id: '/admin/advisers',
     path: '/admin/advisers',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminCorrectionsRoute =
+  AuthenticatedAdminCorrectionsRouteImport.update({
+    id: '/admin/corrections',
+    path: '/admin/corrections',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedAdminEnquiriesRoute =
@@ -262,6 +269,7 @@ export interface FileRoutesByFullPath {
   '/projects/$projectId': typeof ProjectsProjectIdRoute
   '/projects/': typeof ProjectsIndexRoute
   '/admin/advisers': typeof AuthenticatedAdminAdvisersRoute
+  '/admin/corrections': typeof AuthenticatedAdminCorrectionsRoute
   '/admin/enquiries': typeof AuthenticatedAdminEnquiriesRoute
   '/admin/inspections': typeof AuthenticatedAdminInspectionsRoute
   '/admin/investors': typeof AuthenticatedAdminInvestorsRoute
@@ -299,6 +307,7 @@ export interface FileRoutesByTo {
   '/projects/$projectId': typeof ProjectsProjectIdRoute
   '/projects': typeof ProjectsIndexRoute
   '/admin/advisers': typeof AuthenticatedAdminAdvisersRoute
+  '/admin/corrections': typeof AuthenticatedAdminCorrectionsRoute
   '/admin/enquiries': typeof AuthenticatedAdminEnquiriesRoute
   '/admin/inspections': typeof AuthenticatedAdminInspectionsRoute
   '/admin/investors': typeof AuthenticatedAdminInvestorsRoute
@@ -338,6 +347,7 @@ export interface FileRoutesById {
   '/projects/$projectId': typeof ProjectsProjectIdRoute
   '/projects/': typeof ProjectsIndexRoute
   '/_authenticated/admin/advisers': typeof AuthenticatedAdminAdvisersRoute
+  '/_authenticated/admin/corrections': typeof AuthenticatedAdminCorrectionsRoute
   '/_authenticated/admin/enquiries': typeof AuthenticatedAdminEnquiriesRoute
   '/_authenticated/admin/inspections': typeof AuthenticatedAdminInspectionsRoute
   '/_authenticated/admin/investors': typeof AuthenticatedAdminInvestorsRoute
@@ -377,6 +387,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId'
     | '/projects/'
     | '/admin/advisers'
+    | '/admin/corrections'
     | '/admin/enquiries'
     | '/admin/inspections'
     | '/admin/investors'
@@ -414,6 +425,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId'
     | '/projects'
     | '/admin/advisers'
+    | '/admin/corrections'
     | '/admin/enquiries'
     | '/admin/inspections'
     | '/admin/investors'
@@ -452,6 +464,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId'
     | '/projects/'
     | '/_authenticated/admin/advisers'
+    | '/_authenticated/admin/corrections'
     | '/_authenticated/admin/enquiries'
     | '/_authenticated/admin/inspections'
     | '/_authenticated/admin/investors'
@@ -607,6 +620,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminAdvisersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/corrections': {
+      id: '/_authenticated/admin/corrections'
+      path: '/admin/corrections'
+      fullPath: '/admin/corrections'
+      preLoaderRoute: typeof AuthenticatedAdminCorrectionsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/enquiries': {
       id: '/_authenticated/admin/enquiries'
       path: '/admin/enquiries'
@@ -758,6 +778,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedTransactionsRoute: typeof AuthenticatedTransactionsRoute
   AuthenticatedAdminAdvisersRoute: typeof AuthenticatedAdminAdvisersRoute
+  AuthenticatedAdminCorrectionsRoute: typeof AuthenticatedAdminCorrectionsRoute
   AuthenticatedAdminEnquiriesRoute: typeof AuthenticatedAdminEnquiriesRoute
   AuthenticatedAdminInspectionsRoute: typeof AuthenticatedAdminInspectionsRoute
   AuthenticatedAdminInvestorsRoute: typeof AuthenticatedAdminInvestorsRoute
@@ -782,6 +803,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedTransactionsRoute: AuthenticatedTransactionsRoute,
   AuthenticatedAdminAdvisersRoute: AuthenticatedAdminAdvisersRoute,
+  AuthenticatedAdminCorrectionsRoute: AuthenticatedAdminCorrectionsRoute,
   AuthenticatedAdminEnquiriesRoute: AuthenticatedAdminEnquiriesRoute,
   AuthenticatedAdminInspectionsRoute: AuthenticatedAdminInspectionsRoute,
   AuthenticatedAdminInvestorsRoute: AuthenticatedAdminInvestorsRoute,
