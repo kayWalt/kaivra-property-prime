@@ -19,31 +19,46 @@ export type Database = {
           action: string
           actor: string | null
           actor_name: string | null
+          actor_role: string | null
           created_at: string
           detail: Json
+          entity_id: string | null
+          entity_type: string | null
           id: string
+          ip_address: string | null
           project_id: string | null
           subject_user: string | null
+          user_agent: string | null
         }
         Insert: {
           action: string
           actor?: string | null
           actor_name?: string | null
+          actor_role?: string | null
           created_at?: string
           detail?: Json
+          entity_id?: string | null
+          entity_type?: string | null
           id?: string
+          ip_address?: string | null
           project_id?: string | null
           subject_user?: string | null
+          user_agent?: string | null
         }
         Update: {
           action?: string
           actor?: string | null
           actor_name?: string | null
+          actor_role?: string | null
           created_at?: string
           detail?: Json
+          entity_id?: string | null
+          entity_type?: string | null
           id?: string
+          ip_address?: string | null
           project_id?: string | null
           subject_user?: string | null
+          user_agent?: string | null
         }
         Relationships: []
       }
@@ -498,6 +513,136 @@ export type Database = {
         }
         Relationships: []
       }
+      correction_request_documents: {
+        Row: {
+          correction_request_id: string
+          created_at: string
+          file_name: string | null
+          file_path: string
+          id: string
+          mime_type: string | null
+          size_bytes: number | null
+          uploaded_by: string | null
+        }
+        Insert: {
+          correction_request_id: string
+          created_at?: string
+          file_name?: string | null
+          file_path: string
+          id?: string
+          mime_type?: string | null
+          size_bytes?: number | null
+          uploaded_by?: string | null
+        }
+        Update: {
+          correction_request_id?: string
+          created_at?: string
+          file_name?: string | null
+          file_path?: string
+          id?: string
+          mime_type?: string | null
+          size_bytes?: number | null
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "correction_request_documents_correction_request_id_fkey"
+            columns: ["correction_request_id"]
+            isOneToOne: false
+            referencedRelation: "correction_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      correction_requests: {
+        Row: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          admin_note: string | null
+          admin_response: string | null
+          application_id: string | null
+          applied_at: string | null
+          applied_by: string | null
+          created_at: string
+          current_value: string | null
+          field_label: string
+          id: string
+          investor_id: string
+          investor_response: string | null
+          reason: string
+          reference: string | null
+          requested_value: string
+          resolution_details: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          section: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          admin_note?: string | null
+          admin_response?: string | null
+          application_id?: string | null
+          applied_at?: string | null
+          applied_by?: string | null
+          created_at?: string
+          current_value?: string | null
+          field_label: string
+          id?: string
+          investor_id: string
+          investor_response?: string | null
+          reason: string
+          reference?: string | null
+          requested_value: string
+          resolution_details?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          section: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          admin_note?: string | null
+          admin_response?: string | null
+          application_id?: string | null
+          applied_at?: string | null
+          applied_by?: string | null
+          created_at?: string
+          current_value?: string | null
+          field_label?: string
+          id?: string
+          investor_id?: string
+          investor_response?: string | null
+          reason?: string
+          reference?: string | null
+          requested_value?: string
+          resolution_details?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          section?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "correction_requests_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       developer_payment_accounts: {
         Row: {
           account_last4: string | null
@@ -941,6 +1086,8 @@ export type Database = {
       }
       support_tickets: {
         Row: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
           application_id: string | null
           assigned_to: string | null
           category: string
@@ -954,12 +1101,16 @@ export type Database = {
           priority: string
           project_id: string | null
           reference: string | null
+          resolution_note: string | null
           resolved_at: string | null
+          resolved_by: string | null
           status: string
           subject: string
           updated_at: string
         }
         Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
           application_id?: string | null
           assigned_to?: string | null
           category?: string
@@ -973,12 +1124,16 @@ export type Database = {
           priority?: string
           project_id?: string | null
           reference?: string | null
+          resolution_note?: string | null
           resolved_at?: string | null
+          resolved_by?: string | null
           status?: string
           subject: string
           updated_at?: string
         }
         Update: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
           application_id?: string | null
           assigned_to?: string | null
           category?: string
@@ -992,7 +1147,9 @@ export type Database = {
           priority?: string
           project_id?: string | null
           reference?: string | null
+          resolution_note?: string | null
           resolved_at?: string | null
+          resolved_by?: string | null
           status?: string
           subject?: string
           updated_at?: string
