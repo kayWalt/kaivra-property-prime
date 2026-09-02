@@ -24,7 +24,6 @@ import {
   setPushExternalUserId,
 } from "@/lib/median";
 import { cn } from "@/lib/utils";
-import type { AppRole } from "@/lib/kaivra";
 import {
   ADMIN_MODULES,
   EXPIRED_MESSAGE,
