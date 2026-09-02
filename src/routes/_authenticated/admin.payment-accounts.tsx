@@ -264,7 +264,7 @@ function AdminPaymentAccounts() {
 
   async function reveal(account: PaymentAccount) {
     try {
-      const { accountNumber } = await revealAccountNumber({ data: { accountId: account.id } });
+      const { accountNumber } = await revealPaymentAccountNumber({ data: { accountId: account.id } });
       setRevealed((prev) => ({ ...prev, [account.id]: accountNumber || "—" }));
     } catch (err) {
       toast.error(
