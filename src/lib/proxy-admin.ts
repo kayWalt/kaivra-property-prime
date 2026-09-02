@@ -25,6 +25,7 @@ export const ADMIN_MODULES = [
   { key: "support", label: "Support", to: "/admin/support" },
   { key: "corrections", label: "Corrections", to: "/admin/corrections" },
   { key: "enquiries", label: "Enquiries", to: "/admin/enquiries" },
+  { key: "analytics", label: "Analytics", to: "/admin/analytics" },
 ] as const;
 
 export type AdminModule = (typeof ADMIN_MODULES)[number]["key"];
@@ -52,6 +53,7 @@ export const MODULE_ACTIONS: Record<AdminModule, AdminAction[]> = {
   support: ["view", "resolve"],
   corrections: ["view", "resolve"],
   enquiries: ["view", "edit"],
+  analytics: ["view", "export", "manage"],
 };
 
 export type PermissionMatrix = Partial<Record<AdminModule, AdminAction[]>>;
@@ -164,4 +166,16 @@ export function buildAdminAccess(role: AppRole, grant: ProxyGrant | null): Admin
     can,
     modules: ADMIN_MODULES.map((m) => m.key).filter((m) => can(m, "view")),
   };
+}
+
+/**
+ * Analytics is a Super Admin function. Unlike the other modules, an ordinary
+ * administrator is NOT implicitly allowed: a Super Admin must explicitly grant
+ * `analytics` on their proxy grant. The server re-checks this on every read.
+ */
+export function canAnalytics(access: AdminAccess, action: AdminAction = "view") {
+  if (access.isSuperAdmin) return true;
+  const grant = access.grant;
+  if (!grant || grantState(grant) !== "active") return false;
+  return (grant.permissions?.analytics ?? []).includes(action);
 }

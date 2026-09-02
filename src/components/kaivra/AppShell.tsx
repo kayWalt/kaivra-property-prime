@@ -32,6 +32,7 @@ import { playNotificationSound } from "@/lib/notification-sound";
 import { cn } from "@/lib/utils";
 import {
   ADMIN_MODULES,
+  canAnalytics,
   EXPIRED_MESSAGE,
   buildAdminAccess,
   timeRemaining,
@@ -196,10 +197,13 @@ export function AppShell({ children }: { children: ReactNode }) {
   const items =
     role === "admin" || role === "super_admin"
       ? [
-          ...ADMIN_MODULES.filter((m) => access.can(m.key, "view")).map((m) => ({
+          ...ADMIN_MODULES.filter(
+            (m) => m.key !== "analytics" && access.can(m.key, "view"),
+          ).map((m) => ({
             to: m.to,
             label: m.label,
           })),
+          ...(canAnalytics(access) ? [{ to: "/admin/analytics", label: "Analytics" }] : []),
           ...(access.isSuperAdmin ? [{ to: "/admin/access", label: "Admin Access" }] : []),
         ]
       : NAV[role as "investor" | "adviser"];
