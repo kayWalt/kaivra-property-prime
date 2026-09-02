@@ -165,11 +165,16 @@ function AbujaInvestmentPage() {
                   <p className="mt-1 flex items-center gap-1 text-sm text-muted-foreground">
                     <MapPin className="h-3.5 w-3.5" aria-hidden="true" /> {project.location}
                   </p>
-                  {project.price != null && (
-                    <p className="mt-2 text-sm font-semibold text-primary">
-                      From {formatNaira(project.price)}
-                    </p>
-                  )}
+                  {(() => {
+                    const active = (project.properties ?? []).filter((p) => p.is_active);
+                    if (!active.length) return null;
+                    const from = Math.min(...active.map((p) => Number(p.unit_price)));
+                    return (
+                      <p className="mt-2 text-sm font-semibold text-primary">
+                        From {formatNaira(from, project.currency ?? undefined)}
+                      </p>
+                    );
+                  })()}
                 </div>
               </Link>
             ))}
