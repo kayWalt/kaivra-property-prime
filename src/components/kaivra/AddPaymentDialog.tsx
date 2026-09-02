@@ -72,6 +72,11 @@ export function AddPaymentDialog({
       toast.error("Attach your receipt or proof of payment.");
       return;
     }
+    const hasAccounts = (accounts.data ?? []).length > 0;
+    if (hasAccounts && !accountId) {
+      toast.error("Select the account you paid into.");
+      return;
+    }
     try {
       const { data: payment, error } = await supabase
         .from("application_payments")
@@ -84,7 +89,9 @@ export function AddPaymentDialog({
           reference: payRef || null,
           method,
           description: note || null,
+          payment_account_id: accountId || null,
         })
+
         .select()
         .single();
       if (error || !payment) throw error ?? new Error("insert failed");
