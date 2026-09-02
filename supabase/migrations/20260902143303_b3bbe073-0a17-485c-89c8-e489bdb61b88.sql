@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.assign_contact_enquiry_reference() FROM PUBLIC, anon, authenticated;
