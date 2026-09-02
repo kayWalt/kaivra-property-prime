@@ -1794,7 +1794,12 @@ function StepPayment({
             </div>
             <AsyncButton
               className="mt-4"
-              disabled={adding || form.amount <= 0}
+              disabled={
+                adding ||
+                form.amount <= 0 ||
+                (accountRequired && !form.payment_account_id)
+              }
+
               pendingLabel="Adding payment…"
               onClick={async () => {
                 setAdding(true);
