@@ -23,6 +23,7 @@ import teamHassan from "@/assets/team-hassan-jaafar.jpg.asset.json";
 import teamJoseph from "@/assets/team-joseph-osoria.jpg.asset.json";
 import teamNkiruka from "@/assets/team-nkiruka-onyeugo.jpg.asset.json";
 import teamYarison from "@/assets/team-yarison-hope.jpg.asset.json";
+import { mediaSrc } from "@/lib/media";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -239,7 +240,7 @@ function Landing() {
                 >
                   <div className="relative aspect-[16/10] overflow-hidden">
                     <img
-                      src={project.hero_image ?? "/images/project-mountain.jpg"}
+                      src={mediaSrc(project.hero_image)}
                       alt={project.name}
                       loading="lazy"
                       width={1920}

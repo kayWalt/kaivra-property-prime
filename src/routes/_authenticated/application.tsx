@@ -53,6 +53,7 @@ import {
 } from "@/lib/kaivra";
 import { openAiAssist } from "@/lib/ai-assist";
 import { cn } from "@/lib/utils";
+import { mediaSrc, FALLBACK_PROPERTY_IMAGE } from "@/lib/media";
 
 export const Route = createFileRoute("/_authenticated/application")({
   validateSearch: (search: Record<string, unknown>) => {
@@ -1044,7 +1045,7 @@ function StepProject({
               )}
             >
               <img
-                src={project.hero_image ?? "/images/project-mountain.jpg"}
+                src={mediaSrc(project.hero_image)}
                 alt={project.name}
                 loading="lazy"
                 width={1280}
@@ -1129,7 +1130,7 @@ function PropertyCard({
   const shown = images.slice(0, 4);
   const [index, setIndex] = useState(0);
   const current =
-    shown[Math.min(index, Math.max(shown.length - 1, 0))] ?? "/images/property-terrace.jpg";
+    mediaSrc(shown[Math.min(index, Math.max(shown.length - 1, 0))], FALLBACK_PROPERTY_IMAGE);
 
   return (
     <div

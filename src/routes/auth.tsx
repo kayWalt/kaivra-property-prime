@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Brand } from "@/components/kaivra/Brand";
 import { useSession } from "@/hooks/useAuth";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { FALLBACK_PROPERTY_IMAGE } from "@/lib/media";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -156,7 +157,7 @@ function AuthPage() {
     <div className="grid min-h-screen lg:grid-cols-2">
       <div className="relative hidden lg:block">
         <img
-          src="/images/project-lake.jpg"
+          src={FALLBACK_PROPERTY_IMAGE}
           alt="Lakefront luxury estate at sunset"
           className="absolute inset-0 size-full object-cover"
           width={1920}

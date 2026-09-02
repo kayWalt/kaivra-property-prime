@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Brand } from "@/components/kaivra/Brand";
 import { parseGallery, type GalleryImage } from "@/components/kaivra/ProjectImageFields";
 import { formatNaira } from "@/lib/kaivra";
+import { mediaSrc, FALLBACK_PROPERTY_IMAGE } from "@/lib/media";
 
 export const Route = createFileRoute("/projects/$projectId")({
   head: () => ({
@@ -90,7 +91,7 @@ function ProjectDetail() {
   const project = query.data;
   const properties = (project.properties ?? []).filter((p) => p.is_active);
   const gallery = parseGallery(project.gallery_images);
-  const heroImage = project.hero_image ?? "/images/project-mountain.jpg";
+  const heroImage = mediaSrc(project.hero_image);
   // Hero first, then every gallery image, so the hero click opens the same
   // viewer and the rest can be browsed from there.
   const allImages: GalleryImage[] = [{ url: heroImage, caption: project.name }, ...gallery];
@@ -206,7 +207,7 @@ function ProjectDetail() {
                 className="overflow-hidden rounded-lg border border-border bg-card shadow-card"
               >
                 <img
-                  src={images[0] ?? "/images/property-terrace.jpg"}
+                  src={mediaSrc(images[0], FALLBACK_PROPERTY_IMAGE)}
                   alt={property.name}
                   loading="lazy"
                   width={1280}
