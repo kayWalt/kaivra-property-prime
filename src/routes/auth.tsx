@@ -182,22 +182,22 @@ function AuthPage() {
 
       <div className="flex items-center justify-center px-5 py-12">
         <div className="w-full max-w-sm kv-rise">
-          <div className="mb-6 flex items-center gap-3">
-            <img
-              src={kaivraLogoTransparent}
-              alt="KAIVRA"
-              className="h-12 w-auto object-contain"
-              width={48}
-              height={48}
-              loading="lazy"
-              decoding="async"
-            />
-            <div className="flex flex-col leading-none">
+          <div className="mb-6 flex flex-col items-center gap-2">
+            <div className="flex items-center gap-3">
+              <img
+                src={kaivraLogoTransparent}
+                alt="KAIVRA"
+                className="h-12 w-auto object-contain"
+                width={48}
+                height={48}
+                loading="lazy"
+                decoding="async"
+              />
               <span className="font-display text-2xl tracking-[0.18em]">KAIVRA</span>
-              <span className="eyebrow mt-1.5 text-[0.55rem] font-medium uppercase tracking-[0.22em] text-muted-foreground">
-                Real Estate Investment Management
-              </span>
             </div>
+            <span className="eyebrow text-[0.55rem] font-medium uppercase tracking-[0.22em] text-muted-foreground">
+              Real Estate Investment Management
+            </span>
           </div>
           {checkEmail ? (
             <div className="mt-10 rounded-lg border border-border bg-card p-6">
