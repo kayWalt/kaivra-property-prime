@@ -37,6 +37,7 @@ import { Route as AuthenticatedInspectionsIndexRouteImport } from './routes/_aut
 import { Route as AuthenticatedInspectionsNewRouteImport } from './routes/_authenticated/inspections.new'
 import { Route as ApiPublicAiChatRouteImport } from './routes/api/public/ai-chat'
 import { Route as ApiPublicContactRouteImport } from './routes/api/public/contact'
+import { Route as ApiPublicDocumentUrlRouteImport } from './routes/api/public/document-url'
 import { Route as ApiPublicPassportAvatarsRouteImport } from './routes/api/public/passport-avatars'
 import { Route as AuthenticatedAdminApplicationsIndexRouteImport } from './routes/_authenticated/admin.applications.index'
 import { Route as AuthenticatedAdminApplicationsAppIdRouteImport } from './routes/_authenticated/admin.applications.$appId'
@@ -197,6 +198,11 @@ const ApiPublicContactRoute = ApiPublicContactRouteImport.update({
   path: '/api/public/contact',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicDocumentUrlRoute = ApiPublicDocumentUrlRouteImport.update({
+  id: '/api/public/document-url',
+  path: '/api/public/document-url',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicPassportAvatarsRoute =
   ApiPublicPassportAvatarsRouteImport.update({
     id: '/api/public/passport-avatars',
@@ -252,6 +258,7 @@ export interface FileRoutesByFullPath {
   '/inspections/new': typeof AuthenticatedInspectionsNewRoute
   '/api/public/ai-chat': typeof ApiPublicAiChatRoute
   '/api/public/contact': typeof ApiPublicContactRoute
+  '/api/public/document-url': typeof ApiPublicDocumentUrlRoute
   '/api/public/passport-avatars': typeof ApiPublicPassportAvatarsRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/applications/': typeof AuthenticatedApplicationsIndexRoute
@@ -286,6 +293,7 @@ export interface FileRoutesByTo {
   '/inspections/new': typeof AuthenticatedInspectionsNewRoute
   '/api/public/ai-chat': typeof ApiPublicAiChatRoute
   '/api/public/contact': typeof ApiPublicContactRoute
+  '/api/public/document-url': typeof ApiPublicDocumentUrlRoute
   '/api/public/passport-avatars': typeof ApiPublicPassportAvatarsRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/applications': typeof AuthenticatedApplicationsIndexRoute
@@ -322,6 +330,7 @@ export interface FileRoutesById {
   '/_authenticated/inspections/new': typeof AuthenticatedInspectionsNewRoute
   '/api/public/ai-chat': typeof ApiPublicAiChatRoute
   '/api/public/contact': typeof ApiPublicContactRoute
+  '/api/public/document-url': typeof ApiPublicDocumentUrlRoute
   '/api/public/passport-avatars': typeof ApiPublicPassportAvatarsRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/applications/': typeof AuthenticatedApplicationsIndexRoute
@@ -358,6 +367,7 @@ export interface FileRouteTypes {
     | '/inspections/new'
     | '/api/public/ai-chat'
     | '/api/public/contact'
+    | '/api/public/document-url'
     | '/api/public/passport-avatars'
     | '/admin/'
     | '/applications/'
@@ -392,6 +402,7 @@ export interface FileRouteTypes {
     | '/inspections/new'
     | '/api/public/ai-chat'
     | '/api/public/contact'
+    | '/api/public/document-url'
     | '/api/public/passport-avatars'
     | '/admin'
     | '/applications'
@@ -427,6 +438,7 @@ export interface FileRouteTypes {
     | '/_authenticated/inspections/new'
     | '/api/public/ai-chat'
     | '/api/public/contact'
+    | '/api/public/document-url'
     | '/api/public/passport-avatars'
     | '/_authenticated/admin/'
     | '/_authenticated/applications/'
@@ -448,6 +460,7 @@ export interface RootRouteChildren {
   ProjectsIndexRoute: typeof ProjectsIndexRoute
   ApiPublicAiChatRoute: typeof ApiPublicAiChatRoute
   ApiPublicContactRoute: typeof ApiPublicContactRoute
+  ApiPublicDocumentUrlRoute: typeof ApiPublicDocumentUrlRoute
   ApiPublicPassportAvatarsRoute: typeof ApiPublicPassportAvatarsRoute
   ApiPublicAvatarSplatRoute: typeof ApiPublicAvatarSplatRoute
   ApiPublicProjectImageSplatRoute: typeof ApiPublicProjectImageSplatRoute
@@ -651,6 +664,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicContactRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/document-url': {
+      id: '/api/public/document-url'
+      path: '/api/public/document-url'
+      fullPath: '/api/public/document-url'
+      preLoaderRoute: typeof ApiPublicDocumentUrlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/passport-avatars': {
       id: '/api/public/passport-avatars'
       path: '/api/public/passport-avatars'
@@ -751,6 +771,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProjectsIndexRoute: ProjectsIndexRoute,
   ApiPublicAiChatRoute: ApiPublicAiChatRoute,
   ApiPublicContactRoute: ApiPublicContactRoute,
+  ApiPublicDocumentUrlRoute: ApiPublicDocumentUrlRoute,
   ApiPublicPassportAvatarsRoute: ApiPublicPassportAvatarsRoute,
   ApiPublicAvatarSplatRoute: ApiPublicAvatarSplatRoute,
   ApiPublicProjectImageSplatRoute: ApiPublicProjectImageSplatRoute,
