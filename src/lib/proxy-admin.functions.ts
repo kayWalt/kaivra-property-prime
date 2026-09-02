@@ -648,5 +648,17 @@ export const recordProxyAdminSessionEvent = createServerFn({ method: "POST" })
       detail: { note: data.detail ?? null, grant_status: (grant as { status: string }).status },
     });
     if (error) console.error("[proxy-admin] session audit failed", error.message);
+
+    // Last seen, stamped server-side for the verified caller only.
+    try {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      await supabaseAdmin
+        .from("proxy_admin_grants")
+        .update({ last_activity_at: new Date().toISOString() } as never)
+        .eq("user_id", context.userId);
+    } catch (err) {
+      console.error("[proxy-admin] activity stamp failed", err);
+    }
+
     return { ok: !error };
   });
