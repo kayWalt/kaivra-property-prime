@@ -20,12 +20,15 @@ import { ThemeToggle } from "@/components/kaivra/ThemeToggle";
 import { useProfile, useRoles, useSession, primaryRole } from "@/hooks/useAuth";
 import { UserAvatar } from "./UserAvatar";
 import { ShareQrButton } from "./ShareQrButton";
+import { toast } from "sonner";
 import {
   clearPushExternalUserId,
+  haptic,
   isMedianApp,
   requestPushPermission,
   setPushExternalUserId,
 } from "@/lib/median";
+import { playNotificationSound } from "@/lib/notification-sound";
 import { cn } from "@/lib/utils";
 import {
   ADMIN_MODULES,
@@ -212,6 +215,40 @@ export function AppShell({ children }: { children: ReactNode }) {
     requestPushPermission();
     setPushExternalUserId(user.id);
   }, [user?.id]);
+
+  // Live notification alert: as soon as a notification row addressed to the
+  // signed-in user is inserted, chime, buzz on native, surface a toast and
+  // refresh the unread badge.
+  useEffect(() => {
+    if (!user?.id) return;
+    const channel = supabase
+      .channel(`notifications-${user.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "notifications",
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          const row = payload.new as { title?: string; body?: string; link?: string | null };
+          playNotificationSound();
+          haptic();
+          toast(row.title || "New notification", {
+            description: row.body ?? undefined,
+            action: row.link
+              ? { label: "View", onClick: () => void navigate({ to: row.link as string }) }
+              : undefined,
+          });
+          void queryClient.invalidateQueries({ queryKey: ["notifications"] });
+        },
+      )
+      .subscribe();
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [user?.id, queryClient, navigate]);
 
   function signOut() {
     clearPushExternalUserId();
