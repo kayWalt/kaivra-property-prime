@@ -76,8 +76,8 @@ export function RequireModule({
           : "You do not have permission to open this KAIVRA module. Contact a Super Admin if you require access."}
       </p>
       <Button asChild variant="outline">
-        <Link to={access.modules.length > 0 ? "/admin" : "/dashboard"}>
-          {access.modules.length > 0 ? "Back to workspace" : "Back to dashboard"}
+        <Link to={fallbackTo}>
+          {fallbackTo === "/dashboard" ? "Back to dashboard" : "Back to workspace"}
         </Link>
       </Button>
     </div>
