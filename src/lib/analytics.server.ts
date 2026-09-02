@@ -70,13 +70,13 @@ export type IngestPayload = {
   eventType: string;
   sessionId: string;
   visitorId: string;
-  route?: string | null;
-  referrer?: string | null;
-  locale?: string | null;
-  screenWidth?: number | null;
-  isReturning?: boolean;
-  result?: EventResult;
-  metadata?: Record<string, unknown>;
+  route?: string | null | undefined;
+  referrer?: string | null | undefined;
+  locale?: string | null | undefined;
+  screenWidth?: number | null | undefined;
+  isReturning?: boolean | undefined;
+  result?: EventResult | undefined;
+  metadata?: Record<string, unknown> | undefined;
 };
 
 async function actorLabel(userId: string | null) {
