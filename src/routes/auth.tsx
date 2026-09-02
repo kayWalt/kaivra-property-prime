@@ -161,7 +161,7 @@ function AuthPage() {
       <div className="relative hidden lg:block">
         <img
           src={assetUrl(authHero.url)}
-          alt="Proposed five bedroom KAIVRA duplex, option one architectural renders"
+          alt="Modern luxury KAIVRA residence with illuminated terraces and landscaped grounds"
           className="absolute inset-0 size-full object-cover"
           width={1920}
           height={1088}
