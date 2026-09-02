@@ -56,7 +56,8 @@ interface ProjectRow {
   location: string;
   description: string | null;
   hero_image: string | null;
-  price: number | null;
+  currency: string | null;
+  properties: { unit_price: number; is_active: boolean }[] | null;
 }
 
 function AbujaInvestmentPage() {
@@ -65,10 +66,12 @@ function AbujaInvestmentPage() {
     queryFn: async () => {
       const { data } = await supabase
         .from("projects")
-        .select("id, name, location, description, hero_image, price")
+        .select(
+          "id, name, location, description, hero_image, currency, properties(unit_price, is_active)",
+        )
         .eq("is_active", true)
         .order("name");
-      return (data ?? []) as ProjectRow[];
+      return (data ?? []) as unknown as ProjectRow[];
     },
   });
 
