@@ -1684,6 +1684,12 @@ function StepPayment({
                   {formatDate(payment.paid_on)} · {payment.bank ?? "—"} ·{" "}
                   {payment.reference ?? "no reference"}
                 </p>
+                {snapshotLabel(payment.payment_account_snapshot) ? (
+                  <p className="text-xs text-muted-foreground">
+                    Paid into: {snapshotLabel(payment.payment_account_snapshot)}
+                  </p>
+                ) : null}
+
               </div>
               <div className="flex items-center gap-2">
                 <PaymentBadge status={payment.status as "pending" | "verified" | "rejected"} />
