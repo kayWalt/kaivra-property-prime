@@ -4,6 +4,8 @@ import { streamText, tool, stepCountIs } from "ai";
 import { z } from "zod";
 import type { Database } from "@/integrations/supabase/types";
 import { createLovableAiGatewayProvider, KAIVRA_CHAT_MODEL } from "@/lib/ai-gateway.server";
+import { LOVABLE_ORIGIN, isLovableOrigin } from "@/lib/origin-fallback";
+
 
 /**
  * KAIVRA AI Assist.
@@ -115,14 +117,41 @@ async function handler({ request }: { request: Request }) {
   }
 
   const apiKey = env("LOVABLE_API_KEY", "AI_GATEWAY_API_KEY");
+  const supabaseConfigured =
+    !!env("SUPABASE_URL", "VITE_SUPABASE_URL") &&
+    !!env("SUPABASE_PUBLISHABLE_KEY", "VITE_SUPABASE_PUBLISHABLE_KEY");
+
+  // Self-hosted deployments (custom domain on Cloudflare) do not carry the
+  // Lovable-managed AI key. Relay the request to the Lovable-hosted origin of
+  // the same app instead of failing with "not configured".
+  if ((!apiKey || !supabaseConfigured) && !isLovableOrigin(request)) {
+    const auth = request.headers.get("authorization");
+    const relayed = await fetch(`${LOVABLE_ORIGIN}/api/public/ai-chat`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(auth ? { authorization: auth } : {}),
+      },
+      body: JSON.stringify(body),
+    });
+    return new Response(relayed.body, {
+      status: relayed.status,
+      headers: {
+        "Content-Type": relayed.headers.get("content-type") ?? "text/plain; charset=utf-8",
+        "Cache-Control": "no-cache",
+      },
+    });
+  }
+
   if (!apiKey) {
     console.error("[ai-chat] LOVABLE_API_KEY is not set on this deployment.");
     return new Response("KAIVRA AI Assist is not configured.", { status: 503 });
   }
-  if (!env("SUPABASE_URL", "VITE_SUPABASE_URL") || !env("SUPABASE_PUBLISHABLE_KEY", "VITE_SUPABASE_PUBLISHABLE_KEY")) {
+  if (!supabaseConfigured) {
     console.error("[ai-chat] Supabase environment is not configured on this deployment.");
     return new Response("KAIVRA AI Assist is not configured.", { status: 503 });
   }
+
 
   const authHeader = request.headers.get("authorization") ?? "";
   const token =
