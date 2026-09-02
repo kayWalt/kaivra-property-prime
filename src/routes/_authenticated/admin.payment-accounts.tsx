@@ -33,6 +33,7 @@ import {
 import { useRoles, useSession, primaryRole } from "@/hooks/useAuth";
 import { formatDate } from "@/lib/kaivra";
 import { ACCOUNT_COLUMNS, maskAccount, type PaymentAccount } from "@/lib/payment-accounts";
+import { revealPaymentAccountNumber } from "@/lib/payment-accounts.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/payment-accounts")({
   head: () => ({
