@@ -24,7 +24,6 @@ import {
   setPushExternalUserId,
 } from "@/lib/median";
 import { cn } from "@/lib/utils";
-import type { AppRole } from "@/lib/kaivra";
 import {
   ADMIN_MODULES,
   EXPIRED_MESSAGE,
@@ -35,7 +34,12 @@ import {
 
 type NavItem = { to: string; label: string };
 
-const NAV: Record<AppRole, NavItem[]> = {
+/**
+ * Investor and adviser menus are fixed. Admin and Super Admin menus are built
+ * from ADMIN_MODULES and filtered by the caller's effective permissions, so
+ * there is a single source of truth for admin navigation.
+ */
+const NAV: Record<"investor" | "adviser", NavItem[]> = {
   investor: [
     { to: "/dashboard", label: "Dashboard" },
     { to: "/applications", label: "My Applications" },
@@ -50,30 +54,6 @@ const NAV: Record<AppRole, NavItem[]> = {
     { to: "/admin/inspections", label: "Inspections" },
     { to: "/admin/transactions", label: "Transactions" },
     { to: "/admin/support", label: "Support" },
-    { to: "/admin/enquiries", label: "Enquiries" },
-  ],
-  admin: [
-    { to: "/admin", label: "Applications" },
-    { to: "/admin/investors", label: "Investors" },
-    { to: "/admin/transactions", label: "Transactions" },
-    { to: "/admin/payment-accounts", label: "Payment Accounts" },
-    { to: "/admin/inspections", label: "Inspections" },
-    { to: "/admin/projects", label: "Projects" },
-    { to: "/admin/advisers", label: "Advisers" },
-    { to: "/admin/support", label: "Support" },
-    { to: "/admin/corrections", label: "Corrections" },
-    { to: "/admin/enquiries", label: "Enquiries" },
-  ],
-  super_admin: [
-    { to: "/admin", label: "Applications" },
-    { to: "/admin/investors", label: "Investors" },
-    { to: "/admin/transactions", label: "Transactions" },
-    { to: "/admin/payment-accounts", label: "Payment Accounts" },
-    { to: "/admin/inspections", label: "Inspections" },
-    { to: "/admin/projects", label: "Projects" },
-    { to: "/admin/advisers", label: "Advisers" },
-    { to: "/admin/support", label: "Support" },
-    { to: "/admin/corrections", label: "Corrections" },
     { to: "/admin/enquiries", label: "Enquiries" },
   ],
 };
@@ -115,7 +95,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           })),
           ...(access.isSuperAdmin ? [{ to: "/admin/access", label: "Admin Access" }] : []),
         ]
-      : NAV[role];
+      : NAV[role as "investor" | "adviser"];
   const unread = useUnreadCount(user?.id);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
