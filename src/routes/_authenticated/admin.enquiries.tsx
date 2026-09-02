@@ -127,7 +127,7 @@ function AdminEnquiries() {
     return (
       <EmptyState
         title="Not available"
-        description="Website enquiries are only visible to KAIVRA staff."
+        body="Website enquiries are only visible to KAIVRA staff."
       />
     );
   }
@@ -172,7 +172,7 @@ function AdminEnquiries() {
       {rows.length === 0 ? (
         <EmptyState
           title="No enquiries"
-          description="Enquiries submitted through the website will appear here."
+          body="Enquiries submitted through the website will appear here."
         />
       ) : (
         <ul className="grid gap-3">
