@@ -1,0 +1,1 @@
+DROP FUNCTION IF EXISTS public.touch_proxy_admin_activity();
