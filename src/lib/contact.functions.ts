@@ -122,6 +122,9 @@ export const submitContactEnquiry = createServerFn({ method: "POST" })
     const { data: row, error } = await supabaseAdmin
       .from("contact_enquiries")
       .insert({
+        // The BEFORE INSERT trigger always overwrites this with a unique
+        // KVR-E reference; the column is NOT NULL so a placeholder is needed.
+        reference: "",
         full_name: data.full_name,
         email: data.email.toLowerCase(),
         phone: data.phone?.trim() || null,
