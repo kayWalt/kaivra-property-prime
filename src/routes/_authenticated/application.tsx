@@ -1564,7 +1564,10 @@ function StepPayment({
 }) {
   const [form, setForm] = useState<PaymentDraft>(EMPTY_PAYMENT);
   const [adding, setAdding] = useState(false);
+  const accounts = useActivePaymentAccounts();
+  const accountRequired = (accounts.data ?? []).length > 0;
   const update = (patch: Partial<PaymentInfo>) => onChange({ ...info, ...patch });
+
 
   return (
     <div className="space-y-10">
