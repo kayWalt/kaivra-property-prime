@@ -433,6 +433,7 @@ export type Database = {
       }
       contact_enquiries: {
         Row: {
+          admin_notes: string | null
           created_at: string
           email: string
           full_name: string
@@ -442,11 +443,14 @@ export type Database = {
           id: string
           message: string
           phone: string | null
+          reference: string
           source_page: string | null
+          status: string
           subject: string
           updated_at: string
         }
         Insert: {
+          admin_notes?: string | null
           created_at?: string
           email: string
           full_name: string
@@ -456,11 +460,14 @@ export type Database = {
           id?: string
           message: string
           phone?: string | null
+          reference: string
           source_page?: string | null
+          status?: string
           subject: string
           updated_at?: string
         }
         Update: {
+          admin_notes?: string | null
           created_at?: string
           email?: string
           full_name?: string
@@ -470,7 +477,9 @@ export type Database = {
           id?: string
           message?: string
           phone?: string | null
+          reference?: string
           source_page?: string | null
+          status?: string
           subject?: string
           updated_at?: string
         }
