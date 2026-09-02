@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { assertAdminCan } from "@/lib/admin-permissions.server";
 import { DOCS_BUCKET } from "./storage.server";
 
 /**
@@ -15,13 +16,8 @@ export const deleteApplication = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) => z.object({ applicationId: z.string().uuid() }).parse(data))
   .handler(async ({ data, context }) => {
-    const { data: roles, error: roleError } = await context.supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", context.userId);
-    if (roleError) throw new Error("Your permissions could not be verified.");
-    const isAdmin = (roles ?? []).some((r) => r.role === "admin" || r.role === "super_admin");
-    if (!isAdmin) throw new Error("Only KAIVRA administrators can delete an application.");
+    // Honours Proxy Admin module permissions and the access window.
+    await assertAdminCan(context.supabase as never, context.userId, "applications", "edit");
 
     const { data: application, error: appError } = await context.supabase
       .from("applications")

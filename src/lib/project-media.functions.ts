@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { assertAdminCan } from "@/lib/admin-permissions.server";
 
 export const PROJECT_IMAGES_BUCKET = "project-images";
 
@@ -19,13 +20,7 @@ export const createProjectImageUploadTicket = createServerFn({ method: "POST" })
       .parse(data),
   )
   .handler(async ({ data, context }) => {
-    const { data: roles, error: roleError } = await context.supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", context.userId);
-    if (roleError) throw new Error("Could not verify your permissions.");
-    const isAdmin = (roles ?? []).some((r) => r.role === "admin" || r.role === "super_admin");
-    if (!isAdmin) throw new Error("Only administrators can upload project images.");
+    await assertAdminCan(context.supabase as never, context.userId, "projects", "edit");
 
     const path = `${data.scope}/${crypto.randomUUID()}-${safeName(data.fileName)}`;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
