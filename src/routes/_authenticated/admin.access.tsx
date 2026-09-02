@@ -77,10 +77,10 @@ export const Route = createFileRoute("/_authenticated/admin/access")({
 
 const STATE_TONE = {
   active: "emerald",
-  scheduled: "sky",
-  expired: "slate",
-  revoked: "rose",
-  suspended: "amber",
+  scheduled: "gold",
+  expired: "neutral",
+  revoked: "red",
+  suspended: "gold",
 } as const;
 
 function fmt(value: string | null) {
@@ -157,7 +157,7 @@ function AdminAccessPage() {
         ) : (listQuery.data?.length ?? 0) === 0 ? (
           <EmptyState
             title="No Proxy Admins yet"
-            description="Create one to delegate limited, time-boxed administrative access."
+            body="Create one to delegate limited, time-boxed administrative access."
           />
         ) : (
           listQuery.data!.map((row) => {
