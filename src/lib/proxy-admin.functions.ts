@@ -78,6 +78,23 @@ async function audit(
   if (error) console.error("[proxy-admin] audit failed", error.message);
 }
 
+/** Finds an existing auth identity by email without creating a duplicate. */
+async function findAuthUserByEmail(
+  admin: { auth: { admin: { listUsers: (o: { page: number; perPage: number }) => Promise<any> } } },
+  email: string,
+): Promise<{ id: string; email: string | null } | null> {
+  const target = email.toLowerCase();
+  for (let page = 1; page <= 20; page += 1) {
+    const { data, error } = await admin.auth.admin.listUsers({ page, perPage: 200 });
+    if (error) return null;
+    const users = (data?.users ?? []) as { id: string; email?: string | null }[];
+    const hit = users.find((u) => (u.email ?? "").toLowerCase() === target);
+    if (hit) return { id: hit.id, email: hit.email ?? null };
+    if (users.length < 200) return null;
+  }
+  return null;
+}
+
 export type ProxyAdminRow = {
   user_id: string;
   grant: ProxyGrant;
@@ -246,7 +263,7 @@ export const grantProxyAdmin = createServerFn({ method: "POST" })
       if (data.phone && !current?.phone) patch["phone"] = data.phone;
       if (Object.keys(patch).length) {
         if (current) {
-          await supabaseAdmin.from("profiles").update(patch).eq("id", profile.id);
+          await supabaseAdmin.from("profiles").update(patch as never).eq("id", profile.id);
         } else {
           await supabaseAdmin
             .from("profiles")
