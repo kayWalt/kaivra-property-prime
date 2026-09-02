@@ -1,11 +1,13 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Bell, LogOut, Menu, User } from "lucide-react";
-import { useEffect, useState, type ReactNode } from "react";
+import { Bell, ChevronDown, LogOut, Menu, User } from "lucide-react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Brand } from "./Brand";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
