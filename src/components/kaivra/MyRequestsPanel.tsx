@@ -58,7 +58,7 @@ type Complaint = {
  * Investor-facing view of their correction requests and complaints. Reuses the
  * existing dashboard card language — no new page or navigation area.
  */
-export function MyRequestsPanel({ userId }: { userId?: string }) {
+export function MyRequestsPanel({ userId }: { userId?: string | undefined }) {
   const queryClient = useQueryClient();
 
   const corrections = useQuery({
