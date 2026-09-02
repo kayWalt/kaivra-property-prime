@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
 import { AsyncButton } from "@/components/kaivra/AsyncButton";
 import { acknowledgeComplaint, resolveComplaint } from "@/lib/corrections.functions";
+import { EffectCorrectionDialog } from "@/components/kaivra/EffectCorrectionDialog";
 import { ArrowLeft, MessageCircle, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -61,6 +62,7 @@ type Ticket = {
   created_at: string;
   last_message_at: string | null;
   investor_id: string;
+  application_id?: string | null;
   assigned_to: string | null;
   applications: { reference: string | null } | null;
   projects: { name: string } | null;
@@ -90,7 +92,7 @@ function AdminSupport() {
       const { data, error } = await supabase
         .from("support_tickets")
         .select(
-          "id, reference, subject, category, message, priority, status, channel, created_at, last_message_at, investor_id, assigned_to, applications(reference), projects(name)",
+          "id, reference, subject, category, message, priority, status, channel, created_at, last_message_at, investor_id, application_id, assigned_to, applications(reference), projects(name)",
         )
         .order("last_message_at", { ascending: false })
         .limit(200);
@@ -427,6 +429,12 @@ function AdminSupport() {
                       >
                         Resolve complaint
                       </AsyncButton>
+                      <EffectCorrectionDialog
+                        investorId={selected.investor_id}
+                        investorName={investorOf(selected.investor_id)?.full_name ?? null}
+                        ticketId={selected.id}
+                        defaultApplicationId={selected.application_id ?? null}
+                      />
                     </div>
                   </div>
                 ) : null}
