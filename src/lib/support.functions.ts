@@ -51,6 +51,9 @@ export const createSupportTicket = createServerFn({ method: "POST" })
         priority: z.enum(SUPPORT_PRIORITIES).default("normal"),
         applicationId: z.string().uuid().nullable().optional(),
         projectId: z.string().uuid().nullable().optional(),
+        // "complaint" routes the request through the formal complaint workflow
+        // (KAI-CM reference, acknowledgement and resolution steps).
+        channel: z.enum(["web", "in_app", "complaint"]).optional(),
       })
       .parse(data),
   )
@@ -59,6 +62,7 @@ export const createSupportTicket = createServerFn({ method: "POST" })
       .from("support_tickets")
       .insert({
         investor_id: context.userId,
+        ...(data.channel ? { channel: data.channel } : {}),
         subject: data.subject,
         category: data.category,
         message: data.message,
@@ -70,6 +74,7 @@ export const createSupportTicket = createServerFn({ method: "POST" })
       .single();
 
     if (error || !ticket) throw new Error("Your support request could not be created.");
+    const isComplaint = data.channel === "complaint";
 
     // Staff fan-out needs privileged access (investors cannot write another
     // user's notification row). A notification failure must never lose the
@@ -93,7 +98,7 @@ export const createSupportTicket = createServerFn({ method: "POST" })
         await supabaseAdmin.from("notifications").insert(
           Array.from(targets).map((user_id) => ({
             user_id,
-            title: `New support request · ${ticket.reference ?? ""}`.trim(),
+            title: `${isComplaint ? "New complaint" : "New support request"} · ${ticket.reference ?? ""}`.trim(),
             body: `${data.category}: ${data.subject}`,
             link: "/admin/support",
           })),
