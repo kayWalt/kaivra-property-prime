@@ -9,7 +9,7 @@ import { ThemeToggle } from "@/components/kaivra/ThemeToggle";
 import { Brand } from "@/components/kaivra/Brand";
 import { useSession } from "@/hooks/useAuth";
 import { formatCompact } from "@/lib/kaivra";
-import heroAsset from "@/assets/kaivra-22-00-40.jpg.asset.json";
+import { HeroCarousel } from "@/components/kaivra/HeroCarousel";
 import adviserAsset from "@/assets/kaivra-22-00-16.jpg.asset.json";
 import residenceAsset from "@/assets/kaivra-22-00-51.jpg.asset.json";
 import partnerHutuAsset from "@/assets/partner-hutu-prestige.jpg.asset.json";
@@ -121,15 +121,8 @@ function Landing() {
       </header>
 
       <section className="relative min-h-[92svh] w-full">
-        <img
-          src={assetUrl(heroAsset.url)}
-          alt="Contemporary KAIVRA residences with landscaped courtyards at dusk"
-          className="absolute inset-0 size-full object-cover"
-          width={1280}
-          height={784}
-          fetchPriority="high"
-        />
-        <div className="hero-scrim absolute inset-0" />
+        <HeroCarousel />
+
         <div className="relative mx-auto flex min-h-[92svh] w-full max-w-7xl flex-col justify-end px-5 pb-16 pt-32 sm:px-8 sm:pb-24">
           <div className="max-w-2xl kv-rise">
             <div className="rule-gold mb-8" />
