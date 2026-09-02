@@ -232,6 +232,21 @@
   animation: kv-fade 0.4s ease-out both;
 }
 
+@utility kv-kenburns {
+  animation: kv-kenburns 14s ease-out both;
+  will-change: transform;
+}
+
+@keyframes kv-kenburns {
+  from {
+    transform: scale(1.02) translate3d(0, 0, 0);
+  }
+  to {
+    transform: scale(1.09) translate3d(-1.2%, -1%, 0);
+  }
+}
+
+
 @keyframes kv-rise {
   from {
     opacity: 0;
