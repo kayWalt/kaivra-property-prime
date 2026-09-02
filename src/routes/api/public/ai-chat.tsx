@@ -4,6 +4,8 @@ import { streamText, tool, stepCountIs } from "ai";
 import { z } from "zod";
 import type { Database } from "@/integrations/supabase/types";
 import { createLovableAiGatewayProvider, KAIVRA_CHAT_MODEL } from "@/lib/ai-gateway.server";
+import { LOVABLE_ORIGIN, isLovableOrigin } from "@/lib/origin-fallback";
+
 
 /**
  * KAIVRA AI Assist.
