@@ -9,6 +9,32 @@ const toneClass = {
   red: "border-destructive/30 bg-destructive/10 text-destructive",
 };
 
+export type BadgeTone = keyof typeof toneClass;
+
+/** Generic pill used by workflows that define their own status vocabulary. */
+export function ToneBadge({
+  tone,
+  label,
+  className,
+}: {
+  tone: BadgeTone;
+  label: string;
+  className?: string;
+}) {
+  return (
+    <span
+      className={cn(
+        "eyebrow inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1",
+        toneClass[tone],
+        className,
+      )}
+    >
+      <span aria-hidden className="size-1.5 rounded-full bg-current" />
+      {label}
+    </span>
+  );
+}
+
 export function StatusBadge({
   status,
   className,
