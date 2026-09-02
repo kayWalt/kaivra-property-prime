@@ -110,44 +110,71 @@ export const listProxyAdmins = createServerFn({ method: "POST" })
     const { data: profiles } = ids.length
       ? await context.supabase
           .from("profiles")
-          .select("id, full_name, email, avatar_url")
+          .select("id, full_name, email, phone, avatar_url")
           .in("id", ids)
       : { data: [] };
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const signIns = new Map<string, string | null>();
+    type AuthState = {
+      lastSignIn: string | null;
+      invitedAt: string | null;
+      activatedAt: string | null;
+      email: string | null;
+    };
+    const authState = new Map<string, AuthState>();
     await Promise.all(
       rows.map(async (g) => {
         try {
           const { data } = await supabaseAdmin.auth.admin.getUserById(g.user_id);
-          signIns.set(g.user_id, data?.user?.last_sign_in_at ?? null);
+          const u = data?.user;
+          authState.set(g.user_id, {
+            lastSignIn: u?.last_sign_in_at ?? null,
+            invitedAt: (u as { invited_at?: string } | undefined)?.invited_at ?? null,
+            activatedAt: u?.email_confirmed_at ?? null,
+            email: u?.email ?? null,
+          });
         } catch {
-          signIns.set(g.user_id, null);
+          authState.set(g.user_id, {
+            lastSignIn: null,
+            invitedAt: null,
+            activatedAt: null,
+            email: null,
+          });
         }
       }),
     );
 
     const byId = new Map(
-      ((profiles ?? []) as { id: string; full_name: string | null; email: string | null; avatar_url: string | null }[]).map(
-        (p) => [p.id, p],
-      ),
+      ((profiles ?? []) as {
+        id: string;
+        full_name: string | null;
+        email: string | null;
+        phone: string | null;
+        avatar_url: string | null;
+      }[]).map((p) => [p.id, p]),
     );
 
     return {
       proxyAdmins: rows.map((g) => {
         const profile = byId.get(g.user_id);
         const granter = g.granted_by ? byId.get(g.granted_by) : undefined;
+        const auth = authState.get(g.user_id);
         return {
           user_id: g.user_id,
           grant: g as unknown as ProxyGrant,
           full_name: profile?.full_name ?? null,
-          email: profile?.email ?? null,
+          // The auth identity is the source of truth for the login address.
+          email: auth?.email ?? profile?.email ?? null,
+          phone: profile?.phone ?? null,
           avatar_url: profile?.avatar_url ?? null,
           granted_by_name: granter?.full_name ?? granter?.email ?? null,
-          last_sign_in_at: signIns.get(g.user_id) ?? null,
+          last_sign_in_at: auth?.lastSignIn ?? null,
+          invited_at: auth?.invitedAt ?? null,
+          activated_at: auth?.activatedAt ?? null,
         } satisfies ProxyAdminRow;
       }),
     };
+
   });
 
 const upsertSchema = z.object({
