@@ -492,7 +492,7 @@ function ApplicationWizard() {
   }
 
   async function addPayment(form: PaymentDraft) {
-    if (!applicationId) return;
+    if (!applicationId) return false;
     const { error } = await supabase.from("application_payments").insert({
       application_id: applicationId,
       amount: form.amount,
@@ -504,12 +504,13 @@ function ApplicationWizard() {
       description: form.description || null,
     });
     if (error) {
-      toast.error("Your payment record could not be saved. Please try again.");
-      return;
+      toast.error(`Your payment record could not be saved. ${error.message}`);
+      return false;
     }
     toast.success("Payment record added.");
     void logEvent(applicationId, "payment_added", `${formatNaira(form.amount)} recorded`);
     void payments.refetch();
+    return true;
   }
 
   async function removePayment(id: string) {
