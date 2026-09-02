@@ -33,6 +33,20 @@ export async function resolveDocumentUrl(
   if (error) throw new Error("Document could not be loaded.");
   if (!doc) throw new Error("Document not found or you do not have access to it.");
 
+  // Preferred: sign with the caller's own client. Storage RLS already limits
+  // this bucket to the uploader and authorised staff, so no server secret is
+  // required and every deployment behaves identically.
+  try {
+    const { data: mine } = await supabase.storage
+      .from(DOCS_BUCKET)
+      .createSignedUrl(doc.file_path, 120);
+    if (mine?.signedUrl) {
+      return { url: mine.signedUrl, fileName: doc.file_name, mimeType: doc.mime_type };
+    }
+  } catch (err) {
+    console.error("[storage] caller signing failed", err);
+  }
+
   try {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: signed, error: signError } = await supabaseAdmin.storage
@@ -44,4 +58,5 @@ export async function resolveDocumentUrl(
     console.error("[storage] signing unavailable", err);
     return null;
   }
+
 }
