@@ -37,6 +37,7 @@ import { Route as AuthenticatedInspectionsIndexRouteImport } from './routes/_aut
 import { Route as AuthenticatedInspectionsNewRouteImport } from './routes/_authenticated/inspections.new'
 import { Route as ApiPublicAiChatRouteImport } from './routes/api/public/ai-chat'
 import { Route as ApiPublicContactRouteImport } from './routes/api/public/contact'
+import { Route as ApiPublicPassportAvatarsRouteImport } from './routes/api/public/passport-avatars'
 import { Route as AuthenticatedAdminApplicationsIndexRouteImport } from './routes/_authenticated/admin.applications.index'
 import { Route as AuthenticatedAdminApplicationsAppIdRouteImport } from './routes/_authenticated/admin.applications.$appId'
 import { Route as ApiPublicAvatarSplatRouteImport } from './routes/api/public/avatar.$'
@@ -196,6 +197,12 @@ const ApiPublicContactRoute = ApiPublicContactRouteImport.update({
   path: '/api/public/contact',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicPassportAvatarsRoute =
+  ApiPublicPassportAvatarsRouteImport.update({
+    id: '/api/public/passport-avatars',
+    path: '/api/public/passport-avatars',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedAdminApplicationsIndexRoute =
   AuthenticatedAdminApplicationsIndexRouteImport.update({
     id: '/admin/applications/',
@@ -245,6 +252,7 @@ export interface FileRoutesByFullPath {
   '/inspections/new': typeof AuthenticatedInspectionsNewRoute
   '/api/public/ai-chat': typeof ApiPublicAiChatRoute
   '/api/public/contact': typeof ApiPublicContactRoute
+  '/api/public/passport-avatars': typeof ApiPublicPassportAvatarsRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/applications/': typeof AuthenticatedApplicationsIndexRoute
   '/inspections/': typeof AuthenticatedInspectionsIndexRoute
@@ -278,6 +286,7 @@ export interface FileRoutesByTo {
   '/inspections/new': typeof AuthenticatedInspectionsNewRoute
   '/api/public/ai-chat': typeof ApiPublicAiChatRoute
   '/api/public/contact': typeof ApiPublicContactRoute
+  '/api/public/passport-avatars': typeof ApiPublicPassportAvatarsRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/applications': typeof AuthenticatedApplicationsIndexRoute
   '/inspections': typeof AuthenticatedInspectionsIndexRoute
@@ -313,6 +322,7 @@ export interface FileRoutesById {
   '/_authenticated/inspections/new': typeof AuthenticatedInspectionsNewRoute
   '/api/public/ai-chat': typeof ApiPublicAiChatRoute
   '/api/public/contact': typeof ApiPublicContactRoute
+  '/api/public/passport-avatars': typeof ApiPublicPassportAvatarsRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/applications/': typeof AuthenticatedApplicationsIndexRoute
   '/_authenticated/inspections/': typeof AuthenticatedInspectionsIndexRoute
@@ -348,6 +358,7 @@ export interface FileRouteTypes {
     | '/inspections/new'
     | '/api/public/ai-chat'
     | '/api/public/contact'
+    | '/api/public/passport-avatars'
     | '/admin/'
     | '/applications/'
     | '/inspections/'
@@ -381,6 +392,7 @@ export interface FileRouteTypes {
     | '/inspections/new'
     | '/api/public/ai-chat'
     | '/api/public/contact'
+    | '/api/public/passport-avatars'
     | '/admin'
     | '/applications'
     | '/inspections'
@@ -415,6 +427,7 @@ export interface FileRouteTypes {
     | '/_authenticated/inspections/new'
     | '/api/public/ai-chat'
     | '/api/public/contact'
+    | '/api/public/passport-avatars'
     | '/_authenticated/admin/'
     | '/_authenticated/applications/'
     | '/_authenticated/inspections/'
@@ -435,6 +448,7 @@ export interface RootRouteChildren {
   ProjectsIndexRoute: typeof ProjectsIndexRoute
   ApiPublicAiChatRoute: typeof ApiPublicAiChatRoute
   ApiPublicContactRoute: typeof ApiPublicContactRoute
+  ApiPublicPassportAvatarsRoute: typeof ApiPublicPassportAvatarsRoute
   ApiPublicAvatarSplatRoute: typeof ApiPublicAvatarSplatRoute
   ApiPublicProjectImageSplatRoute: typeof ApiPublicProjectImageSplatRoute
 }
@@ -637,6 +651,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicContactRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/passport-avatars': {
+      id: '/api/public/passport-avatars'
+      path: '/api/public/passport-avatars'
+      fullPath: '/api/public/passport-avatars'
+      preLoaderRoute: typeof ApiPublicPassportAvatarsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/admin/applications/': {
       id: '/_authenticated/admin/applications/'
       path: '/admin/applications'
@@ -730,6 +751,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProjectsIndexRoute: ProjectsIndexRoute,
   ApiPublicAiChatRoute: ApiPublicAiChatRoute,
   ApiPublicContactRoute: ApiPublicContactRoute,
+  ApiPublicPassportAvatarsRoute: ApiPublicPassportAvatarsRoute,
   ApiPublicAvatarSplatRoute: ApiPublicAvatarSplatRoute,
   ApiPublicProjectImageSplatRoute: ApiPublicProjectImageSplatRoute,
 }
