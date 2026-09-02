@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useRoles, useSession, primaryRole } from "@/hooks/useAuth";
 import {
+  ADMIN_MODULES,
   EXPIRED_MESSAGE,
   buildAdminAccess,
   useMyProxyGrant,
