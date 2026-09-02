@@ -180,12 +180,14 @@ export const listProxyAdmins = createServerFn({ method: "POST" })
 const upsertSchema = z.object({
   email: z.string().trim().email().max(255),
   fullName: z.string().trim().max(120).optional().nullable(),
+  phone: z.string().trim().max(40).optional().nullable(),
   permissions: permissionsSchema,
   startsAt: z.string().datetime(),
   expiresAt: z.string().datetime().nullable(),
   note: z.string().trim().max(500).optional().nullable(),
   redirectTo: z.string().url().max(500),
 });
+
 
 /**
  * Creates (or re-grants) proxy admin access for a user. Existing users are
