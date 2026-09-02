@@ -305,7 +305,7 @@ export type Database = {
           id?: string
           method?: Database["public"]["Enums"]["payment_method"]
           paid_on?: string | null
-          payment_reference: string
+          payment_reference?: string
           reference?: string | null
           rejection_reason?: string | null
           sender?: string | null
@@ -658,7 +658,7 @@ export type Database = {
           location?: string
           name: string
           payment_plans?: Json
-          project_code: string
+          project_code?: string
           self_registration_open?: boolean
           updated_at?: string
         }
@@ -705,7 +705,7 @@ export type Database = {
           name: string
           payment_plan?: string
           project_id: string
-          property_code: string
+          property_code?: string
           property_type?: string
           size_label?: string
           unit_price?: number
