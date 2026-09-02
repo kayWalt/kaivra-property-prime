@@ -49,6 +49,7 @@ const NAV: Record<AppRole, NavItem[]> = {
     { to: "/admin", label: "Applications" },
     { to: "/admin/investors", label: "Investors" },
     { to: "/admin/transactions", label: "Transactions" },
+    { to: "/admin/payment-accounts", label: "Payment Accounts" },
     { to: "/admin/inspections", label: "Inspections" },
     { to: "/admin/projects", label: "Projects" },
     { to: "/admin/advisers", label: "Advisers" },
@@ -59,6 +60,7 @@ const NAV: Record<AppRole, NavItem[]> = {
     { to: "/admin", label: "Applications" },
     { to: "/admin/investors", label: "Investors" },
     { to: "/admin/transactions", label: "Transactions" },
+    { to: "/admin/payment-accounts", label: "Payment Accounts" },
     { to: "/admin/inspections", label: "Inspections" },
     { to: "/admin/projects", label: "Projects" },
     { to: "/admin/advisers", label: "Advisers" },
@@ -66,6 +68,7 @@ const NAV: Record<AppRole, NavItem[]> = {
     { to: "/admin/enquiries", label: "Enquiries" },
   ],
 };
+
 
 function useUnreadCount(userId?: string) {
   return useQuery({
