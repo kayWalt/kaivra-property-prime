@@ -25,6 +25,13 @@ import {
 } from "@/lib/median";
 import { cn } from "@/lib/utils";
 import type { AppRole } from "@/lib/kaivra";
+import {
+  ADMIN_MODULES,
+  EXPIRED_MESSAGE,
+  buildAdminAccess,
+  timeRemaining,
+  useMyProxyGrant,
+} from "@/lib/proxy-admin";
 
 type NavItem = { to: string; label: string };
 
@@ -218,6 +225,20 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </div>
       </header>
+      {access.isProxyAdmin ? (
+        <div
+          className={cn(
+            "no-print border-b px-4 py-2 text-center text-xs sm:px-6",
+            access.accessExpired
+              ? "border-destructive/40 bg-destructive/10 text-destructive"
+              : "border-border bg-muted/50 text-muted-foreground",
+          )}
+        >
+          {access.accessExpired
+            ? EXPIRED_MESSAGE
+            : `Proxy Admin access · ${timeRemaining(access.grant?.expires_at ?? null)} remaining`}
+        </div>
+      ) : null}
       <main className={cn("flex-1")}>{children}</main>
     </div>
   );
