@@ -26,6 +26,7 @@ import { Route as ProjectsProjectIdRouteImport } from './routes/projects.$projec
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedAdminAccessRouteImport } from './routes/_authenticated/admin.access'
 import { Route as AuthenticatedAdminAdvisersRouteImport } from './routes/_authenticated/admin.advisers'
+import { Route as AuthenticatedAdminAnalyticsRouteImport } from './routes/_authenticated/admin.analytics'
 import { Route as AuthenticatedAdminCorrectionsRouteImport } from './routes/_authenticated/admin.corrections'
 import { Route as AuthenticatedAdminEnquiriesRouteImport } from './routes/_authenticated/admin.enquiries'
 import { Route as AuthenticatedAdminInspectionsRouteImport } from './routes/_authenticated/admin.inspections'
@@ -43,6 +44,7 @@ import { Route as ApiPublicContactRouteImport } from './routes/api/public/contac
 import { Route as ApiPublicDocumentUrlRouteImport } from './routes/api/public/document-url'
 import { Route as ApiPublicPassportAvatarsRouteImport } from './routes/api/public/passport-avatars'
 import { Route as ApiPublicPaymentAccountNumberRouteImport } from './routes/api/public/payment-account-number'
+import { Route as ApiPublicTrackRouteImport } from './routes/api/public/track'
 import { Route as AuthenticatedAdminApplicationsIndexRouteImport } from './routes/_authenticated/admin.applications.index'
 import { Route as AuthenticatedAdminApplicationsAppIdRouteImport } from './routes/_authenticated/admin.applications.$appId'
 import { Route as ApiPublicAvatarSplatRouteImport } from './routes/api/public/avatar.$'
@@ -136,6 +138,12 @@ const AuthenticatedAdminAdvisersRoute =
   AuthenticatedAdminAdvisersRouteImport.update({
     id: '/admin/advisers',
     path: '/admin/advisers',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminAnalyticsRoute =
+  AuthenticatedAdminAnalyticsRouteImport.update({
+    id: '/admin/analytics',
+    path: '/admin/analytics',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedAdminCorrectionsRoute =
@@ -237,6 +245,11 @@ const ApiPublicPaymentAccountNumberRoute =
     path: '/api/public/payment-account-number',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicTrackRoute = ApiPublicTrackRouteImport.update({
+  id: '/api/public/track',
+  path: '/api/public/track',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedAdminApplicationsIndexRoute =
   AuthenticatedAdminApplicationsIndexRouteImport.update({
     id: '/admin/applications/',
@@ -277,6 +290,7 @@ export interface FileRoutesByFullPath {
   '/projects/': typeof ProjectsIndexRoute
   '/admin/access': typeof AuthenticatedAdminAccessRoute
   '/admin/advisers': typeof AuthenticatedAdminAdvisersRoute
+  '/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
   '/admin/corrections': typeof AuthenticatedAdminCorrectionsRoute
   '/admin/enquiries': typeof AuthenticatedAdminEnquiriesRoute
   '/admin/inspections': typeof AuthenticatedAdminInspectionsRoute
@@ -292,6 +306,7 @@ export interface FileRoutesByFullPath {
   '/api/public/document-url': typeof ApiPublicDocumentUrlRoute
   '/api/public/passport-avatars': typeof ApiPublicPassportAvatarsRoute
   '/api/public/payment-account-number': typeof ApiPublicPaymentAccountNumberRoute
+  '/api/public/track': typeof ApiPublicTrackRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/applications/': typeof AuthenticatedApplicationsIndexRoute
   '/inspections/': typeof AuthenticatedInspectionsIndexRoute
@@ -316,6 +331,7 @@ export interface FileRoutesByTo {
   '/projects': typeof ProjectsIndexRoute
   '/admin/access': typeof AuthenticatedAdminAccessRoute
   '/admin/advisers': typeof AuthenticatedAdminAdvisersRoute
+  '/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
   '/admin/corrections': typeof AuthenticatedAdminCorrectionsRoute
   '/admin/enquiries': typeof AuthenticatedAdminEnquiriesRoute
   '/admin/inspections': typeof AuthenticatedAdminInspectionsRoute
@@ -331,6 +347,7 @@ export interface FileRoutesByTo {
   '/api/public/document-url': typeof ApiPublicDocumentUrlRoute
   '/api/public/passport-avatars': typeof ApiPublicPassportAvatarsRoute
   '/api/public/payment-account-number': typeof ApiPublicPaymentAccountNumberRoute
+  '/api/public/track': typeof ApiPublicTrackRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/applications': typeof AuthenticatedApplicationsIndexRoute
   '/inspections': typeof AuthenticatedInspectionsIndexRoute
@@ -357,6 +374,7 @@ export interface FileRoutesById {
   '/projects/': typeof ProjectsIndexRoute
   '/_authenticated/admin/access': typeof AuthenticatedAdminAccessRoute
   '/_authenticated/admin/advisers': typeof AuthenticatedAdminAdvisersRoute
+  '/_authenticated/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
   '/_authenticated/admin/corrections': typeof AuthenticatedAdminCorrectionsRoute
   '/_authenticated/admin/enquiries': typeof AuthenticatedAdminEnquiriesRoute
   '/_authenticated/admin/inspections': typeof AuthenticatedAdminInspectionsRoute
@@ -372,6 +390,7 @@ export interface FileRoutesById {
   '/api/public/document-url': typeof ApiPublicDocumentUrlRoute
   '/api/public/passport-avatars': typeof ApiPublicPassportAvatarsRoute
   '/api/public/payment-account-number': typeof ApiPublicPaymentAccountNumberRoute
+  '/api/public/track': typeof ApiPublicTrackRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/applications/': typeof AuthenticatedApplicationsIndexRoute
   '/_authenticated/inspections/': typeof AuthenticatedInspectionsIndexRoute
@@ -398,6 +417,7 @@ export interface FileRouteTypes {
     | '/projects/'
     | '/admin/access'
     | '/admin/advisers'
+    | '/admin/analytics'
     | '/admin/corrections'
     | '/admin/enquiries'
     | '/admin/inspections'
@@ -413,6 +433,7 @@ export interface FileRouteTypes {
     | '/api/public/document-url'
     | '/api/public/passport-avatars'
     | '/api/public/payment-account-number'
+    | '/api/public/track'
     | '/admin/'
     | '/applications/'
     | '/inspections/'
@@ -437,6 +458,7 @@ export interface FileRouteTypes {
     | '/projects'
     | '/admin/access'
     | '/admin/advisers'
+    | '/admin/analytics'
     | '/admin/corrections'
     | '/admin/enquiries'
     | '/admin/inspections'
@@ -452,6 +474,7 @@ export interface FileRouteTypes {
     | '/api/public/document-url'
     | '/api/public/passport-avatars'
     | '/api/public/payment-account-number'
+    | '/api/public/track'
     | '/admin'
     | '/applications'
     | '/inspections'
@@ -477,6 +500,7 @@ export interface FileRouteTypes {
     | '/projects/'
     | '/_authenticated/admin/access'
     | '/_authenticated/admin/advisers'
+    | '/_authenticated/admin/analytics'
     | '/_authenticated/admin/corrections'
     | '/_authenticated/admin/enquiries'
     | '/_authenticated/admin/inspections'
@@ -492,6 +516,7 @@ export interface FileRouteTypes {
     | '/api/public/document-url'
     | '/api/public/passport-avatars'
     | '/api/public/payment-account-number'
+    | '/api/public/track'
     | '/_authenticated/admin/'
     | '/_authenticated/applications/'
     | '/_authenticated/inspections/'
@@ -515,6 +540,7 @@ export interface RootRouteChildren {
   ApiPublicDocumentUrlRoute: typeof ApiPublicDocumentUrlRoute
   ApiPublicPassportAvatarsRoute: typeof ApiPublicPassportAvatarsRoute
   ApiPublicPaymentAccountNumberRoute: typeof ApiPublicPaymentAccountNumberRoute
+  ApiPublicTrackRoute: typeof ApiPublicTrackRoute
   ApiPublicAvatarSplatRoute: typeof ApiPublicAvatarSplatRoute
   ApiPublicProjectImageSplatRoute: typeof ApiPublicProjectImageSplatRoute
 }
@@ -640,6 +666,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminAdvisersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/analytics': {
+      id: '/_authenticated/admin/analytics'
+      path: '/admin/analytics'
+      fullPath: '/admin/analytics'
+      preLoaderRoute: typeof AuthenticatedAdminAnalyticsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/corrections': {
       id: '/_authenticated/admin/corrections'
       path: '/admin/corrections'
@@ -759,6 +792,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPaymentAccountNumberRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/track': {
+      id: '/api/public/track'
+      path: '/api/public/track'
+      fullPath: '/api/public/track'
+      preLoaderRoute: typeof ApiPublicTrackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/admin/applications/': {
       id: '/_authenticated/admin/applications/'
       path: '/admin/applications'
@@ -799,6 +839,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedTransactionsRoute: typeof AuthenticatedTransactionsRoute
   AuthenticatedAdminAccessRoute: typeof AuthenticatedAdminAccessRoute
   AuthenticatedAdminAdvisersRoute: typeof AuthenticatedAdminAdvisersRoute
+  AuthenticatedAdminAnalyticsRoute: typeof AuthenticatedAdminAnalyticsRoute
   AuthenticatedAdminCorrectionsRoute: typeof AuthenticatedAdminCorrectionsRoute
   AuthenticatedAdminEnquiriesRoute: typeof AuthenticatedAdminEnquiriesRoute
   AuthenticatedAdminInspectionsRoute: typeof AuthenticatedAdminInspectionsRoute
@@ -825,6 +866,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedTransactionsRoute: AuthenticatedTransactionsRoute,
   AuthenticatedAdminAccessRoute: AuthenticatedAdminAccessRoute,
   AuthenticatedAdminAdvisersRoute: AuthenticatedAdminAdvisersRoute,
+  AuthenticatedAdminAnalyticsRoute: AuthenticatedAdminAnalyticsRoute,
   AuthenticatedAdminCorrectionsRoute: AuthenticatedAdminCorrectionsRoute,
   AuthenticatedAdminEnquiriesRoute: AuthenticatedAdminEnquiriesRoute,
   AuthenticatedAdminInspectionsRoute: AuthenticatedAdminInspectionsRoute,
@@ -862,6 +904,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicDocumentUrlRoute: ApiPublicDocumentUrlRoute,
   ApiPublicPassportAvatarsRoute: ApiPublicPassportAvatarsRoute,
   ApiPublicPaymentAccountNumberRoute: ApiPublicPaymentAccountNumberRoute,
+  ApiPublicTrackRoute: ApiPublicTrackRoute,
   ApiPublicAvatarSplatRoute: ApiPublicAvatarSplatRoute,
   ApiPublicProjectImageSplatRoute: ApiPublicProjectImageSplatRoute,
 }

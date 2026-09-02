@@ -14,6 +14,7 @@ import { ThemeProvider, themeInitScript } from "@/lib/theme";
 import appCss from "../styles.css?url";
 import { Toaster } from "@/components/ui/sonner";
 import { AiAssist } from "@/components/kaivra/AiAssist";
+import { ActivityTracker } from "@/components/kaivra/ActivityTracker";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
 function NotFoundComponent() {
@@ -160,6 +161,7 @@ function RootComponent() {
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
         <Outlet />
         <AiAssist />
+        <ActivityTracker />
         <Toaster richColors position="top-center" />
       </ThemeProvider>
     </QueryClientProvider>
