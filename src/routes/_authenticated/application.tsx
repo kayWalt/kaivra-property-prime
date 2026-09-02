@@ -1519,6 +1519,7 @@ interface PaymentDraft {
   reference: string;
   method: PaymentMethod;
   description: string;
+  payment_account_id: string;
 }
 
 const EMPTY_PAYMENT: PaymentDraft = {
@@ -1529,7 +1530,9 @@ const EMPTY_PAYMENT: PaymentDraft = {
   reference: "",
   method: "bank_transfer",
   description: "",
+  payment_account_id: "",
 };
+
 
 function StepPayment({
   info,
