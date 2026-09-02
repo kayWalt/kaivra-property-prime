@@ -130,9 +130,7 @@ function Landing() {
             <p className="eyebrow inline-block rounded-sm bg-info px-3 py-1.5 text-info-foreground">
               Smart Real Estate Investment Management
             </p>
-            <h1 className="mt-4 font-display text-5xl leading-[1.05] text-onyx-foreground sm:text-7xl">
-              Invest in the future you can own.
-            </h1>
+            <RotatingHeadline />
             <div className="mt-6 inline-block max-w-xl rounded-lg bg-onyx/60 px-4 py-3 backdrop-blur-md">
               <p className="text-base text-onyx-foreground sm:text-lg">
                 Securely manage your real-estate investments, subscriptions and payments in one
