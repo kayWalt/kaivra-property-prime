@@ -14,6 +14,78 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_events: {
+        Row: {
+          actor: string | null
+          actor_label: string | null
+          actor_role: string | null
+          browser: string | null
+          country: string | null
+          created_at: string
+          device_category: string | null
+          event_category: string
+          event_type: string
+          id: string
+          locale: string | null
+          metadata: Json
+          occurred_at: string
+          os: string | null
+          resource_id: string | null
+          resource_type: string | null
+          result: string
+          route: string | null
+          session_id: string | null
+          severity: string
+          visitor_id: string | null
+        }
+        Insert: {
+          actor?: string | null
+          actor_label?: string | null
+          actor_role?: string | null
+          browser?: string | null
+          country?: string | null
+          created_at?: string
+          device_category?: string | null
+          event_category: string
+          event_type: string
+          id?: string
+          locale?: string | null
+          metadata?: Json
+          occurred_at?: string
+          os?: string | null
+          resource_id?: string | null
+          resource_type?: string | null
+          result?: string
+          route?: string | null
+          session_id?: string | null
+          severity?: string
+          visitor_id?: string | null
+        }
+        Update: {
+          actor?: string | null
+          actor_label?: string | null
+          actor_role?: string | null
+          browser?: string | null
+          country?: string | null
+          created_at?: string
+          device_category?: string | null
+          event_category?: string
+          event_type?: string
+          id?: string
+          locale?: string | null
+          metadata?: Json
+          occurred_at?: string
+          os?: string | null
+          resource_id?: string | null
+          resource_type?: string | null
+          result?: string
+          route?: string | null
+          session_id?: string | null
+          severity?: string
+          visitor_id?: string | null
+        }
+        Relationships: []
+      }
       admin_audit_events: {
         Row: {
           action: string
@@ -196,6 +268,36 @@ export type Database = {
           welcome_message?: string
           whatsapp_enabled?: boolean
           whatsapp_number?: string
+        }
+        Relationships: []
+      }
+      analytics_settings: {
+        Row: {
+          activity_retention_days: number
+          created_at: string
+          id: boolean
+          security_retention_days: number
+          updated_at: string
+          updated_by: string | null
+          visitor_retention_days: number
+        }
+        Insert: {
+          activity_retention_days?: number
+          created_at?: string
+          id?: boolean
+          security_retention_days?: number
+          updated_at?: string
+          updated_by?: string | null
+          visitor_retention_days?: number
+        }
+        Update: {
+          activity_retention_days?: number
+          created_at?: string
+          id?: boolean
+          security_retention_days?: number
+          updated_at?: string
+          updated_by?: string | null
+          visitor_retention_days?: number
         }
         Relationships: []
       }
@@ -1240,6 +1342,84 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      visitor_sessions: {
+        Row: {
+          browser: string | null
+          country: string | null
+          created_at: string
+          device_category: string | null
+          ended_at: string | null
+          entry_page: string | null
+          exit_page: string | null
+          id: string
+          ip_hash: string | null
+          is_authenticated: boolean
+          is_returning: boolean
+          last_seen_at: string
+          locale: string | null
+          os: string | null
+          page_views: number
+          referrer: string | null
+          region: string | null
+          screen_class: string | null
+          session_id: string
+          started_at: string
+          updated_at: string
+          user_id: string | null
+          visitor_id: string
+        }
+        Insert: {
+          browser?: string | null
+          country?: string | null
+          created_at?: string
+          device_category?: string | null
+          ended_at?: string | null
+          entry_page?: string | null
+          exit_page?: string | null
+          id?: string
+          ip_hash?: string | null
+          is_authenticated?: boolean
+          is_returning?: boolean
+          last_seen_at?: string
+          locale?: string | null
+          os?: string | null
+          page_views?: number
+          referrer?: string | null
+          region?: string | null
+          screen_class?: string | null
+          session_id: string
+          started_at?: string
+          updated_at?: string
+          user_id?: string | null
+          visitor_id: string
+        }
+        Update: {
+          browser?: string | null
+          country?: string | null
+          created_at?: string
+          device_category?: string | null
+          ended_at?: string | null
+          entry_page?: string | null
+          exit_page?: string | null
+          id?: string
+          ip_hash?: string | null
+          is_authenticated?: boolean
+          is_returning?: boolean
+          last_seen_at?: string
+          locale?: string | null
+          os?: string | null
+          page_views?: number
+          referrer?: string | null
+          region?: string | null
+          screen_class?: string | null
+          session_id?: string
+          started_at?: string
+          updated_at?: string
+          user_id?: string | null
+          visitor_id?: string
         }
         Relationships: []
       }
