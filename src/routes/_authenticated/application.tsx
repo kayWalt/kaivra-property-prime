@@ -1762,8 +1762,8 @@ function StepPayment({
               onClick={async () => {
                 setAdding(true);
                 try {
-                  await onAdd(form);
-                  setForm(EMPTY_PAYMENT);
+                  const ok = await onAdd(form);
+                  if (ok) setForm(EMPTY_PAYMENT);
                 } finally {
                   setAdding(false);
                 }
