@@ -2,8 +2,8 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
+import { createLovableAuth } from "@lovable.dev/cloud-auth-js";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -36,6 +36,10 @@ const schema = z.object({
   email: z.string().trim().email("Enter a valid email address").max(255),
   password: z.string().min(8, "Password must be at least 8 characters").max(72),
   fullName: z.string().trim().max(120).optional(),
+});
+
+const googleAuth = createLovableAuth({
+  oauthBrokerUrl: "https://kaivra-property-prime.lovable.app/~oauth/initiate",
 });
 
 function AuthPage() {
@@ -131,27 +135,7 @@ function AuthPage() {
     if (busy) return;
     setAction("google");
     try {
-      // The Lovable OAuth broker (/~oauth/*) only exists on Lovable-hosted
-      // origins. On our own domain we go straight to Supabase's Google
-      // provider, which is the same auth backend and the same user records.
-      const host = window.location.hostname;
-      const brokerHost =
-        host === "localhost" ||
-        /(^|\.)(lovable\.app|lovableproject\.com|lovable\.dev|gptengineer\.run)$/i.test(host);
-      if (!brokerHost) {
-        const { error } = await supabase.auth.signInWithOAuth({
-          provider: "google",
-          options: { redirectTo: `${window.location.origin}/auth` },
-        });
-        if (error) {
-          setAction(null);
-          toast.error("Google sign-in could not be completed. Please try again.");
-        }
-        return; // browser navigates to Google
-      }
-      // Return to this lightweight public route (not the image-heavy landing
-      // page) so the session lands and forwards to the dashboard immediately.
-      const result = await lovable.auth.signInWithOAuth("google", {
+      const result = await googleAuth.signInWithOAuth("google", {
         redirect_uri: `${window.location.origin}/auth`,
       });
       if (result.error) {
@@ -160,6 +144,7 @@ function AuthPage() {
         return;
       }
       if (result.redirected) return; // browser is navigating away; keep the spinner
+      await supabase.auth.setSession(result.tokens);
       navigate({ to: "/dashboard", replace: true });
     } catch (err) {
       setAction(null);
