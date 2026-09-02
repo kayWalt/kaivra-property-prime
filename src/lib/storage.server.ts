@@ -11,7 +11,7 @@ export function buildDocPath(applicationId: string, kind: string, fileName: stri
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 
-export type ResolvedDocument = { url: string; fileName: string; mimeType: string | null };
+export type ResolvedDocument = { url: string; fileName: string | null; mimeType: string | null };
 
 /**
  * Resolves a short-lived signed URL for one application document.
