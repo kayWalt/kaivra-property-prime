@@ -435,6 +435,16 @@ function AdminSupport() {
                         ticketId={selected.id}
                         defaultApplicationId={selected.application_id ?? null}
                       />
+                      {selected.application_id ? (
+                        <Button asChild size="sm" variant="outline">
+                          <Link
+                            to="/admin/applications/$appId"
+                            params={{ appId: selected.application_id }}
+                          >
+                            Open application
+                          </Link>
+                        </Button>
+                      ) : null}
                     </div>
                   </div>
                 ) : null}
