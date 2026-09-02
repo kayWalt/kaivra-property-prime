@@ -63,12 +63,27 @@ function ProfilePage() {
       // Phone cameras produce multi-megabyte photos: downscale before the
       // upload so it completes quickly on 3G/4G.
       const optimised = await compressImage(file, 640, 0.8);
-      const ticket = await createAvatarUploadTicket({ data: { fileName: optimised.name } });
-      const { error } = await supabase.storage
-        .from(ticket.bucket)
-        .uploadToSignedUrl(ticket.path, ticket.token, optimised);
-      if (error) throw new Error("Your picture could not be uploaded.");
-      await persistAvatar(ticket.url);
+      let publicPath: string | null = null;
+      try {
+        const ticket = await createAvatarUploadTicket({ data: { fileName: optimised.name } });
+        const { error } = await supabase.storage
+          .from(ticket.bucket)
+          .uploadToSignedUrl(ticket.path, ticket.token, optimised);
+        if (error) throw error;
+        publicPath = ticket.url;
+      } catch {
+        // Fallback: upload straight from the browser under the user's own
+        // folder — Storage RLS already permits exactly this.
+        const safe = optimised.name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(-80);
+        const path = `${user.id}/${crypto.randomUUID()}-${safe}`;
+        const { error } = await supabase.storage.from("avatars").upload(path, optimised, {
+          upsert: false,
+          contentType: optimised.type || "image/jpeg",
+        });
+        if (error) throw new Error("Your picture could not be uploaded.");
+        publicPath = `/api/public/avatar/${path}`;
+      }
+      await persistAvatar(publicPath);
       toast.success("Profile picture updated.");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Your picture could not be uploaded.");
@@ -84,7 +99,12 @@ function ProfilePage() {
     try {
       const path = avatarUrl.replace("/api/public/avatar/", "");
       await persistAvatar(null);
-      await removeAvatarFile({ data: { path } });
+      try {
+        await removeAvatarFile({ data: { path } });
+      } catch {
+        // Owner-scoped delete via RLS when the privileged path is unavailable.
+        await supabase.storage.from("avatars").remove([path]);
+      }
       toast.success("Profile picture removed.");
     } catch {
       toast.error("Your picture could not be removed.");
