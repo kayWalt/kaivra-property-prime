@@ -24,6 +24,7 @@ import teamJoseph from "@/assets/team-joseph-osoria.jpg.asset.json";
 import teamNkiruka from "@/assets/team-nkiruka-onyeugo.jpg.asset.json";
 import teamYarison from "@/assets/team-yarison-hope.jpg.asset.json";
 import { mediaSrc } from "@/lib/media";
+import { ContactForm } from "@/components/kaivra/ContactForm";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -591,7 +592,22 @@ function Landing() {
         </div>
       </section>
 
+      <section id="contact" className="border-t border-border bg-background">
+        <div className="mx-auto w-full max-w-3xl px-5 py-16 sm:px-8">
+          <p className="eyebrow text-muted-foreground">Contact</p>
+          <h2 className="mt-2 font-display text-3xl sm:text-4xl">Speak with a KAIVRA adviser</h2>
+          <p className="mt-3 text-sm text-muted-foreground">
+            Send us a message and a member of the KAIVRA team will respond using the contact
+            details below.
+          </p>
+          <div className="mt-8">
+            <ContactForm />
+          </div>
+        </div>
+      </section>
+
       <footer className="surface-onyx">
+
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-5 py-12 sm:px-8 lg:flex-row lg:items-start lg:justify-between">
           <Brand tone="inverted" withTagline />
           <div className="flex flex-col gap-4 sm:flex-row sm:gap-10">
