@@ -13,6 +13,7 @@ import { useProfile } from "@/hooks/useAuth";
 import { usePassportAvatars } from "@/hooks/usePassportAvatars";
 import { AddPaymentDialog } from "@/components/kaivra/AddPaymentDialog";
 import { ReferenceChip } from "@/components/kaivra/ReferenceChip";
+import { RequestCorrectionDialog } from "@/components/kaivra/RequestCorrectionDialog";
 import {
   fetchApplication,
   fetchDocuments,
@@ -162,6 +163,17 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
                 Continue application
               </Link>
             </Button>
+          ) : null}
+          {!manage && record.status !== "draft" ? (
+            <RequestCorrectionDialog
+              applicationId={appId}
+              values={{
+                personal,
+                contact,
+                investment: investment as Record<string, unknown>,
+                payment_info: (record.payment_info ?? {}) as Record<string, unknown>,
+              }}
+            />
           ) : null}
           <AsyncButton
             variant="outline"

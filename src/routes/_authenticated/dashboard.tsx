@@ -16,6 +16,7 @@ import { useMyInspections } from "./inspections.index";
 import { useMyTransactions } from "./transactions";
 import { formatSlot, isUpcoming } from "@/lib/inspections";
 import { mediaSrc } from "@/lib/media";
+import { MyRequestsPanel } from "@/components/kaivra/MyRequestsPanel";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -411,6 +412,8 @@ function Dashboard() {
           );
         })}
       </div>
+
+      <MyRequestsPanel userId={user?.id} />
     </div>
   );
 }
