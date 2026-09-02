@@ -1248,7 +1248,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      touch_proxy_admin_activity: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role: "super_admin" | "admin" | "adviser" | "investor"
