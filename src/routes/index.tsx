@@ -9,7 +9,7 @@ import { ThemeToggle } from "@/components/kaivra/ThemeToggle";
 import { Brand } from "@/components/kaivra/Brand";
 import { useSession } from "@/hooks/useAuth";
 import { formatCompact } from "@/lib/kaivra";
-import heroAsset from "@/assets/kaivra-22-00-40.jpg.asset.json";
+import { HeroCarousel } from "@/components/kaivra/HeroCarousel";
 import adviserAsset from "@/assets/kaivra-22-00-16.jpg.asset.json";
 import residenceAsset from "@/assets/kaivra-22-00-51.jpg.asset.json";
 import partnerHutuAsset from "@/assets/partner-hutu-prestige.jpg.asset.json";
