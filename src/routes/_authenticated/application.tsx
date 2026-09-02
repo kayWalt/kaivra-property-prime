@@ -503,7 +503,9 @@ function ApplicationWizard() {
       reference: form.reference || null,
       method: form.method as never,
       description: form.description || null,
+      payment_account_id: form.payment_account_id || null,
     });
+
     if (error) {
       toast.error(`Your payment record could not be saved. ${error.message}`);
       return false;
