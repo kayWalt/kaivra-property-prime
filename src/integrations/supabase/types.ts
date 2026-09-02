@@ -881,6 +881,7 @@ export type Database = {
           investor_code: string | null
           legacy_investor_code: string | null
           phone: string | null
+          theme_preference: string
           updated_at: string
         }
         Insert: {
@@ -892,6 +893,7 @@ export type Database = {
           investor_code?: string | null
           legacy_investor_code?: string | null
           phone?: string | null
+          theme_preference?: string
           updated_at?: string
         }
         Update: {
@@ -903,6 +905,7 @@ export type Database = {
           investor_code?: string | null
           legacy_investor_code?: string | null
           phone?: string | null
+          theme_preference?: string
           updated_at?: string
         }
         Relationships: []
