@@ -11,26 +11,79 @@ import { parseGallery, type GalleryImage } from "@/components/kaivra/ProjectImag
 import { formatNaira } from "@/lib/kaivra";
 import { mediaSrc, FALLBACK_PROPERTY_IMAGE } from "@/lib/media";
 
+const SITE_URL = "https://kaivraa-com.lovable.app";
+
 export const Route = createFileRoute("/projects/$projectId")({
-  head: () => ({
-    meta: [
-      { title: "KAIVRA | Investment Opportunity" },
-      {
-        name: "description",
-        content:
-          "Explore property options, sizes, prices and payment plans for this KAIVRA real-estate project.",
-      },
-      { property: "og:title", content: "KAIVRA | Investment Opportunity" },
-      {
-        property: "og:description",
-        content: "Premium residential investment opportunity on KAIVRA.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
+  loader: async ({ params }) => {
+    const { data } = await supabase
+      .from("projects")
+      .select("name, location, description, hero_image")
+      .eq("id", params.projectId)
+      .maybeSingle();
+    return { project: data ?? null };
+  },
+  head: ({ params, loaderData }) => {
+    const project = loaderData?.project ?? null;
+    const url = `${SITE_URL}/projects/${params.projectId}`;
+    const title = project
+      ? `${project.name} — ${project.location} | KAIVRA`
+      : "KAIVRA | Investment Opportunity";
+    const description = project
+      ? `${project.name} in ${project.location}. ${project.description ?? ""}`
+          .replace(/\s+/g, " ")
+          .trim()
+          .slice(0, 155)
+      : "Explore property options, sizes, prices and payment plans for this KAIVRA real-estate project.";
+    const image = project?.hero_image ? mediaSrc(project.hero_image) : null;
+    const absoluteImage = image?.startsWith("https://") ? image : null;
+
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:type", content: "product" },
+        { property: "og:url", content: url },
+        { name: "twitter:card", content: "summary_large_image" },
+        ...(absoluteImage
+          ? [
+              { property: "og:image", content: absoluteImage },
+              { name: "twitter:image", content: absoluteImage },
+            ]
+          : []),
+      ],
+      links: [{ rel: "canonical", href: url }],
+      scripts: project
+        ? [
+            {
+              type: "application/ld+json",
+              children: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "Product",
+                name: project.name,
+                description,
+                ...(absoluteImage ? { image: absoluteImage } : {}),
+                url,
+                brand: { "@type": "Brand", name: "KAIVRA" },
+                category: "Real Estate Investment",
+                ...(project.location
+                  ? {
+                      areaServed: {
+                        "@type": "Place",
+                        name: project.location,
+                      },
+                    }
+                  : {}),
+              }),
+            },
+          ]
+        : [],
+    };
+  },
   component: ProjectDetail,
 });
+
 
 function ProjectDetail() {
   const { projectId } = Route.useParams();
