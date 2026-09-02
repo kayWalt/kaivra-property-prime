@@ -34,6 +34,7 @@ import { useRoles, useSession, primaryRole } from "@/hooks/useAuth";
 import { formatDate } from "@/lib/kaivra";
 import { ACCOUNT_COLUMNS, maskAccount, type PaymentAccount } from "@/lib/payment-accounts";
 import { revealPaymentAccountNumber } from "@/lib/payment-accounts.functions";
+import { RequireModule } from "@/components/kaivra/RequireModule";
 
 export const Route = createFileRoute("/_authenticated/admin/payment-accounts")({
   head: () => ({
@@ -49,7 +50,11 @@ export const Route = createFileRoute("/_authenticated/admin/payment-accounts")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: AdminPaymentAccounts,
+  component: () => (
+    <RequireModule module="payment_accounts">
+      <AdminPaymentAccounts />
+    </RequireModule>
+  ),
 });
 
 type AuditRow = {

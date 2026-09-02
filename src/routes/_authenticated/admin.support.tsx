@@ -31,6 +31,7 @@ import {
   type SupportStatus,
 } from "@/lib/support.functions";
 import { cn } from "@/lib/utils";
+import { RequireModule } from "@/components/kaivra/RequireModule";
 
 export const Route = createFileRoute("/_authenticated/admin/support")({
   head: () => ({
@@ -47,7 +48,11 @@ export const Route = createFileRoute("/_authenticated/admin/support")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: AdminSupport,
+  component: () => (
+    <RequireModule module="support" allowAdviser>
+      <AdminSupport />
+    </RequireModule>
+  ),
 });
 
 type Ticket = {

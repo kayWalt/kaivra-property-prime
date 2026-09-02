@@ -38,6 +38,7 @@ import { ApplicationDetailView } from "./applications.$appId";
 import { useRoles, useSession, primaryRole, isStaffRole } from "@/hooks/useAuth";
 import { fetchPayments, logEvent, notify } from "@/lib/applications";
 import {
+import { RequireModule } from "@/components/kaivra/RequireModule";
   APPLICATION_STATUSES,
   STATUS_LABEL,
   formatNaira,
@@ -59,7 +60,11 @@ export const Route = createFileRoute("/_authenticated/admin/applications/$appId"
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: ManageApplication,
+  component: () => (
+    <RequireModule module="applications" allowAdviser>
+      <ManageApplication />
+    </RequireModule>
+  ),
 });
 
 function ManageApplication() {

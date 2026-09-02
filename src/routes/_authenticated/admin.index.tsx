@@ -13,6 +13,7 @@ import { usePassportAvatars } from "@/hooks/usePassportAvatars";
 import { useRoles, useSession, primaryRole, isStaffRole } from "@/hooks/useAuth";
 import { totals } from "@/lib/applications";
 import {
+import { RequireModule } from "@/components/kaivra/RequireModule";
   APPLICATION_STATUSES,
   STATUS_LABEL,
   formatCompact,
@@ -35,7 +36,11 @@ export const Route = createFileRoute("/_authenticated/admin/")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: AdminDashboard,
+  component: () => (
+    <RequireModule module="applications" allowAdviser>
+      <AdminDashboard />
+    </RequireModule>
+  ),
 });
 
 const PAGE_SIZE = 20;

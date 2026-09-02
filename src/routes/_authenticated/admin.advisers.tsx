@@ -39,6 +39,7 @@ import { EmptyState } from "@/components/kaivra/EmptyState";
 import { UserAvatar } from "@/components/kaivra/UserAvatar";
 import { useRoles, useSession, useProfile, primaryRole } from "@/hooks/useAuth";
 import { STATUS_LABEL, type ApplicationStatus } from "@/lib/kaivra";
+import { RequireModule } from "@/components/kaivra/RequireModule";
 
 export const Route = createFileRoute("/_authenticated/admin/advisers")({
   head: () => ({
@@ -54,7 +55,11 @@ export const Route = createFileRoute("/_authenticated/admin/advisers")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: AdvisersPage,
+  component: () => (
+    <RequireModule module="advisers">
+      <AdvisersPage />
+    </RequireModule>
+  ),
 });
 
 type ProjectRow = { id: string; name: string; location: string; is_active: boolean };

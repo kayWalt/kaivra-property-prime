@@ -24,6 +24,7 @@ import { logEvent, notify } from "@/lib/applications";
 import { formatDate } from "@/lib/kaivra";
 import type { TablesUpdate } from "@/integrations/supabase/types";
 import {
+import { RequireModule } from "@/components/kaivra/RequireModule";
   INSPECTION_SELECT,
   INSPECTION_SLOTS,
   INSPECTION_STATUSES,
@@ -47,7 +48,11 @@ export const Route = createFileRoute("/_authenticated/admin/inspections")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: AdminInspections,
+  component: () => (
+    <RequireModule module="inspections" allowAdviser>
+      <AdminInspections />
+    </RequireModule>
+  ),
 });
 
 type Row = {
