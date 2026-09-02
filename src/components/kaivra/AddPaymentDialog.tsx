@@ -46,6 +46,8 @@ export function AddPaymentDialog({
   const [method, setMethod] = useState<PaymentMethod>("bank_transfer");
   const [note, setNote] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [accountId, setAccountId] = useState("");
+  const accounts = useActivePaymentAccounts();
 
   function reset() {
     setAmount("");
@@ -56,7 +58,9 @@ export function AddPaymentDialog({
     setMethod("bank_transfer");
     setNote("");
     setFile(null);
+    setAccountId("");
   }
+
 
   async function submit() {
     const value = Number(amount);
