@@ -40,6 +40,7 @@ import { Route as ApiPublicAiChatRouteImport } from './routes/api/public/ai-chat
 import { Route as ApiPublicContactRouteImport } from './routes/api/public/contact'
 import { Route as ApiPublicDocumentUrlRouteImport } from './routes/api/public/document-url'
 import { Route as ApiPublicPassportAvatarsRouteImport } from './routes/api/public/passport-avatars'
+import { Route as ApiPublicPaymentAccountNumberRouteImport } from './routes/api/public/payment-account-number'
 import { Route as AuthenticatedAdminApplicationsIndexRouteImport } from './routes/_authenticated/admin.applications.index'
 import { Route as AuthenticatedAdminApplicationsAppIdRouteImport } from './routes/_authenticated/admin.applications.$appId'
 import { Route as ApiPublicAvatarSplatRouteImport } from './routes/api/public/avatar.$'
@@ -216,6 +217,12 @@ const ApiPublicPassportAvatarsRoute =
     path: '/api/public/passport-avatars',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicPaymentAccountNumberRoute =
+  ApiPublicPaymentAccountNumberRouteImport.update({
+    id: '/api/public/payment-account-number',
+    path: '/api/public/payment-account-number',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedAdminApplicationsIndexRoute =
   AuthenticatedAdminApplicationsIndexRouteImport.update({
     id: '/admin/applications/',
@@ -268,6 +275,7 @@ export interface FileRoutesByFullPath {
   '/api/public/contact': typeof ApiPublicContactRoute
   '/api/public/document-url': typeof ApiPublicDocumentUrlRoute
   '/api/public/passport-avatars': typeof ApiPublicPassportAvatarsRoute
+  '/api/public/payment-account-number': typeof ApiPublicPaymentAccountNumberRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/applications/': typeof AuthenticatedApplicationsIndexRoute
   '/inspections/': typeof AuthenticatedInspectionsIndexRoute
@@ -304,6 +312,7 @@ export interface FileRoutesByTo {
   '/api/public/contact': typeof ApiPublicContactRoute
   '/api/public/document-url': typeof ApiPublicDocumentUrlRoute
   '/api/public/passport-avatars': typeof ApiPublicPassportAvatarsRoute
+  '/api/public/payment-account-number': typeof ApiPublicPaymentAccountNumberRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/applications': typeof AuthenticatedApplicationsIndexRoute
   '/inspections': typeof AuthenticatedInspectionsIndexRoute
@@ -342,6 +351,7 @@ export interface FileRoutesById {
   '/api/public/contact': typeof ApiPublicContactRoute
   '/api/public/document-url': typeof ApiPublicDocumentUrlRoute
   '/api/public/passport-avatars': typeof ApiPublicPassportAvatarsRoute
+  '/api/public/payment-account-number': typeof ApiPublicPaymentAccountNumberRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/applications/': typeof AuthenticatedApplicationsIndexRoute
   '/_authenticated/inspections/': typeof AuthenticatedInspectionsIndexRoute
@@ -380,6 +390,7 @@ export interface FileRouteTypes {
     | '/api/public/contact'
     | '/api/public/document-url'
     | '/api/public/passport-avatars'
+    | '/api/public/payment-account-number'
     | '/admin/'
     | '/applications/'
     | '/inspections/'
@@ -416,6 +427,7 @@ export interface FileRouteTypes {
     | '/api/public/contact'
     | '/api/public/document-url'
     | '/api/public/passport-avatars'
+    | '/api/public/payment-account-number'
     | '/admin'
     | '/applications'
     | '/inspections'
@@ -453,6 +465,7 @@ export interface FileRouteTypes {
     | '/api/public/contact'
     | '/api/public/document-url'
     | '/api/public/passport-avatars'
+    | '/api/public/payment-account-number'
     | '/_authenticated/admin/'
     | '/_authenticated/applications/'
     | '/_authenticated/inspections/'
@@ -475,6 +488,7 @@ export interface RootRouteChildren {
   ApiPublicContactRoute: typeof ApiPublicContactRoute
   ApiPublicDocumentUrlRoute: typeof ApiPublicDocumentUrlRoute
   ApiPublicPassportAvatarsRoute: typeof ApiPublicPassportAvatarsRoute
+  ApiPublicPaymentAccountNumberRoute: typeof ApiPublicPaymentAccountNumberRoute
   ApiPublicAvatarSplatRoute: typeof ApiPublicAvatarSplatRoute
   ApiPublicProjectImageSplatRoute: typeof ApiPublicProjectImageSplatRoute
 }
@@ -698,6 +712,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPassportAvatarsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/payment-account-number': {
+      id: '/api/public/payment-account-number'
+      path: '/api/public/payment-account-number'
+      fullPath: '/api/public/payment-account-number'
+      preLoaderRoute: typeof ApiPublicPaymentAccountNumberRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/admin/applications/': {
       id: '/_authenticated/admin/applications/'
       path: '/admin/applications'
@@ -796,6 +817,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicContactRoute: ApiPublicContactRoute,
   ApiPublicDocumentUrlRoute: ApiPublicDocumentUrlRoute,
   ApiPublicPassportAvatarsRoute: ApiPublicPassportAvatarsRoute,
+  ApiPublicPaymentAccountNumberRoute: ApiPublicPaymentAccountNumberRoute,
   ApiPublicAvatarSplatRoute: ApiPublicAvatarSplatRoute,
   ApiPublicProjectImageSplatRoute: ApiPublicProjectImageSplatRoute,
 }
