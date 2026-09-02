@@ -15,6 +15,7 @@ import { formatDate, formatNaira, type ApplicationStatus } from "@/lib/kaivra";
 import { useMyInspections } from "./inspections.index";
 import { useMyTransactions } from "./transactions";
 import { formatSlot, isUpcoming } from "@/lib/inspections";
+import { mediaSrc } from "@/lib/media";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -349,7 +350,7 @@ function Dashboard() {
               className="grid gap-0 overflow-hidden rounded-lg border border-border bg-card shadow-card sm:grid-cols-[14rem_1fr]"
             >
               <img
-                src={app.projects?.hero_image ?? "/images/project-mountain.jpg"}
+                src={mediaSrc(app.projects?.hero_image)}
                 alt={app.projects?.name ?? "Project"}
                 loading="lazy"
                 width={1280}
