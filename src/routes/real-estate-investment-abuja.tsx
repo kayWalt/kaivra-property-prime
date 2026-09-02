@@ -7,7 +7,7 @@ import { Brand } from "@/components/kaivra/Brand";
 import { mediaSrc, FALLBACK_PROPERTY_IMAGE } from "@/lib/media";
 import { formatNaira } from "@/lib/kaivra";
 
-const SITE_URL = "https://kaivraa-com.lovable.app";
+const SITE_URL = "https://kaivraa.com";
 const PAGE_URL = `${SITE_URL}/real-estate-investment-abuja`;
 
 export const Route = createFileRoute("/real-estate-investment-abuja")({
