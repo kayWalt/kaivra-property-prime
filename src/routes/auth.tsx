@@ -11,7 +11,7 @@ import { Brand } from "@/components/kaivra/Brand";
 import { useSession } from "@/hooks/useAuth";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { assetUrl } from "@/lib/media";
-import authHero from "@/assets/kaivra-duplex-option-1.jpg.asset.json";
+import authHero from "@/assets/kaivra-auth-hero-2026-09-02.jpg.asset.json";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
