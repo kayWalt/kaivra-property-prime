@@ -158,13 +158,11 @@ function AuthPage() {
 
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
-      <div className="relative hidden lg:block">
+      <div className="relative hidden overflow-hidden bg-onyx lg:block">
         <img
           src={assetUrl(authHero.url)}
           alt="Modern luxury KAIVRA residence with illuminated terraces and landscaped grounds"
-          className="absolute inset-0 size-full object-cover"
-          width={1920}
-          height={1088}
+          className="absolute inset-0 size-full object-contain object-center"
           decoding="async"
           fetchPriority="low"
         />
