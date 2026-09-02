@@ -5,6 +5,7 @@ import { ArrowRight, Mail, MapPin, Phone, ShieldCheck, Sparkles } from "lucide-r
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ThemeToggle } from "@/components/kaivra/ThemeToggle";
 import { Brand } from "@/components/kaivra/Brand";
 import { useSession } from "@/hooks/useAuth";
 import { formatCompact } from "@/lib/kaivra";
@@ -103,6 +104,7 @@ function Landing() {
         <div className="mx-auto flex h-20 w-full max-w-7xl items-center px-5 sm:px-8">
           <Brand tone="inverted" />
           <div className="ml-auto flex items-center gap-2">
+            <ThemeToggle className="hidden w-auto border-onyx-foreground/25 bg-onyx-foreground/10 sm:inline-flex" showLabels={false} />
             <Button
               asChild
               variant="ghost"

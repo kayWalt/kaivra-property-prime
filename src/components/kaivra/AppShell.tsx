@@ -16,6 +16,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ThemeToggle } from "@/components/kaivra/ThemeToggle";
 import { useProfile, useRoles, useSession, primaryRole } from "@/hooks/useAuth";
 import { UserAvatar } from "./UserAvatar";
 import { ShareQrButton } from "./ShareQrButton";
@@ -267,6 +268,11 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <DropdownMenuItem asChild>
                   <Link to="/profile">Profile</Link>
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <div className="px-2 py-1.5">
+                  <p className="eyebrow mb-1.5 text-muted-foreground">Theme</p>
+                  <ThemeToggle />
+                </div>
                 <DropdownMenuItem onClick={signOut}>
                   <LogOut className="mr-2 size-4" /> Sign out
                 </DropdownMenuItem>
@@ -293,6 +299,10 @@ export function AppShell({ children }: { children: ReactNode }) {
                     </Link>
                   ))}
                 </nav>
+                <div className="mt-6 border-t border-border pt-4">
+                  <p className="eyebrow mb-2 text-muted-foreground">Theme</p>
+                  <ThemeToggle />
+                </div>
               </SheetContent>
             </Sheet>
           </div>
