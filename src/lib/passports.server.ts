@@ -38,16 +38,31 @@ export async function resolvePassportAvatars(
   const paths = [...latest.values()];
   let signed: { path?: string | null; signedUrl?: string | null; error?: string | null }[] | null =
     null;
+
+  // Preferred: sign with the caller's own client. Storage RLS on the documents
+  // bucket already authorises owners and staff, so no server secret is needed
+  // and every deployment (Lovable, GitHub, Cloudflare) behaves identically.
   try {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const res = await supabaseAdmin.storage
-      .from(DOCS_BUCKET)
-      .createSignedUrls(paths, PASSPORT_URL_TTL_SECONDS);
-    if (!res.error) signed = res.data;
+    const res = await supabase.storage.from(DOCS_BUCKET).createSignedUrls(paths, PASSPORT_URL_TTL_SECONDS);
+    if (!res.error && res.data?.some((i) => i.signedUrl)) signed = res.data;
   } catch (err) {
-    console.error("[passports] signing unavailable", err);
+    console.error("[passports] caller signing failed", err);
+  }
+
+  // Fallback: service-role signing where the secret is available.
+  if (!signed) {
+    try {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const res = await supabaseAdmin.storage
+        .from(DOCS_BUCKET)
+        .createSignedUrls(paths, PASSPORT_URL_TTL_SECONDS);
+      if (!res.error) signed = res.data;
+    } catch (err) {
+      console.error("[passports] signing unavailable", err);
+    }
   }
   if (!signed) return null;
+
 
   const byPath = new Map<string, string>();
   for (const item of signed) {
