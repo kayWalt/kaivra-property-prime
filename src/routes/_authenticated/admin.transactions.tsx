@@ -23,6 +23,7 @@ import { PaymentBadge } from "@/components/kaivra/StatusBadge";
 import { openDocument } from "@/components/kaivra/FileUpload";
 import { useProfile, useRoles, useSession, primaryRole, isStaffRole } from "@/hooks/useAuth";
 import { logEvent, notify } from "@/lib/applications";
+import { snapshotLabel } from "@/lib/payment-accounts";
 import { formatDate, formatNaira, type PaymentStatus } from "@/lib/kaivra";
 
 export const Route = createFileRoute("/_authenticated/admin/transactions")({
@@ -57,6 +58,8 @@ type Row = {
   verified_at: string | null;
   verified_by: string | null;
   rejection_reason: string | null;
+  payment_account_snapshot?: unknown;
+
   application_id: string;
   applications: {
     id: string;
@@ -91,7 +94,7 @@ function AdminTransactions() {
       let q = supabase
         .from("application_payments")
         .select(
-          "id, amount, paid_on, created_at, bank, sender, reference, payment_reference, method, description, status, verified_at, verified_by, rejection_reason, application_id, applications!inner(id, reference, investor_id, personal, projects(id, name), properties(name))",
+          "id, amount, paid_on, created_at, bank, sender, reference, payment_reference, method, description, status, verified_at, verified_by, rejection_reason, application_id, payment_account_snapshot, applications!inner(id, reference, investor_id, personal, projects(id, name), properties(name))",
         )
         .order("paid_on", { ascending: false, nullsFirst: false })
         .limit(300);
@@ -409,6 +412,7 @@ function AdminTransactions() {
                   ["Payment date", formatDate(open.paid_on ?? open.created_at)],
                   ["Method", open.method.replace(/_/g, " ")],
                   ["Bank", open.bank ?? "—"],
+                  ["Account paid into", snapshotLabel(open.payment_account_snapshot) ?? "—"],
                   ["Sender", open.sender ?? "—"],
                   ["Payment reference", open.payment_reference ?? "—"],
                   ["Bank reference", open.reference ?? "—"],

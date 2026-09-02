@@ -28,6 +28,7 @@ import { Route as AuthenticatedAdminAdvisersRouteImport } from './routes/_authen
 import { Route as AuthenticatedAdminEnquiriesRouteImport } from './routes/_authenticated/admin.enquiries'
 import { Route as AuthenticatedAdminInspectionsRouteImport } from './routes/_authenticated/admin.inspections'
 import { Route as AuthenticatedAdminInvestorsRouteImport } from './routes/_authenticated/admin.investors'
+import { Route as AuthenticatedAdminPaymentAccountsRouteImport } from './routes/_authenticated/admin.payment-accounts'
 import { Route as AuthenticatedAdminProjectsRouteImport } from './routes/_authenticated/admin.projects'
 import { Route as AuthenticatedAdminSupportRouteImport } from './routes/_authenticated/admin.support'
 import { Route as AuthenticatedAdminTransactionsRouteImport } from './routes/_authenticated/admin.transactions'
@@ -146,6 +147,12 @@ const AuthenticatedAdminInvestorsRoute =
     path: '/admin/investors',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminPaymentAccountsRoute =
+  AuthenticatedAdminPaymentAccountsRouteImport.update({
+    id: '/admin/payment-accounts',
+    path: '/admin/payment-accounts',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminProjectsRoute =
   AuthenticatedAdminProjectsRouteImport.update({
     id: '/admin/projects',
@@ -251,6 +258,7 @@ export interface FileRoutesByFullPath {
   '/admin/enquiries': typeof AuthenticatedAdminEnquiriesRoute
   '/admin/inspections': typeof AuthenticatedAdminInspectionsRoute
   '/admin/investors': typeof AuthenticatedAdminInvestorsRoute
+  '/admin/payment-accounts': typeof AuthenticatedAdminPaymentAccountsRoute
   '/admin/projects': typeof AuthenticatedAdminProjectsRoute
   '/admin/support': typeof AuthenticatedAdminSupportRoute
   '/admin/transactions': typeof AuthenticatedAdminTransactionsRoute
@@ -286,6 +294,7 @@ export interface FileRoutesByTo {
   '/admin/enquiries': typeof AuthenticatedAdminEnquiriesRoute
   '/admin/inspections': typeof AuthenticatedAdminInspectionsRoute
   '/admin/investors': typeof AuthenticatedAdminInvestorsRoute
+  '/admin/payment-accounts': typeof AuthenticatedAdminPaymentAccountsRoute
   '/admin/projects': typeof AuthenticatedAdminProjectsRoute
   '/admin/support': typeof AuthenticatedAdminSupportRoute
   '/admin/transactions': typeof AuthenticatedAdminTransactionsRoute
@@ -323,6 +332,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/enquiries': typeof AuthenticatedAdminEnquiriesRoute
   '/_authenticated/admin/inspections': typeof AuthenticatedAdminInspectionsRoute
   '/_authenticated/admin/investors': typeof AuthenticatedAdminInvestorsRoute
+  '/_authenticated/admin/payment-accounts': typeof AuthenticatedAdminPaymentAccountsRoute
   '/_authenticated/admin/projects': typeof AuthenticatedAdminProjectsRoute
   '/_authenticated/admin/support': typeof AuthenticatedAdminSupportRoute
   '/_authenticated/admin/transactions': typeof AuthenticatedAdminTransactionsRoute
@@ -360,6 +370,7 @@ export interface FileRouteTypes {
     | '/admin/enquiries'
     | '/admin/inspections'
     | '/admin/investors'
+    | '/admin/payment-accounts'
     | '/admin/projects'
     | '/admin/support'
     | '/admin/transactions'
@@ -395,6 +406,7 @@ export interface FileRouteTypes {
     | '/admin/enquiries'
     | '/admin/inspections'
     | '/admin/investors'
+    | '/admin/payment-accounts'
     | '/admin/projects'
     | '/admin/support'
     | '/admin/transactions'
@@ -431,6 +443,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/enquiries'
     | '/_authenticated/admin/inspections'
     | '/_authenticated/admin/investors'
+    | '/_authenticated/admin/payment-accounts'
     | '/_authenticated/admin/projects'
     | '/_authenticated/admin/support'
     | '/_authenticated/admin/transactions'
@@ -601,6 +614,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminInvestorsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/payment-accounts': {
+      id: '/_authenticated/admin/payment-accounts'
+      path: '/admin/payment-accounts'
+      fullPath: '/admin/payment-accounts'
+      preLoaderRoute: typeof AuthenticatedAdminPaymentAccountsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/projects': {
       id: '/_authenticated/admin/projects'
       path: '/admin/projects'
@@ -720,6 +740,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminEnquiriesRoute: typeof AuthenticatedAdminEnquiriesRoute
   AuthenticatedAdminInspectionsRoute: typeof AuthenticatedAdminInspectionsRoute
   AuthenticatedAdminInvestorsRoute: typeof AuthenticatedAdminInvestorsRoute
+  AuthenticatedAdminPaymentAccountsRoute: typeof AuthenticatedAdminPaymentAccountsRoute
   AuthenticatedAdminProjectsRoute: typeof AuthenticatedAdminProjectsRoute
   AuthenticatedAdminSupportRoute: typeof AuthenticatedAdminSupportRoute
   AuthenticatedAdminTransactionsRoute: typeof AuthenticatedAdminTransactionsRoute
@@ -743,6 +764,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminEnquiriesRoute: AuthenticatedAdminEnquiriesRoute,
   AuthenticatedAdminInspectionsRoute: AuthenticatedAdminInspectionsRoute,
   AuthenticatedAdminInvestorsRoute: AuthenticatedAdminInvestorsRoute,
+  AuthenticatedAdminPaymentAccountsRoute:
+    AuthenticatedAdminPaymentAccountsRoute,
   AuthenticatedAdminProjectsRoute: AuthenticatedAdminProjectsRoute,
   AuthenticatedAdminSupportRoute: AuthenticatedAdminSupportRoute,
   AuthenticatedAdminTransactionsRoute: AuthenticatedAdminTransactionsRoute,

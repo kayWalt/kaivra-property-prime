@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.set_payment_account_snapshot() FROM PUBLIC, anon, authenticated;

@@ -18,7 +18,9 @@ import {
 } from "@/components/ui/dialog";
 import { uploadDocument } from "@/components/kaivra/FileUpload";
 import { logEvent, notifyStaffForProject } from "@/lib/applications";
+import { accountLabel, useActivePaymentAccounts } from "@/lib/payment-accounts";
 import { PAYMENT_METHODS, type PaymentMethod } from "@/lib/kaivra";
+
 
 /**
  * Lets an investor record a payment and attach the bank receipt / proof of
@@ -44,6 +46,8 @@ export function AddPaymentDialog({
   const [method, setMethod] = useState<PaymentMethod>("bank_transfer");
   const [note, setNote] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [accountId, setAccountId] = useState("");
+  const accounts = useActivePaymentAccounts();
 
   function reset() {
     setAmount("");
@@ -54,7 +58,9 @@ export function AddPaymentDialog({
     setMethod("bank_transfer");
     setNote("");
     setFile(null);
+    setAccountId("");
   }
+
 
   async function submit() {
     const value = Number(amount);
@@ -64,6 +70,11 @@ export function AddPaymentDialog({
     }
     if (!file) {
       toast.error("Attach your receipt or proof of payment.");
+      return;
+    }
+    const hasAccounts = (accounts.data ?? []).length > 0;
+    if (hasAccounts && !accountId) {
+      toast.error("Select the account you paid into.");
       return;
     }
     try {
@@ -78,7 +89,9 @@ export function AddPaymentDialog({
           reference: payRef || null,
           method,
           description: note || null,
+          payment_account_id: accountId || null,
         })
+
         .select()
         .single();
       if (error || !payment) throw error ?? new Error("insert failed");
@@ -135,7 +148,33 @@ export function AddPaymentDialog({
         </DialogHeader>
 
         <div className="grid gap-4">
+          <div>
+            <Label htmlFor="pay-account">Account paid into</Label>
+            <select
+              id="pay-account"
+              className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+              value={accountId}
+              onChange={(e) => setAccountId(e.target.value)}
+              disabled={accounts.isLoading}
+            >
+              <option value="">
+                {accounts.isLoading ? "Loading accounts…" : "Select the account you paid into"}
+              </option>
+              {(accounts.data ?? []).map((a) => (
+                <option key={a.id} value={a.id}>
+                  {accountLabel(a)}
+                </option>
+              ))}
+            </select>
+            {!accounts.isLoading && (accounts.data ?? []).length === 0 ? (
+              <p className="mt-1 text-xs text-muted-foreground">
+                No payment accounts are published yet — please contact your adviser.
+              </p>
+            ) : null}
+          </div>
+
           <div className="grid gap-2 sm:grid-cols-2">
+
             <div>
               <Label htmlFor="pay-amount">Amount paid (₦)</Label>
               <Input

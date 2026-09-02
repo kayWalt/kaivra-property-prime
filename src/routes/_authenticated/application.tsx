@@ -51,6 +51,8 @@ import {
   type PaymentMethod,
   type PersonalDetails,
 } from "@/lib/kaivra";
+import { accountLabel, snapshotLabel, useActivePaymentAccounts } from "@/lib/payment-accounts";
+
 import { openAiAssist } from "@/lib/ai-assist";
 import { cn } from "@/lib/utils";
 import { mediaSrc, FALLBACK_PROPERTY_IMAGE } from "@/lib/media";
@@ -503,7 +505,9 @@ function ApplicationWizard() {
       reference: form.reference || null,
       method: form.method as never,
       description: form.description || null,
+      payment_account_id: form.payment_account_id || null,
     });
+
     if (error) {
       toast.error(`Your payment record could not be saved. ${error.message}`);
       return false;
@@ -1517,6 +1521,7 @@ interface PaymentDraft {
   reference: string;
   method: PaymentMethod;
   description: string;
+  payment_account_id: string;
 }
 
 const EMPTY_PAYMENT: PaymentDraft = {
@@ -1527,7 +1532,9 @@ const EMPTY_PAYMENT: PaymentDraft = {
   reference: "",
   method: "bank_transfer",
   description: "",
+  payment_account_id: "",
 };
+
 
 function StepPayment({
   info,
@@ -1550,6 +1557,8 @@ function StepPayment({
     bank: string | null;
     reference: string | null;
     status: string;
+    payment_account_snapshot?: unknown;
+
   }[];
   onAdd: (payment: PaymentDraft) => Promise<boolean>;
   onRemove: (id: string) => Promise<void>;
@@ -1559,7 +1568,10 @@ function StepPayment({
 }) {
   const [form, setForm] = useState<PaymentDraft>(EMPTY_PAYMENT);
   const [adding, setAdding] = useState(false);
+  const accounts = useActivePaymentAccounts();
+  const accountRequired = (accounts.data ?? []).length > 0;
   const update = (patch: Partial<PaymentInfo>) => onChange({ ...info, ...patch });
+
 
   return (
     <div className="space-y-10">
@@ -1672,6 +1684,12 @@ function StepPayment({
                   {formatDate(payment.paid_on)} · {payment.bank ?? "—"} ·{" "}
                   {payment.reference ?? "no reference"}
                 </p>
+                {snapshotLabel(payment.payment_account_snapshot) ? (
+                  <p className="text-xs text-muted-foreground">
+                    Paid into: {snapshotLabel(payment.payment_account_snapshot)}
+                  </p>
+                ) : null}
+
               </div>
               <div className="flex items-center gap-2">
                 <PaymentBadge status={payment.status as "pending" | "verified" | "rejected"} />
@@ -1694,6 +1712,31 @@ function StepPayment({
           <div className="mt-6 rounded-lg border border-border bg-card p-4">
             <p className="eyebrow text-primary">Add payment</p>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              <div className="sm:col-span-2">
+                <Field label="Account paid into" htmlFor="payment_account">
+                  <select
+                    id="payment_account"
+                    className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                    value={form.payment_account_id}
+                    disabled={accounts.isLoading}
+                    onChange={(e) => setForm({ ...form, payment_account_id: e.target.value })}
+                  >
+                    <option value="">
+                      {accounts.isLoading
+                        ? "Loading accounts…"
+                        : accountRequired
+                          ? "Select the account you paid into"
+                          : "No payment accounts published"}
+                    </option>
+                    {(accounts.data ?? []).map((a) => (
+                      <option key={a.id} value={a.id}>
+                        {accountLabel(a)}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+              </div>
+
               <Field label="Amount (₦)" htmlFor="amount">
                 <Input
                   id="amount"
@@ -1759,7 +1802,12 @@ function StepPayment({
             </div>
             <AsyncButton
               className="mt-4"
-              disabled={adding || form.amount <= 0}
+              disabled={
+                adding ||
+                form.amount <= 0 ||
+                (accountRequired && !form.payment_account_id)
+              }
+
               pendingLabel="Adding payment…"
               onClick={async () => {
                 setAdding(true);

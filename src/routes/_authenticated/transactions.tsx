@@ -14,6 +14,7 @@ import { ReferenceChip } from "@/components/kaivra/ReferenceChip";
 import { openDocument } from "@/components/kaivra/FileUpload";
 import { useProfile, useSession } from "@/hooks/useAuth";
 import { downloadPaymentReceipt } from "@/lib/receipt";
+import { snapshotLabel } from "@/lib/payment-accounts";
 import { formatDate, formatNaira, type PaymentStatus } from "@/lib/kaivra";
 
 export const Route = createFileRoute("/_authenticated/transactions")({
@@ -47,6 +48,7 @@ export type TxRow = {
   status: PaymentStatus;
   verified_at: string | null;
   rejection_reason: string | null;
+  payment_account_snapshot?: unknown;
   applications: {
     id: string;
     reference: string | null;
@@ -65,7 +67,7 @@ export function useMyTransactions(userId?: string, limit = 200) {
       const { data, error } = await supabase
         .from("application_payments")
         .select(
-          "id, amount, paid_on, created_at, bank, sender, reference, payment_reference, method, description, status, verified_at, rejection_reason, applications!inner(id, reference, investor_id, investment, projects(name, currency), properties(name))",
+          "id, amount, paid_on, created_at, bank, sender, reference, payment_reference, method, description, status, verified_at, rejection_reason, payment_account_snapshot, applications!inner(id, reference, investor_id, investment, projects(name, currency), properties(name))",
         )
         .eq("applications.investor_id", userId!)
         .order("paid_on", { ascending: false, nullsFirst: false })
@@ -263,6 +265,7 @@ function TransactionsPage() {
                   ["Amount", formatNaira(open.amount)],
                   ["Method", open.method.replace(/_/g, " ")],
                   ["Bank", open.bank ?? "—"],
+                  ["Account paid into", snapshotLabel(open.payment_account_snapshot) ?? "—"],
                   ["Sender", open.sender ?? "—"],
                   ["Application", open.applications?.reference ?? "—"],
                   ["Project", open.applications?.projects?.name ?? "—"],
