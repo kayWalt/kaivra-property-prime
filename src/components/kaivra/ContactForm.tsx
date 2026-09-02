@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Loader2, Send } from "lucide-react";
 import { toast } from "sonner";
 import { submitContactEnquiry } from "@/lib/contact.functions";
+import { LOVABLE_ORIGIN } from "@/lib/origin-fallback";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,18 +35,39 @@ export function ContactForm() {
     event.preventDefault();
     if (sending) return;
     setSending(true);
+    const payload = {
+      full_name: form.full_name.trim(),
+      email: form.email.trim(),
+      phone: form.phone.trim() || null,
+      subject: form.subject.trim(),
+      message: form.message.trim(),
+      source_page: typeof window !== "undefined" ? window.location.pathname : null,
+      company: form.company,
+    };
     try {
-      const res = await submitContactEnquiry({
-        data: {
-          full_name: form.full_name.trim(),
-          email: form.email.trim(),
-          phone: form.phone.trim() || null,
-          subject: form.subject.trim(),
-          message: form.message.trim(),
-          source_page: typeof window !== "undefined" ? window.location.pathname : null,
-          company: form.company,
-        },
-      });
+      let res: { reference: string | null };
+      try {
+        res = await submitContactEnquiry({ data: payload });
+      } catch (primaryErr) {
+        // The custom-domain runtime may lack the server secrets. Fall back to
+        // the canonical origin's public intake endpoint (same app, same
+        // database, same validation) so an enquiry is never lost.
+        const relay = await fetch(`${LOVABLE_ORIGIN}/api/public/contact`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }).catch(() => null);
+        const body = relay ? await relay.json().catch(() => null) : null;
+        if (!relay || !relay.ok || !body || body.error) {
+          throw new Error(
+            body?.error ||
+              (primaryErr instanceof Error && primaryErr.message
+                ? primaryErr.message
+                : "Your enquiry could not be sent. Please try again."),
+          );
+        }
+        res = { reference: body.reference ?? null };
+      }
       setReference(res.reference);
       setForm({
         full_name: "",
@@ -66,6 +88,7 @@ export function ContactForm() {
       setSending(false);
     }
   }
+
 
   return (
     <form onSubmit={submit} className="grid gap-4 sm:grid-cols-2">
