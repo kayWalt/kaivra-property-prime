@@ -531,3 +531,96 @@ export const getCorrectionDocumentUrl = createServerFn({ method: "POST" })
   });
 
 export const CORRECTION_STATUS_VALUES = CORRECTION_STATUSES;
+
+/* -------------------------------------------------- direct admin correction */
+
+/**
+ * Lets an administrator correct a field on an investor's application directly
+ * — e.g. when the investor raised the issue as a complaint rather than as a
+ * formal correction request. The previous value is captured in the append-only
+ * audit trail and in the application's own history before it changes.
+ */
+export const applyInvestorRecordCorrection = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) =>
+    z
+      .object({
+        investorId: z.string().uuid(),
+        applicationId: z.string().uuid(),
+        column: z.enum(["personal", "contact", "investment", "payment_info"]),
+        fieldKey: z.string().min(1).max(80),
+        fieldLabel: z.string().min(1).max(120),
+        newValue: z.string().min(1).max(2000),
+        note: z.string().max(2000).optional(),
+        ticketId: z.string().uuid().optional(),
+      })
+      .parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    const ctx = context as unknown as Ctx;
+    await assertAdmin(ctx);
+
+    const { data: app, error: appError } = await ctx.supabase
+      .from("applications")
+      .select(`id, reference, investor_id, ${data.column}`)
+      .eq("id", data.applicationId)
+      .maybeSingle();
+    if (appError || !app) throw new Error("The application could not be loaded.");
+    if (app.investor_id !== data.investorId) {
+      throw new Error("That application does not belong to this investor.");
+    }
+
+    const blob = ((app as Record<string, unknown>)[data.column] ?? {}) as Record<string, unknown>;
+    const previousValue = blob[data.fieldKey] ?? null;
+    const { error: updateError } = await ctx.supabase
+      .from("applications")
+      .update({ [data.column]: { ...blob, [data.fieldKey]: data.newValue } })
+      .eq("id", data.applicationId);
+    if (updateError) throw new Error("The correction could not be saved. Please try again.");
+
+    await ctx.supabase.from("application_events").insert({
+      application_id: data.applicationId,
+      actor: ctx.userId,
+      action: "correction_applied",
+      detail: `${data.fieldLabel}: "${String(previousValue ?? "—")}" → "${data.newValue}"${
+        data.note ? ` (${data.note})` : ""
+      }`,
+    });
+
+    await audit(ctx, {
+      action: "ADMIN_CORRECTED_INVESTOR_RECORD",
+      entityType: "application",
+      entityId: data.applicationId,
+      subjectUser: data.investorId,
+      detail: {
+        source_ticket: data.ticketId ?? null,
+        section: data.column,
+        field: data.fieldKey,
+        field_label: data.fieldLabel,
+        previous_value: previousValue,
+        new_value: data.newValue,
+        note: data.note ?? null,
+      },
+    });
+
+    if (data.ticketId) {
+      await ctx.supabase.from("support_messages").insert({
+        ticket_id: data.ticketId,
+        author_id: ctx.userId,
+        is_internal: false,
+        body: `${data.fieldLabel} has been corrected to "${data.newValue}"${
+          app.reference ? ` on application ${app.reference}` : ""
+        }.${data.note ? ` ${data.note}` : ""}`,
+      });
+    }
+
+    await notify(
+      ctx,
+      data.investorId,
+      "Your record has been corrected",
+      `${data.fieldLabel} is now "${data.newValue}".`,
+      "/dashboard",
+    );
+
+    return { ok: true, previousValue: previousValue ?? null };
+  });
