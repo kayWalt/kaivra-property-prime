@@ -18,7 +18,9 @@ import {
 } from "@/components/ui/dialog";
 import { uploadDocument } from "@/components/kaivra/FileUpload";
 import { logEvent, notifyStaffForProject } from "@/lib/applications";
+import { accountLabel, useActivePaymentAccounts } from "@/lib/payment-accounts";
 import { PAYMENT_METHODS, type PaymentMethod } from "@/lib/kaivra";
+
 
 /**
  * Lets an investor record a payment and attach the bank receipt / proof of
