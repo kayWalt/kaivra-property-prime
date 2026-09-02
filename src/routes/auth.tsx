@@ -12,6 +12,7 @@ import { useSession } from "@/hooks/useAuth";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { assetUrl } from "@/lib/media";
 import authHero from "@/assets/kaivra-auth-hero-2026-09-02.jpg.asset.json";
+import kaivraLogo from "@/assets/kaivra-logo.png.asset.json";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -181,7 +182,18 @@ function AuthPage() {
 
       <div className="flex items-center justify-center px-5 py-12">
         <div className="w-full max-w-sm kv-rise">
-          <Brand withTagline />
+          <div className="mb-6 flex justify-center">
+            <img
+              src={assetUrl(kaivraLogo.url)}
+              alt="KAIVRA"
+              className="h-20 w-auto object-contain"
+              width={1024}
+              height={1024}
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
+          <Brand withTagline className="items-center text-center" />
           {checkEmail ? (
             <div className="mt-10 rounded-lg border border-border bg-card p-6">
               <h1 className="font-display text-2xl">Check your email</h1>
