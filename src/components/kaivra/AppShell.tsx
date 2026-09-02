@@ -89,7 +89,7 @@ function DesktopNav({ items }: { items: NavItem[] }) {
     let used = 0;
     let count = 0;
     for (let i = 0; i < widths.length; i += 1) {
-      const next = used + (i === 0 ? 0 : GAP) + widths[i];
+      const next = used + (i === 0 ? 0 : GAP) + (widths[i] ?? 0);
       const needsMore = i < widths.length - 1;
       if (next + (needsMore ? GAP + moreWidth : 0) > available) break;
       used = next;
