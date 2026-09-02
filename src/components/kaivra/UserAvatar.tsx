@@ -1,5 +1,6 @@
 import { User } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAvatarSrc } from "@/hooks/useAvatarSrc";
 
 export function UserAvatar({
   url,
@@ -12,12 +13,15 @@ export function UserAvatar({
   className?: string;
   iconClassName?: string;
 }) {
-  if (url) {
+  const { src, onError } = useAvatarSrc(url);
+
+  if (src) {
     return (
       <img
         loading="lazy"
         decoding="async"
-        src={url}
+        src={src}
+        onError={onError}
         alt={name ? `${name}'s profile picture` : "Profile picture"}
         className={cn("size-9 rounded-full border border-border object-cover", className)}
       />

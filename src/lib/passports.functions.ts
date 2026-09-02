@@ -40,11 +40,21 @@ export const getPassportAvatars = createServerFn({ method: "POST" })
     if (latest.size === 0) return { avatars: {} as Record<string, string> };
 
     const paths = [...latest.values()];
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: signed, error: signError } = await supabaseAdmin.storage
-      .from(DOCS_BUCKET)
-      .createSignedUrls(paths, PASSPORT_URL_TTL_SECONDS);
-    if (signError || !signed) return { avatars: {} as Record<string, string> };
+    // Signing needs the privileged client. If this deployment has no service
+    // role configured, fall back to no photographs (initials placeholder)
+    // instead of failing the whole directory request.
+    let signed: { path?: string | null; signedUrl?: string | null; error?: string | null }[] | null =
+      null;
+    try {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const res = await supabaseAdmin.storage
+        .from(DOCS_BUCKET)
+        .createSignedUrls(paths, PASSPORT_URL_TTL_SECONDS);
+      if (!res.error) signed = res.data;
+    } catch (err) {
+      console.error("[passports] signing unavailable", err);
+    }
+    if (!signed) return { avatars: {} as Record<string, string> };
 
     const byPath = new Map<string, string>();
     for (const item of signed) {
