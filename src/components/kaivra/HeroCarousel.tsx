@@ -4,10 +4,9 @@ import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
 import { assetUrl, FALLBACK_PROJECT_IMAGE } from "@/lib/media";
 import { cn } from "@/lib/utils";
 
-import slide1 from "@/assets/kaivra-22-01-16.jpg.asset.json";
-import slide2 from "@/assets/kaivra-22-00-40.jpg.asset.json";
-import slide3 from "@/assets/kaivra-22-00-51.jpg.asset.json";
-import slide4 from "@/assets/kaivra-duplex-option-1.jpg.asset.json";
+import slide1 from "@/assets/kaivra-22-00-40.jpg.asset.json";
+import slide2 from "@/assets/kaivra-22-00-51.jpg.asset.json";
+import slide3 from "@/assets/kaivra-duplex-option-1.jpg.asset.json";
 
 const SLIDES = [
   {
@@ -20,10 +19,6 @@ const SLIDES = [
   },
   {
     url: slide3.url,
-    alt: "Modern luxury KAIVRA residence viewed from another angle at dusk",
-  },
-  {
-    url: slide4.url,
     alt: "Architectural renders of the proposed five bedroom duplex, option one",
   },
 ] as const;
