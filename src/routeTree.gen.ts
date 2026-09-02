@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as RealEstateInvestmentAbujaRouteImport } from './routes/real-estate-investment-abuja'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as AuthenticatedApplicationRouteImport } from './routes/_authenticated/application'
@@ -53,6 +54,12 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RealEstateInvestmentAbujaRoute =
+  RealEstateInvestmentAbujaRouteImport.update({
+    id: '/real-estate-investment-abuja',
+    path: '/real-estate-investment-abuja',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
@@ -203,6 +210,7 @@ const ApiPublicProjectImageSplatRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/real-estate-investment-abuja': typeof RealEstateInvestmentAbujaRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/application': typeof AuthenticatedApplicationRoute
@@ -233,6 +241,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/real-estate-investment-abuja': typeof RealEstateInvestmentAbujaRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/application': typeof AuthenticatedApplicationRoute
@@ -265,6 +274,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/real-estate-investment-abuja': typeof RealEstateInvestmentAbujaRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/application': typeof AuthenticatedApplicationRoute
@@ -297,6 +307,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/real-estate-investment-abuja'
     | '/reset-password'
     | '/sitemap.xml'
     | '/application'
@@ -327,6 +338,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/real-estate-investment-abuja'
     | '/reset-password'
     | '/sitemap.xml'
     | '/application'
@@ -358,6 +370,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/real-estate-investment-abuja'
     | '/reset-password'
     | '/sitemap.xml'
     | '/_authenticated/application'
@@ -390,6 +403,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  RealEstateInvestmentAbujaRoute: typeof RealEstateInvestmentAbujaRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ProjectsProjectIdRoute: typeof ProjectsProjectIdRoute
@@ -420,6 +434,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/real-estate-investment-abuja': {
+      id: '/real-estate-investment-abuja'
+      path: '/real-estate-investment-abuja'
+      fullPath: '/real-estate-investment-abuja'
+      preLoaderRoute: typeof RealEstateInvestmentAbujaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -660,6 +681,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  RealEstateInvestmentAbujaRoute: RealEstateInvestmentAbujaRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   ProjectsProjectIdRoute: ProjectsProjectIdRoute,
