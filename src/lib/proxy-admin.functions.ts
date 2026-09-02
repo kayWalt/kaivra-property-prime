@@ -466,3 +466,187 @@ export const proxyAdminHistory = createServerFn({ method: "POST" })
     if (error) throw new Error("The access history could not be loaded.");
     return { events: events ?? [] };
   });
+
+/**
+ * Re-sends the secure activation link to a Proxy Admin who never activated.
+ * Uses the auth provider's short-lived, single-use invite/recovery link — no
+ * password is ever generated, transmitted or shown to the Super Admin.
+ */
+export const resendProxyAdminInvite = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) =>
+    z
+      .object({ userId: z.string().uuid(), redirectTo: z.string().url().max(500) })
+      .parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    const { actorName } = await requireSuperAdmin(context);
+
+    const { data: grant } = await context.supabase
+      .from("proxy_admin_grants")
+      .select("id")
+      .eq("user_id", data.userId)
+      .maybeSingle();
+    if (!grant) throw new Error("That proxy admin could not be found.");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: target, error: targetError } = await supabaseAdmin.auth.admin.getUserById(
+      data.userId,
+    );
+    const email = target?.user?.email;
+    if (targetError || !email) throw new Error("That account has no email address on file.");
+
+    const activated = !!target?.user?.email_confirmed_at;
+    let sendError: string | null = null;
+    if (activated) {
+      // Already activated: send a password-reset (recovery) link instead.
+      const { error } = await supabaseAdmin.auth.resetPasswordForEmail(email, {
+        redirectTo: data.redirectTo,
+      });
+      sendError = error?.message ?? null;
+    } else {
+      const { error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
+        redirectTo: data.redirectTo,
+        data: { invited_as: "proxy_admin" },
+      });
+      sendError = error?.message ?? null;
+    }
+    if (sendError) {
+      console.error("[proxy-admin] resend failed", sendError);
+      throw new Error("The invitation could not be sent. Please try again shortly.");
+    }
+
+    await audit(context, actorName, {
+      action: "PROXY_ADMIN_INVITATION_RESENT",
+      subject_user: data.userId,
+      entity_id: (grant as { id: string }).id,
+      detail: { email, mode: activated ? "password_reset" : "invitation" },
+    });
+
+    return { ok: true, activated };
+  });
+
+/**
+ * Super Admin-only correction of a Proxy Admin's login email (for example when
+ * a temporary address was used during testing). The existing authentication
+ * identity, permissions, audit history and access window are all preserved —
+ * only the address changes, and the new one must be verified by the user.
+ */
+export const changeProxyAdminEmail = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) =>
+    z
+      .object({
+        userId: z.string().uuid(),
+        newEmail: z.string().trim().email().max(255),
+        redirectTo: z.string().url().max(500),
+        reason: z.string().trim().max(300).optional(),
+      })
+      .parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    const { actorName } = await requireSuperAdmin(context);
+    if (data.userId === context.userId) {
+      throw new Error("Use your own profile to change your own sign-in email.");
+    }
+
+    const { data: grant } = await context.supabase
+      .from("proxy_admin_grants")
+      .select("id")
+      .eq("user_id", data.userId)
+      .maybeSingle();
+    if (!grant) throw new Error("That proxy admin could not be found.");
+
+    const newEmail = data.newEmail.toLowerCase();
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const clash = await findAuthUserByEmail(supabaseAdmin, newEmail);
+    if (clash && clash.id !== data.userId) {
+      throw new Error(
+        "Another KAIVRA account already uses that email address. Grant proxy access to that account instead.",
+      );
+    }
+
+    const { data: target } = await supabaseAdmin.auth.admin.getUserById(data.userId);
+    const oldEmail = target?.user?.email ?? null;
+    if (oldEmail && oldEmail.toLowerCase() === newEmail) return { ok: true, unchanged: true };
+
+    const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(data.userId, {
+      email: newEmail,
+      email_confirm: false,
+    });
+    if (updateError) {
+      console.error("[proxy-admin] email change failed", updateError.message);
+      throw new Error("The sign-in email could not be updated.");
+    }
+
+    await supabaseAdmin.from("profiles").update({ email: newEmail } as never).eq("id", data.userId);
+
+    // Verification / activation at the corrected address.
+    const { error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(newEmail, {
+      redirectTo: data.redirectTo,
+      data: { invited_as: "proxy_admin" },
+    });
+    if (inviteError) console.error("[proxy-admin] verification email failed", inviteError.message);
+
+    await audit(context, actorName, {
+      action: "PROXY_ADMIN_EMAIL_CHANGED",
+      subject_user: data.userId,
+      entity_id: (grant as { id: string }).id,
+      detail: {
+        before: { email: oldEmail },
+        after: { email: newEmail },
+        verification_sent: !inviteError,
+        reason: data.reason ?? null,
+      },
+    });
+
+    return { ok: true, verificationSent: !inviteError };
+  });
+
+/**
+ * Digital footprint written by the Proxy Admin's own session (sign-in, sign-out
+ * and denied privileged attempts). It is advisory only: the caller can never
+ * write anything privileged, the row is stamped with their verified user id,
+ * and `admin_audit_events` is append-only.
+ */
+export const recordProxyAdminSessionEvent = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) =>
+    z
+      .object({
+        event: z.enum(["LOGIN", "LOGOUT", "ACCESS_EXPIRED", "DENIED"]),
+        detail: z.string().trim().max(200).optional(),
+      })
+      .parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    const { data: grant } = await context.supabase
+      .from("proxy_admin_grants")
+      .select("id, status, starts_at, expires_at")
+      .eq("user_id", context.userId)
+      .maybeSingle();
+    if (!grant) return { ok: false };
+
+    const { data: profile } = await context.supabase
+      .from("profiles")
+      .select("full_name, email")
+      .eq("id", context.userId)
+      .maybeSingle();
+
+    const meta = requestMeta();
+    const { error } = await context.supabase.from("admin_audit_events").insert({
+      actor: context.userId,
+      actor_name: profile?.full_name ?? profile?.email ?? null,
+      actor_role: "proxy_admin",
+      action: `PROXY_ADMIN_${data.event}`,
+      subject_user: context.userId,
+      entity_type: "proxy_admin_grant",
+      entity_id: (grant as { id: string }).id,
+      ip_address: meta.ip,
+      user_agent: meta.userAgent,
+      detail: { note: data.detail ?? null, grant_status: (grant as { status: string }).status },
+    });
+    if (error) console.error("[proxy-admin] session audit failed", error.message);
+    return { ok: !error };
+  });
