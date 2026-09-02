@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useProfile, useRoles, useSession, primaryRole } from "@/hooks/useAuth";
 import { useAvatarSrc } from "@/hooks/useAvatarSrc";
+import { ThemeToggle } from "@/components/kaivra/ThemeToggle";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({
@@ -232,6 +233,14 @@ function ProfilePage() {
           Save changes
         </AsyncButton>
       </div>
+
+      <section className="mt-6 rounded-lg border border-border bg-card p-5">
+        <h2 className="text-base font-semibold">Appearance</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Choose how KAIVRA looks. System follows your device setting automatically.
+        </p>
+        <ThemeToggle className="mt-3 max-w-sm" />
+      </section>
 
       <Button variant="outline" className="mt-6" onClick={() => void signOut()}>
         Sign out
