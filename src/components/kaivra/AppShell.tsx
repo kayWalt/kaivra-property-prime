@@ -20,12 +20,15 @@ import { ThemeToggle } from "@/components/kaivra/ThemeToggle";
 import { useProfile, useRoles, useSession, primaryRole } from "@/hooks/useAuth";
 import { UserAvatar } from "./UserAvatar";
 import { ShareQrButton } from "./ShareQrButton";
+import { toast } from "sonner";
 import {
   clearPushExternalUserId,
+  haptic,
   isMedianApp,
   requestPushPermission,
   setPushExternalUserId,
 } from "@/lib/median";
+import { playNotificationSound } from "@/lib/notification-sound";
 import { cn } from "@/lib/utils";
 import {
   ADMIN_MODULES,
