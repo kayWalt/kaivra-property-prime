@@ -67,7 +67,7 @@ async function audit(
     actor_role: entry.actorRole ?? "admin",
     detail: entry.detail ?? {},
     ...meta,
-  };
+  } as never;
   const { error } = await context.supabase.from("admin_audit_events").insert(row);
   if (!error) return;
   // Investors hold no insert grant on the audit log — record server-side.
