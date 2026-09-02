@@ -197,9 +197,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const items =
     role === "admin" || role === "super_admin"
       ? [
-          ...ADMIN_MODULES.filter(
-            (m) => m.key !== "analytics" && access.can(m.key, "view"),
-          ).map((m) => ({
+          ...ADMIN_MODULES.filter((m) => access.can(m.key, "view")).map((m) => ({
             to: m.to,
             label: m.label,
           })),
