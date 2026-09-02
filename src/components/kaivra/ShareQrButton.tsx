@@ -31,7 +31,7 @@ export function ShareQrButton() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label="Share app QR code">
+        <Button variant="ghost" size="icon" aria-label="Share app QR code" title="Share app QR code">
           <QrCode className="size-5" />
         </Button>
       </DialogTrigger>
