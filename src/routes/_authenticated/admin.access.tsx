@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { ShieldCheck, ShieldOff, History, Clock, UserPlus } from "lucide-react";
+import { ShieldCheck, ShieldOff, History, Clock, UserPlus, Mail, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -50,8 +50,10 @@ import {
   type ProxyGrant,
 } from "@/lib/proxy-admin";
 import {
+  changeProxyAdminEmail,
   grantProxyAdmin,
   listProxyAdmins,
+  resendProxyAdminInvite,
   proxyAdminHistory,
   revokeProxyAdmin,
   updateProxyAdmin,
@@ -100,6 +102,7 @@ function AdminAccessPage() {
   const [editUser, setEditUser] = useState<ProxyAdminRow | null>(null);
   const [historyUser, setHistoryUser] = useState<ProxyAdminRow | null>(null);
   const [revokeUser, setRevokeUser] = useState<ProxyAdminRow | null>(null);
+  const [emailUser, setEmailUser] = useState<ProxyAdminRow | null>(null);
 
   useEffect(() => {
     if (!rolesLoading && roles && !isSuperAdmin) {
@@ -127,6 +130,20 @@ function AdminAccessPage() {
       setRevokeUser(null);
       refresh();
     },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const resendMutation = useMutation({
+    mutationFn: async (userId: string) =>
+      resendProxyAdminInvite({
+        data: { userId, redirectTo: `${window.location.origin}/reset-password` },
+      }),
+    onSuccess: (r) =>
+      toast.success(
+        r.activated
+          ? "A secure password-reset link has been sent."
+          : "The activation invitation has been re-sent.",
+      ),
     onError: (e: Error) => toast.error(e.message),
   });
 
@@ -174,6 +191,14 @@ function AdminAccessPage() {
                       <ToneBadge tone={STATE_TONE[state]} label={state.toUpperCase()} />
                     </div>
                     <p className="truncate text-sm text-muted-foreground">{row.email}</p>
+                    {row.phone ? (
+                      <p className="truncate text-xs text-muted-foreground">{row.phone}</p>
+                    ) : null}
+                    {!row.activated_at ? (
+                      <p className="mt-1 text-xs text-amber-600 dark:text-amber-500">
+                        Invitation sent — account not activated yet.
+                      </p>
+                    ) : null}
                     <dl className="mt-3 grid gap-x-6 gap-y-1 text-xs text-muted-foreground sm:grid-cols-2 lg:grid-cols-3">
                       <div>Access starts: {fmt(grant.starts_at)}</div>
                       <div>Expires: {grant.expires_at ? fmt(grant.expires_at) : "No expiry"}</div>
@@ -203,6 +228,18 @@ function AdminAccessPage() {
                   <div className="flex flex-wrap gap-2">
                     <Button size="sm" variant="outline" onClick={() => setEditUser(row)}>
                       <ShieldCheck className="mr-2 size-4" /> Permissions & access
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => setEmailUser(row)}>
+                      <Mail className="mr-2 size-4" /> Change email
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={resendMutation.isPending}
+                      onClick={() => resendMutation.mutate(row.user_id)}
+                    >
+                      <Send className="mr-2 size-4" />
+                      {row.activated_at ? "Send reset link" : "Resend invitation"}
                     </Button>
                     <Button size="sm" variant="outline" onClick={() => setHistoryUser(row)}>
                       <History className="mr-2 size-4" /> History
@@ -236,6 +273,17 @@ function AdminAccessPage() {
           onOpenChange={(v) => !v && setEditUser(null)}
           onSaved={() => {
             setEditUser(null);
+            refresh();
+          }}
+        />
+      ) : null}
+
+      {emailUser ? (
+        <ChangeEmailDialog
+          row={emailUser}
+          onOpenChange={(v) => !v && setEmailUser(null)}
+          onSaved={() => {
+            setEmailUser(null);
             refresh();
           }}
         />
@@ -320,6 +368,7 @@ function GrantDialog({
   const grant = existing?.grant as ProxyGrant | undefined;
   const [email, setEmail] = useState(existing?.email ?? "");
   const [fullName, setFullName] = useState(existing?.full_name ?? "");
+  const [phone, setPhone] = useState(existing?.phone ?? "");
   const [note, setNote] = useState(grant?.note ?? "");
   const [startsAt, setStartsAt] = useState(toLocalInput(grant?.starts_at ?? new Date().toISOString()));
   const [expiresAt, setExpiresAt] = useState(
@@ -382,6 +431,7 @@ function GrantDialog({
         data: {
           email,
           fullName: fullName || null,
+          phone: phone || null,
           permissions: dirtyPermissions as Record<string, string[]>,
           startsAt: startsIso,
           expiresAt: expiresIso,
@@ -429,6 +479,15 @@ function GrantDialog({
                   id="proxy-name"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="proxy-phone">Phone (optional)</Label>
+                <Input
+                  id="proxy-phone"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="+234…"
                 />
               </div>
             </div>
@@ -516,6 +575,88 @@ function GrantDialog({
           </Button>
           <Button onClick={() => save.mutate()} disabled={save.isPending}>
             {save.isPending ? "Saving…" : existing ? "Save access" : "Grant access"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/**
+ * Super Admin-only correction of a Proxy Admin's real login email. The existing
+ * account, permissions, access window and audit trail are preserved; the new
+ * address must be verified by the person before it can be used to sign in.
+ */
+function ChangeEmailDialog({
+  row,
+  onOpenChange,
+  onSaved,
+}: {
+  row: ProxyAdminRow;
+  onOpenChange: (v: boolean) => void;
+  onSaved: () => void;
+}) {
+  const [newEmail, setNewEmail] = useState("");
+  const [reason, setReason] = useState("");
+
+  const save = useMutation({
+    mutationFn: async () =>
+      changeProxyAdminEmail({
+        data: {
+          userId: row.user_id,
+          newEmail,
+          reason: reason || undefined,
+          redirectTo: `${window.location.origin}/reset-password`,
+        },
+      }),
+    onSuccess: () => {
+      toast.success("Sign-in email updated. A verification link has been sent.");
+      onSaved();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  return (
+    <Dialog open onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Change sign-in email</DialogTitle>
+          <DialogDescription>
+            Replaces the login address for {row.full_name || row.email} without creating a second
+            account. Permissions, access duration and history are kept intact.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label>Current email</Label>
+            <Input value={row.email ?? ""} readOnly disabled />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="proxy-new-email">New email</Label>
+            <Input
+              id="proxy-new-email"
+              type="email"
+              value={newEmail}
+              onChange={(e) => setNewEmail(e.target.value)}
+              placeholder="real.person@company.com"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="proxy-email-reason">Reason (recorded in the audit log)</Label>
+            <Textarea
+              id="proxy-email-reason"
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              rows={2}
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button disabled={!newEmail || save.isPending} onClick={() => save.mutate()}>
+            {save.isPending ? "Updating…" : "Update email"}
           </Button>
         </DialogFooter>
       </DialogContent>

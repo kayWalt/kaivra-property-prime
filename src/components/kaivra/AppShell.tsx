@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bell, ChevronDown, LogOut, Menu, User } from "lucide-react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
@@ -37,6 +37,7 @@ import {
   timeRemaining,
   useMyProxyGrant,
 } from "@/lib/proxy-admin";
+import { recordProxyAdminSessionEvent } from "@/lib/proxy-admin.functions";
 
 type NavItem = { to: string; label: string };
 
@@ -204,6 +205,25 @@ export function AppShell({ children }: { children: ReactNode }) {
       : NAV[role as "investor" | "adviser"];
   const unread = useUnreadCount(user?.id);
   const navigate = useNavigate();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+
+  // Digital footprint: one sign-in record per browser session for proxy admins.
+  useEffect(() => {
+    if (!user?.id || !access.isProxyAdmin || access.accessExpired) return;
+    const key = `kaivra.proxy-login.${user.id}`;
+    if (typeof sessionStorage === "undefined" || sessionStorage.getItem(key)) return;
+    sessionStorage.setItem(key, "1");
+    void recordProxyAdminSessionEvent({ data: { event: "LOGIN" } }).catch(() => {});
+  }, [user?.id, access.isProxyAdmin, access.accessExpired]);
+
+  // Expiry is enforced in the database; this simply stops an expired proxy
+  // admin from lingering on an admin screen that can no longer load data.
+  useEffect(() => {
+    if (!access.accessExpired || !pathname.startsWith("/admin")) return;
+    void recordProxyAdminSessionEvent({ data: { event: "ACCESS_EXPIRED" } }).catch(() => {});
+    toast.error(EXPIRED_MESSAGE);
+    void navigate({ to: "/dashboard", replace: true });
+  }, [access.accessExpired, pathname, navigate]);
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
 
@@ -252,6 +272,10 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   function signOut() {
     clearPushExternalUserId();
+    if (access.isProxyAdmin) {
+      // Recorded before the session is torn down; best-effort only.
+      void recordProxyAdminSessionEvent({ data: { event: "LOGOUT" } }).catch(() => {});
+    }
     // Navigate first so the click feels instant; tear down caches and the
     // Supabase session right after, without blocking the transition.
     void navigate({ to: "/auth", replace: true });
@@ -259,6 +283,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     queryClient.clear();
     void supabase.auth.signOut();
   }
+
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
