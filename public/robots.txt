@@ -12,5 +12,16 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /dashboard
+Disallow: /admin
+Disallow: /application
+Disallow: /applications
+Disallow: /documents
+Disallow: /inspections
+Disallow: /notifications
+Disallow: /profile
+Disallow: /transactions
+Disallow: /reset-password
+Disallow: /api/
 
 Sitemap: https://kaivraa.com/sitemap.xml
