@@ -54,6 +54,7 @@ const NAV: Record<AppRole, NavItem[]> = {
     { to: "/admin/projects", label: "Projects" },
     { to: "/admin/advisers", label: "Advisers" },
     { to: "/admin/support", label: "Support" },
+    { to: "/admin/corrections", label: "Corrections" },
     { to: "/admin/enquiries", label: "Enquiries" },
   ],
   super_admin: [
@@ -65,6 +66,7 @@ const NAV: Record<AppRole, NavItem[]> = {
     { to: "/admin/projects", label: "Projects" },
     { to: "/admin/advisers", label: "Advisers" },
     { to: "/admin/support", label: "Support" },
+    { to: "/admin/corrections", label: "Corrections" },
     { to: "/admin/enquiries", label: "Enquiries" },
   ],
 };
