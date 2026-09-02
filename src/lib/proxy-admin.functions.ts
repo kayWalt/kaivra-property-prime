@@ -208,6 +208,12 @@ export const grantProxyAdmin = createServerFn({ method: "POST" })
       .ilike("email", email)
       .maybeSingle();
 
+    // An auth identity can exist without a profile row — never duplicate it.
+    if (!profile) {
+      const existingAuth = await findAuthUserByEmail(supabaseAdmin, email);
+      if (existingAuth) profile = { id: existingAuth.id, full_name: data.fullName ?? null, email };
+    }
+
     let invited = false;
     if (!profile) {
       const { data: created, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(
@@ -226,6 +232,29 @@ export const grantProxyAdmin = createServerFn({ method: "POST" })
       invited = true;
       profile = { id: created.user.id, full_name: data.fullName ?? null, email };
     }
+
+    // Contact details are stored on the existing profile row only when the
+    // person has not already supplied their own — never overwrite user data.
+    if (data.fullName || data.phone) {
+      const { data: current } = await supabaseAdmin
+        .from("profiles")
+        .select("id, full_name, phone")
+        .eq("id", profile.id)
+        .maybeSingle();
+      const patch: Record<string, string> = {};
+      if (data.fullName && !current?.full_name) patch["full_name"] = data.fullName;
+      if (data.phone && !current?.phone) patch["phone"] = data.phone;
+      if (Object.keys(patch).length) {
+        if (current) {
+          await supabaseAdmin.from("profiles").update(patch).eq("id", profile.id);
+        } else {
+          await supabaseAdmin
+            .from("profiles")
+            .insert({ id: profile.id, email, ...patch } as never);
+        }
+      }
+    }
+
 
     const userId = profile.id;
     if (userId === context.userId) {
