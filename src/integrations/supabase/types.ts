@@ -1040,10 +1040,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      admin_payment_account_number: {
-        Args: { _account_id: string }
-        Returns: string
-      }
+      [_ in never]: never
     }
     Enums: {
       app_role: "super_admin" | "admin" | "adviser" | "investor"
