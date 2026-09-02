@@ -25,12 +25,13 @@ export async function resolveAdminAuthority(supabase: CallerClient, userId: stri
   const isAdmin = isSuperAdmin || roles.includes("admin");
   const isAdviser = roles.includes("adviser");
 
-  let grant: {
+  type Grant = {
     permissions: Record<string, string[]> | null;
     status: string;
     starts_at: string;
     expires_at: string | null;
-  } | null = null;
+  };
+  let grant: Grant | null = null;
 
   if (!isSuperAdmin && isAdmin) {
     const { data } = await supabase
@@ -38,7 +39,7 @@ export async function resolveAdminAuthority(supabase: CallerClient, userId: stri
       .select("permissions, status, starts_at, expires_at")
       .eq("user_id", userId)
       .maybeSingle();
-    grant = (data as typeof grant) ?? null;
+    grant = (data as Grant | null) ?? null;
   }
 
   const now = Date.now();
