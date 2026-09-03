@@ -68,6 +68,24 @@ function looksLikeImage(d: { mime_type: string | null; file_name: string | null;
   return !d.mime_type && (d.kind === "passport" || d.kind === "signature");
 }
 
+function looksLikePdf(d: { mime_type: string | null; file_name: string | null }) {
+  if ((d.mime_type ?? "").includes("pdf")) return true;
+  return !!d.file_name && /\.pdf$/i.test(d.file_name);
+}
+
+async function fetchBytes(documentId: string): Promise<ArrayBuffer | null> {
+  try {
+    const { url } = await getDocumentUrl({ data: { documentId } });
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const buf = await res.arrayBuffer();
+    return buf.byteLength ? buf : null;
+  } catch {
+    return null;
+  }
+}
+
+
 /**
  * Re-encode any browser-decodable image to PNG/JPEG so jsPDF can always embed
  * it (jsPDF cannot read webp/avif/heic data URLs directly).
@@ -435,14 +453,15 @@ export async function generateApplicationPdf(input: PdfInput): Promise<jsPDF> {
   } else {
     documents.forEach((d) => {
       ensure(18);
-      const isImage = looksLikeImage(d);
+      const attached = looksLikeImage(d) || looksLikePdf(d);
       doc.text(
-        `• ${d.label ?? d.kind.replace(/_/g, " ")} — ${d.file_name ?? "file"}${isImage ? " (attached overleaf)" : ""}`,
+        `• ${d.label ?? d.kind.replace(/_/g, " ")} — ${d.file_name ?? "file"}${attached ? " (attached overleaf)" : ""}`,
         M,
         y,
       );
       y += 15;
     });
+
   }
   y += 10;
 
@@ -524,5 +543,39 @@ export async function generateApplicationPdf(input: PdfInput): Promise<jsPDF> {
 
 export async function downloadApplicationPdf(input: PdfInput) {
   const doc = await generateApplicationPdf(input);
-  doc.save(`KAIVRA-${input.application.reference ?? "application"}.pdf`);
+  const fileName = `KAIVRA-${input.application.reference ?? "application"}.pdf`;
+  const base = doc.output("arraybuffer");
+
+  const pdfDocs = input.documents.filter((d) => looksLikePdf(d));
+  if (pdfDocs.length === 0) {
+    doc.save(fileName);
+    return;
+  }
+
+  try {
+    const { PDFDocument } = await import("pdf-lib");
+    const merged = await PDFDocument.load(base);
+    for (const d of pdfDocs) {
+      const bytes = await fetchBytes(d.id);
+      if (!bytes) continue;
+      try {
+        const attachment = await PDFDocument.load(bytes, { ignoreEncryption: true });
+        const pages = await merged.copyPages(attachment, attachment.getPageIndices());
+        pages.forEach((p) => merged.addPage(p));
+      } catch {
+        /* unreadable attachment — skip */
+      }
+    }
+    const out = await merged.save();
+    const blob = new Blob([out as unknown as BlobPart], { type: "application/pdf" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+  } catch {
+    doc.save(fileName);
+  }
 }
+
