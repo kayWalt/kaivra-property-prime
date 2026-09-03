@@ -417,7 +417,7 @@ export const userFootprint = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await requireAnalytics(context as Caller);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const [{ data: profile }, { data: events }, { data: sessions }, authUser] = await Promise.all([
+    const [{ data: profile }, { data: events }, { data: sessions }] = await Promise.all([
       supabaseAdmin
         .from("profiles")
         .select("id, full_name, email, phone, investor_code, created_at")
