@@ -342,8 +342,12 @@ function AnalyticsDashboard({ canExport }: { canExport: boolean }) {
         </>
       )}
 
-      <Tabs defaultValue="activity">
+      <Tabs defaultValue="people">
         <TabsList>
+          <TabsTrigger value="people">
+            <Users className="mr-2 size-4" aria-hidden />
+            People
+          </TabsTrigger>
           <TabsTrigger value="activity">
             <Activity className="mr-2 size-4" aria-hidden />
             Recent activity
@@ -353,6 +357,11 @@ function AnalyticsDashboard({ canExport }: { canExport: boolean }) {
             Security
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="people" className="space-y-3 pt-4">
+          <PeopleTab range={range} onOpenUser={setProfileUser} />
+        </TabsContent>
+
 
         <TabsContent value="activity" className="space-y-3 pt-4">
           <div className="flex flex-wrap gap-2">
