@@ -53,10 +53,10 @@ export const Route = createFileRoute("/api/public/document-url")({
           if (!doc) return new Response("Unavailable", { status: 503 });
           return Response.json(doc);
         } catch (err) {
-          return new Response(
-            err instanceof Error ? err.message : "Document could not be loaded.",
-            { status: 400 },
-          );
+          console.error("[document-url] resolution failed", err);
+          return new Response("Service temporarily unavailable. Please try again later.", {
+            status: 503,
+          });
         }
       },
     },

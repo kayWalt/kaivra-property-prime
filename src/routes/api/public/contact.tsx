@@ -38,11 +38,13 @@ export const Route = createFileRoute("/api/public/contact")({
           const { recordContactEnquiry } = await import("@/lib/contact.server");
           return Response.json(await recordContactEnquiry(parsed), { headers: corsHeaders });
         } catch (err) {
-          const message =
-            err instanceof Error && err.message
-              ? err.message
-              : "Your enquiry could not be recorded. Please try again.";
-          return Response.json({ error: message }, { status: 400, headers: corsHeaders });
+          // Detailed configuration/runtime failures stay server-side only;
+          // the browser never learns variable names or internal details.
+          console.error("[contact] enquiry could not be recorded", err);
+          return Response.json(
+            { error: "Service temporarily unavailable. Please try again later." },
+            { status: 503, headers: corsHeaders },
+          );
         }
       },
     },
