@@ -543,5 +543,39 @@ export async function generateApplicationPdf(input: PdfInput): Promise<jsPDF> {
 
 export async function downloadApplicationPdf(input: PdfInput) {
   const doc = await generateApplicationPdf(input);
-  doc.save(`KAIVRA-${input.application.reference ?? "application"}.pdf`);
+  const fileName = `KAIVRA-${input.application.reference ?? "application"}.pdf`;
+  const base = doc.output("arraybuffer");
+
+  const pdfDocs = input.documents.filter((d) => looksLikePdf(d));
+  if (pdfDocs.length === 0) {
+    doc.save(fileName);
+    return;
+  }
+
+  try {
+    const { PDFDocument } = await import("pdf-lib");
+    const merged = await PDFDocument.load(base);
+    for (const d of pdfDocs) {
+      const bytes = await fetchBytes(d.id);
+      if (!bytes) continue;
+      try {
+        const attachment = await PDFDocument.load(bytes, { ignoreEncryption: true });
+        const pages = await merged.copyPages(attachment, attachment.getPageIndices());
+        pages.forEach((p) => merged.addPage(p));
+      } catch {
+        /* unreadable attachment — skip */
+      }
+    }
+    const out = await merged.save();
+    const blob = new Blob([out as unknown as BlobPart], { type: "application/pdf" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+  } catch {
+    doc.save(fileName);
+  }
 }
+
