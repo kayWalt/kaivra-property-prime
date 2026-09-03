@@ -763,9 +763,70 @@ function UserFootprintSheet({
               <p className="font-medium">{(data?.profile as any)?.full_name ?? "Unknown user"}</p>
               <p className="text-muted-foreground">{(data?.profile as any)?.email}</p>
               <p className="text-xs text-muted-foreground">
-                {(data?.profile as any)?.investor_code}
+                {[(data?.profile as any)?.investor_code, (data?.profile as any)?.phone]
+                  .filter(Boolean)
+                  .join(" · ")}
               </p>
             </div>
+
+            <div className="rounded-lg border p-3">
+              <p className="mb-2 font-medium">Login details</p>
+              {(data as any)?.login ? (
+                <dl className="space-y-1 text-xs">
+                  <div className="flex justify-between gap-3">
+                    <dt className="text-muted-foreground">Login email</dt>
+                    <dd>{(data as any).login.email ?? "—"}</dd>
+                  </div>
+                  <div className="flex justify-between gap-3">
+                    <dt className="text-muted-foreground">Last sign-in</dt>
+                    <dd>
+                      {(data as any).login.lastSignInAt
+                        ? new Date((data as any).login.lastSignInAt).toLocaleString()
+                        : "Never"}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between gap-3">
+                    <dt className="text-muted-foreground">Account created</dt>
+                    <dd>
+                      {(data as any).login.createdAt
+                        ? new Date((data as any).login.createdAt).toLocaleString()
+                        : "—"}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between gap-3">
+                    <dt className="text-muted-foreground">Email confirmed</dt>
+                    <dd>
+                      {(data as any).login.emailConfirmedAt
+                        ? new Date((data as any).login.emailConfirmedAt).toLocaleDateString()
+                        : "Not confirmed"}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between gap-3">
+                    <dt className="text-muted-foreground">Sign-in methods</dt>
+                    <dd>{((data as any).login.providers ?? []).join(", ") || "email"}</dd>
+                  </div>
+                </dl>
+              ) : (
+                <p className="text-xs text-muted-foreground">No login record available.</p>
+              )}
+            </div>
+
+            <div>
+              <p className="mb-2 font-medium">Pages visited</p>
+              {((data as any)?.pages ?? []).length === 0 ? (
+                <p className="text-muted-foreground">No page views recorded.</p>
+              ) : (
+                ((data as any).pages as any[]).slice(0, 40).map((pg) => (
+                  <div key={pg.route} className="flex justify-between gap-3 border-b py-1 text-xs">
+                    <span className="truncate">{pg.route}</span>
+                    <span className="whitespace-nowrap text-muted-foreground">
+                      {pg.views} views · {new Date(pg.lastAt).toLocaleString()}
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
+
             <div>
               <p className="mb-2 flex items-center gap-2 font-medium">
                 <Eye className="size-4" aria-hidden /> Recent sessions
