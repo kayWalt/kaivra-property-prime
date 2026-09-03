@@ -60,24 +60,59 @@ export interface PdfInput {
   adviserName?: string | null;
 }
 
+const IMAGE_EXT = /\.(png|jpe?g|webp|gif|bmp|avif|heic|heif)$/i;
+
+function looksLikeImage(d: { mime_type: string | null; file_name: string | null; kind: string }) {
+  if ((d.mime_type ?? "").startsWith("image/")) return true;
+  if (d.file_name && IMAGE_EXT.test(d.file_name)) return true;
+  return !d.mime_type && (d.kind === "passport" || d.kind === "signature");
+}
+
+/**
+ * Re-encode any browser-decodable image to PNG/JPEG so jsPDF can always embed
+ * it (jsPDF cannot read webp/avif/heic data URLs directly).
+ */
+async function normaliseImage(blob: Blob): Promise<{ dataUrl: string; format: string } | null> {
+  const objectUrl = URL.createObjectURL(blob);
+  try {
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const el = new Image();
+      el.onload = () => resolve(el);
+      el.onerror = () => reject(new Error("decode failed"));
+      el.src = objectUrl;
+    });
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.min(img.naturalWidth || img.width, 1600));
+    canvas.height = Math.max(
+      1,
+      Math.round(((img.naturalHeight || img.height) * canvas.width) / (img.naturalWidth || img.width)),
+    );
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    return { dataUrl: canvas.toDataURL("image/jpeg", 0.9), format: "JPEG" };
+  } catch {
+    return null;
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
+}
+
 async function fetchImage(documentId: string): Promise<{ dataUrl: string; format: string } | null> {
   try {
-    const { url, mimeType } = await getDocumentUrl({ data: { documentId } });
+    const { url } = await getDocumentUrl({ data: { documentId } });
     const res = await fetch(url);
     if (!res.ok) return null;
     const blob = await res.blob();
-    if (!blob.type.startsWith("image/")) return null;
-    const dataUrl = await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(String(reader.result));
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
-    return { dataUrl, format: (mimeType ?? "image/jpeg").includes("png") ? "PNG" : "JPEG" };
+    if (blob.size === 0) return null;
+    return await normaliseImage(blob);
   } catch {
     return null;
   }
 }
+
 
 const ONYX: [number, number, number] = [26, 32, 29];
 const GOLD: [number, number, number] = [198, 165, 106];
