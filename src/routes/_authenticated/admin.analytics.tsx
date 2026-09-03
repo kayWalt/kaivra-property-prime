@@ -43,6 +43,8 @@ import {
   exportActivityCsv,
   securitySignals,
   userFootprint,
+  visitorDirectory,
+
 } from "@/lib/analytics.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/analytics")({
