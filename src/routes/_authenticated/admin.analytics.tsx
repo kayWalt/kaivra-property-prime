@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -606,8 +606,8 @@ function PeopleTab({
                 const key = p.userId ?? p.visitorId;
                 const open = expanded === key;
                 return (
-                  <>
-                    <tr key={key} className="border-t align-top">
+                  <Fragment key={key}>
+                    <tr className="border-t align-top">
                       <td className="px-3 py-2">
                         {p.userId ? (
                           <button
@@ -664,7 +664,7 @@ function PeopleTab({
                       </td>
                     </tr>
                     {open ? (
-                      <tr key={`${key}-pages`} className="border-t bg-muted/30">
+                      <tr className="border-t bg-muted/30">
                         <td colSpan={6} className="px-3 py-3">
                           <p className="mb-2 text-xs uppercase tracking-wide text-muted-foreground">
                             Pages visited
@@ -688,7 +688,7 @@ function PeopleTab({
                         </td>
                       </tr>
                     ) : null}
-                  </>
+                  </Fragment>
                 );
               })}
             </tbody>

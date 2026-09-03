@@ -268,19 +268,48 @@ export const visitorDirectory = createServerFn({ method: "POST" })
       pages: { route: string; views: number; lastAt: string }[];
     };
 
+    // Resolve device identity: a person who signs in at any point owns every
+    // session recorded from that device, so their earlier "anonymous" visits
+    // are folded into the named person instead of appearing separately.
+    const identity = new Map<string, string>(); // visitor_id -> user_id
+    for (const s of sessions) if (s.visitor_id && s.user_id) identity.set(s.visitor_id, s.user_id);
+    for (const e of events) if (e.visitor_id && e.actor) identity.set(e.visitor_id, e.actor);
+    const visitorIds = [
+      ...new Set([
+        ...sessions.map((s) => s.visitor_id),
+        ...events.map((e) => e.visitor_id),
+      ].filter(Boolean)),
+    ] as string[];
+    const unknown = visitorIds.filter((v) => !identity.has(v));
+    if (unknown.length) {
+      const { data: linked } = await supabaseAdmin
+        .from("visitor_sessions")
+        .select("visitor_id, user_id")
+        .not("user_id", "is", null)
+        .in("visitor_id", unknown.slice(0, 500))
+        .limit(2_000);
+      for (const row of ((linked ?? []) as any[])) {
+        if (row.visitor_id && row.user_id) identity.set(row.visitor_id, row.user_id);
+      }
+    }
+    const keyFor = (visitorId?: string | null, userId?: string | null) =>
+      userId ?? (visitorId ? (identity.get(visitorId) ?? visitorId) : null);
+
     const people = new Map<string, Person>();
     for (const s of sessions) {
-      const key = s.user_id ?? s.visitor_id;
+      const key = keyFor(s.visitor_id, s.user_id);
+      if (!key) continue;
+      const resolvedUser = s.user_id ?? identity.get(s.visitor_id) ?? null;
       const p = people.get(key);
       if (!p) {
         people.set(key, {
           visitorId: s.visitor_id,
-          userId: s.user_id ?? null,
+          userId: resolvedUser,
           name: null,
           email: null,
           phone: null,
           investorCode: null,
-          role: s.user_id ? "user" : "visitor",
+          role: resolvedUser ? "user" : "visitor",
           sessions: 1,
           pageViews: s.page_views ?? 0,
           firstSeen: s.started_at,
@@ -300,8 +329,16 @@ export const visitorDirectory = createServerFn({ method: "POST" })
       } else {
         p.sessions += 1;
         p.pageViews += s.page_views ?? 0;
+        p.userId = p.userId ?? resolvedUser;
         if (s.started_at < p.firstSeen) p.firstSeen = s.started_at;
         if (s.last_seen_at > p.lastSeen) p.lastSeen = s.last_seen_at;
+        p.device = p.device ?? s.device_category;
+        p.browser = p.browser ?? s.browser;
+        p.os = p.os ?? s.os;
+        p.country = p.country ?? s.country;
+        p.locale = p.locale ?? s.locale;
+        p.referrer = p.referrer ?? s.referrer;
+        p.entryPage = p.entryPage ?? s.entry_page;
         p.isReturning = p.isReturning || !!s.is_returning;
       }
     }
@@ -309,18 +346,19 @@ export const visitorDirectory = createServerFn({ method: "POST" })
     // Pages + sign-in signals per person.
     const pageMap = new Map<string, Map<string, { views: number; lastAt: string }>>();
     for (const e of events) {
-      const key = e.actor ?? e.visitor_id;
+      const key = keyFor(e.visitor_id, e.actor);
       if (!key) continue;
+      const resolvedUser = e.actor ?? (e.visitor_id ? identity.get(e.visitor_id) ?? null : null);
       let person = people.get(key);
       if (!person) {
         person = {
           visitorId: e.visitor_id ?? key,
-          userId: e.actor ?? null,
+          userId: resolvedUser,
           name: null,
           email: null,
           phone: null,
           investorCode: null,
-          role: e.actor ? "user" : "visitor",
+          role: resolvedUser ? "user" : "visitor",
           sessions: 0,
           pageViews: 0,
           firstSeen: e.occurred_at,
@@ -339,6 +377,9 @@ export const visitorDirectory = createServerFn({ method: "POST" })
         };
         people.set(key, person);
       }
+      person.userId = person.userId ?? resolvedUser;
+      if (e.occurred_at > person.lastSeen) person.lastSeen = e.occurred_at;
+      if (e.occurred_at < person.firstSeen) person.firstSeen = e.occurred_at;
       if (e.event_type === "sign_in" && (!person.lastSignInEvent || e.occurred_at > person.lastSignInEvent)) {
         person.lastSignInEvent = e.occurred_at;
       }
@@ -360,8 +401,12 @@ export const visitorDirectory = createServerFn({ method: "POST" })
       person.pages = [...routes.entries()]
         .map(([route, v]) => ({ route, views: v.views, lastAt: v.lastAt }))
         .sort((a, b) => b.views - a.views)
-        .slice(0, 25);
+        .slice(0, 50);
+      // Session counters can lag behind the event stream; never under-report.
+      const viewed = person.pages.reduce((a, b) => a + b.views, 0);
+      if (viewed > person.pageViews) person.pageViews = viewed;
     }
+
 
     // Identity for signed-in people.
     const userIds = [...new Set([...people.values()].map((p) => p.userId).filter(Boolean))] as string[];
