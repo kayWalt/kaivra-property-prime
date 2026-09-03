@@ -43,6 +43,8 @@ import {
   exportActivityCsv,
   securitySignals,
   userFootprint,
+  visitorDirectory,
+
 } from "@/lib/analytics.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/analytics")({
@@ -342,8 +344,12 @@ function AnalyticsDashboard({ canExport }: { canExport: boolean }) {
         </>
       )}
 
-      <Tabs defaultValue="activity">
+      <Tabs defaultValue="people">
         <TabsList>
+          <TabsTrigger value="people">
+            <Users className="mr-2 size-4" aria-hidden />
+            People
+          </TabsTrigger>
           <TabsTrigger value="activity">
             <Activity className="mr-2 size-4" aria-hidden />
             Recent activity
@@ -353,6 +359,11 @@ function AnalyticsDashboard({ canExport }: { canExport: boolean }) {
             Security
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="people" className="space-y-3 pt-4">
+          <PeopleTab range={range} onOpenUser={setProfileUser} />
+        </TabsContent>
+
 
         <TabsContent value="activity" className="space-y-3 pt-4">
           <div className="flex flex-wrap gap-2">
@@ -527,6 +538,170 @@ function AnalyticsDashboard({ canExport }: { canExport: boolean }) {
   );
 }
 
+function PeopleTab({
+  range,
+  onOpenUser,
+}: {
+  range: Record<string, unknown>;
+  onOpenUser: (id: string) => void;
+}) {
+  const [search, setSearch] = useState("");
+  const [onlySignedIn, setOnlySignedIn] = useState("all");
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const directoryFn = useServerFn(visitorDirectory);
+
+  const q = useQuery({
+    queryKey: ["analytics-people", range, search, onlySignedIn],
+    queryFn: () =>
+      directoryFn({
+        data: {
+          ...range,
+          ...(search.trim() ? { search: search.trim() } : {}),
+          ...(onlySignedIn === "signed-in" ? { onlySignedIn: true } : {}),
+        } as never,
+      }),
+  });
+
+  const people = (q.data?.people ?? []) as any[];
+
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap gap-2">
+        <Input
+          placeholder="Search name, email, phone, investor ID"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full sm:w-72"
+        />
+        <Select value={onlySignedIn} onValueChange={setOnlySignedIn}>
+          <SelectTrigger className="w-44">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Everyone</SelectItem>
+            <SelectItem value="signed-in">Signed-in users only</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {q.isLoading ? (
+        <Skeleton className="h-64 w-full" />
+      ) : people.length === 0 ? (
+        <EmptyState title="No visitors" body="Nobody visited in this period." />
+      ) : (
+        <div className="overflow-x-auto rounded-lg border">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/50 text-left text-xs uppercase text-muted-foreground">
+              <tr>
+                <th className="px-3 py-2">Person</th>
+                <th className="px-3 py-2">Role</th>
+                <th className="px-3 py-2">Sessions</th>
+                <th className="px-3 py-2">Pages</th>
+                <th className="px-3 py-2">Last seen</th>
+                <th className="px-3 py-2">Context</th>
+              </tr>
+            </thead>
+            <tbody>
+              {people.map((p) => {
+                const key = p.userId ?? p.visitorId;
+                const open = expanded === key;
+                return (
+                  <>
+                    <tr key={key} className="border-t align-top">
+                      <td className="px-3 py-2">
+                        {p.userId ? (
+                          <button
+                            className="font-medium underline underline-offset-2"
+                            onClick={() => onOpenUser(p.userId)}
+                          >
+                            {p.name ?? p.email ?? "Signed-in user"}
+                          </button>
+                        ) : (
+                          <span className="font-medium">Anonymous visitor</span>
+                        )}
+                        <div className="text-xs text-muted-foreground">
+                          {p.email ?? `ID ${String(p.visitorId).slice(0, 10)}…`}
+                        </div>
+                        {p.phone || p.investorCode ? (
+                          <div className="text-xs text-muted-foreground">
+                            {[p.investorCode, p.phone].filter(Boolean).join(" · ")}
+                          </div>
+                        ) : null}
+                      </td>
+                      <td className="px-3 py-2">
+                        <Badge variant={p.userId ? "secondary" : "outline"}>{p.role}</Badge>
+                        {p.failedSignIns > 0 ? (
+                          <div className="mt-1 text-xs text-destructive">
+                            {p.failedSignIns} failed sign-in{p.failedSignIns > 1 ? "s" : ""}
+                          </div>
+                        ) : null}
+                      </td>
+                      <td className="px-3 py-2">
+                        {p.sessions}
+                        <div className="text-xs text-muted-foreground">
+                          {p.isReturning ? "Returning" : "New"}
+                        </div>
+                      </td>
+                      <td className="px-3 py-2">
+                        <button
+                          className="underline underline-offset-2"
+                          onClick={() => setExpanded(open ? null : key)}
+                        >
+                          {p.pages.length} page{p.pages.length === 1 ? "" : "s"}
+                        </button>
+                        <div className="text-xs text-muted-foreground">{p.pageViews} views</div>
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-2 text-muted-foreground">
+                        {new Date(p.lastSeen).toLocaleString()}
+                        {p.lastSignInEvent ? (
+                          <div className="text-xs">
+                            Signed in {new Date(p.lastSignInEvent).toLocaleString()}
+                          </div>
+                        ) : null}
+                      </td>
+                      <td className="px-3 py-2 text-xs text-muted-foreground">
+                        {[p.device, p.browser, p.os, p.country].filter(Boolean).join(" · ")}
+                      </td>
+                    </tr>
+                    {open ? (
+                      <tr key={`${key}-pages`} className="border-t bg-muted/30">
+                        <td colSpan={6} className="px-3 py-3">
+                          <p className="mb-2 text-xs uppercase tracking-wide text-muted-foreground">
+                            Pages visited
+                          </p>
+                          {p.pages.length === 0 ? (
+                            <p className="text-xs text-muted-foreground">
+                              No page views recorded in this period.
+                            </p>
+                          ) : (
+                            <div className="grid gap-1 sm:grid-cols-2">
+                              {p.pages.map((pg: any) => (
+                                <div key={pg.route} className="flex justify-between gap-3 text-xs">
+                                  <span className="truncate">{pg.route}</span>
+                                  <span className="whitespace-nowrap text-muted-foreground">
+                                    {pg.views} · {new Date(pg.lastAt).toLocaleString()}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    ) : null}
+                  </>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+      <p className="text-xs text-muted-foreground">
+        Showing {people.length} of {q.data?.total ?? 0} people.
+      </p>
+    </div>
+  );
+}
+
 function BreakdownCard({ title, rows }: { title: string; rows: { name: string; value: number }[] }) {
   const total = rows.reduce((a, b) => a + b.value, 0) || 1;
   return (
@@ -588,9 +763,70 @@ function UserFootprintSheet({
               <p className="font-medium">{(data?.profile as any)?.full_name ?? "Unknown user"}</p>
               <p className="text-muted-foreground">{(data?.profile as any)?.email}</p>
               <p className="text-xs text-muted-foreground">
-                {(data?.profile as any)?.investor_code}
+                {[(data?.profile as any)?.investor_code, (data?.profile as any)?.phone]
+                  .filter(Boolean)
+                  .join(" · ")}
               </p>
             </div>
+
+            <div className="rounded-lg border p-3">
+              <p className="mb-2 font-medium">Login details</p>
+              {(data as any)?.login ? (
+                <dl className="space-y-1 text-xs">
+                  <div className="flex justify-between gap-3">
+                    <dt className="text-muted-foreground">Login email</dt>
+                    <dd>{(data as any).login.email ?? "—"}</dd>
+                  </div>
+                  <div className="flex justify-between gap-3">
+                    <dt className="text-muted-foreground">Last sign-in</dt>
+                    <dd>
+                      {(data as any).login.lastSignInAt
+                        ? new Date((data as any).login.lastSignInAt).toLocaleString()
+                        : "Never"}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between gap-3">
+                    <dt className="text-muted-foreground">Account created</dt>
+                    <dd>
+                      {(data as any).login.createdAt
+                        ? new Date((data as any).login.createdAt).toLocaleString()
+                        : "—"}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between gap-3">
+                    <dt className="text-muted-foreground">Email confirmed</dt>
+                    <dd>
+                      {(data as any).login.emailConfirmedAt
+                        ? new Date((data as any).login.emailConfirmedAt).toLocaleDateString()
+                        : "Not confirmed"}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between gap-3">
+                    <dt className="text-muted-foreground">Sign-in methods</dt>
+                    <dd>{((data as any).login.providers ?? []).join(", ") || "email"}</dd>
+                  </div>
+                </dl>
+              ) : (
+                <p className="text-xs text-muted-foreground">No login record available.</p>
+              )}
+            </div>
+
+            <div>
+              <p className="mb-2 font-medium">Pages visited</p>
+              {((data as any)?.pages ?? []).length === 0 ? (
+                <p className="text-muted-foreground">No page views recorded.</p>
+              ) : (
+                ((data as any).pages as any[]).slice(0, 40).map((pg) => (
+                  <div key={pg.route} className="flex justify-between gap-3 border-b py-1 text-xs">
+                    <span className="truncate">{pg.route}</span>
+                    <span className="whitespace-nowrap text-muted-foreground">
+                      {pg.views} views · {new Date(pg.lastAt).toLocaleString()}
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
+
             <div>
               <p className="mb-2 flex items-center gap-2 font-medium">
                 <Eye className="size-4" aria-hidden /> Recent sessions
