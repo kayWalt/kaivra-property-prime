@@ -386,6 +386,7 @@ export async function generateApplicationPdf(input: PdfInput): Promise<jsPDF> {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   doc.setTextColor(...ONYX);
+  const imageDocs = documents.filter((d) => (d.mime_type ?? "").startsWith("image/"));
   if (documents.length === 0) {
     doc.setTextColor(...GREY);
     doc.text("No documents uploaded.", M, y);
@@ -393,7 +394,12 @@ export async function generateApplicationPdf(input: PdfInput): Promise<jsPDF> {
   } else {
     documents.forEach((d) => {
       ensure(18);
-      doc.text(`• ${d.label ?? d.kind.replace(/_/g, " ")} — ${d.file_name ?? "file"}`, M, y);
+      const isImage = (d.mime_type ?? "").startsWith("image/");
+      doc.text(
+        `• ${d.label ?? d.kind.replace(/_/g, " ")} — ${d.file_name ?? "file"}${isImage ? " (attached overleaf)" : ""}`,
+        M,
+        y,
+      );
       y += 15;
     });
   }
