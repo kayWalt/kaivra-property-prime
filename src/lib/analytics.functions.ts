@@ -202,37 +202,284 @@ export const activityFeed = createServerFn({ method: "POST" })
     return { items, total: count ?? items.length };
   });
 
+/**
+ * Every person (identified user or anonymous visitor) seen in the window, with
+ * the pages they visited. Super Admin only, like every other analytics read.
+ */
+export const visitorDirectory = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) =>
+    rangeSchema
+      .extend({
+        search: z.string().trim().max(80).optional(),
+        onlySignedIn: z.boolean().optional(),
+      })
+      .parse(d ?? {}),
+  )
+  .handler(async ({ data, context }) => {
+    await requireAnalytics(context as Caller);
+    const { fromIso, toIso } = window(data);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const [{ data: sessionRows }, { data: eventRows }] = await Promise.all([
+      supabaseAdmin
+        .from("visitor_sessions")
+        .select(
+          "session_id, visitor_id, user_id, is_authenticated, is_returning, started_at, last_seen_at, page_views, entry_page, exit_page, referrer, device_category, browser, os, country, region, locale",
+        )
+        .gte("started_at", fromIso)
+        .lte("started_at", toIso)
+        .order("started_at", { ascending: false })
+        .limit(20_000),
+      supabaseAdmin
+        .from("activity_events")
+        .select("visitor_id, actor, route, event_type, occurred_at, result")
+        .gte("occurred_at", fromIso)
+        .lte("occurred_at", toIso)
+        .order("occurred_at", { ascending: false })
+        .limit(20_000),
+    ]);
+
+    const sessions = (sessionRows ?? []) as any[];
+    const events = (eventRows ?? []) as any[];
+
+    type Person = {
+      visitorId: string;
+      userId: string | null;
+      name: string | null;
+      email: string | null;
+      phone: string | null;
+      investorCode: string | null;
+      role: string;
+      sessions: number;
+      pageViews: number;
+      firstSeen: string;
+      lastSeen: string;
+      device: string | null;
+      browser: string | null;
+      os: string | null;
+      country: string | null;
+      locale: string | null;
+      referrer: string | null;
+      entryPage: string | null;
+      isReturning: boolean;
+      lastSignInEvent: string | null;
+      failedSignIns: number;
+      pages: { route: string; views: number; lastAt: string }[];
+    };
+
+    const people = new Map<string, Person>();
+    for (const s of sessions) {
+      const key = s.user_id ?? s.visitor_id;
+      const p = people.get(key);
+      if (!p) {
+        people.set(key, {
+          visitorId: s.visitor_id,
+          userId: s.user_id ?? null,
+          name: null,
+          email: null,
+          phone: null,
+          investorCode: null,
+          role: s.user_id ? "user" : "visitor",
+          sessions: 1,
+          pageViews: s.page_views ?? 0,
+          firstSeen: s.started_at,
+          lastSeen: s.last_seen_at,
+          device: s.device_category,
+          browser: s.browser,
+          os: s.os,
+          country: s.country,
+          locale: s.locale,
+          referrer: s.referrer,
+          entryPage: s.entry_page,
+          isReturning: !!s.is_returning,
+          lastSignInEvent: null,
+          failedSignIns: 0,
+          pages: [],
+        });
+      } else {
+        p.sessions += 1;
+        p.pageViews += s.page_views ?? 0;
+        if (s.started_at < p.firstSeen) p.firstSeen = s.started_at;
+        if (s.last_seen_at > p.lastSeen) p.lastSeen = s.last_seen_at;
+        p.isReturning = p.isReturning || !!s.is_returning;
+      }
+    }
+
+    // Pages + sign-in signals per person.
+    const pageMap = new Map<string, Map<string, { views: number; lastAt: string }>>();
+    for (const e of events) {
+      const key = e.actor ?? e.visitor_id;
+      if (!key) continue;
+      let person = people.get(key);
+      if (!person) {
+        person = {
+          visitorId: e.visitor_id ?? key,
+          userId: e.actor ?? null,
+          name: null,
+          email: null,
+          phone: null,
+          investorCode: null,
+          role: e.actor ? "user" : "visitor",
+          sessions: 0,
+          pageViews: 0,
+          firstSeen: e.occurred_at,
+          lastSeen: e.occurred_at,
+          device: null,
+          browser: null,
+          os: null,
+          country: null,
+          locale: null,
+          referrer: null,
+          entryPage: null,
+          isReturning: false,
+          lastSignInEvent: null,
+          failedSignIns: 0,
+          pages: [],
+        };
+        people.set(key, person);
+      }
+      if (e.event_type === "sign_in" && (!person.lastSignInEvent || e.occurred_at > person.lastSignInEvent)) {
+        person.lastSignInEvent = e.occurred_at;
+      }
+      if (e.event_type === "sign_in_failed" || e.event_type === "google_sign_in_failed") {
+        person.failedSignIns += 1;
+      }
+      if (e.event_type === "page_view" && e.route) {
+        const routes = pageMap.get(key) ?? new Map();
+        const entry = routes.get(e.route) ?? { views: 0, lastAt: e.occurred_at };
+        entry.views += 1;
+        if (e.occurred_at > entry.lastAt) entry.lastAt = e.occurred_at;
+        routes.set(e.route, entry);
+        pageMap.set(key, routes);
+      }
+    }
+    for (const [key, routes] of pageMap) {
+      const person = people.get(key);
+      if (!person) continue;
+      person.pages = [...routes.entries()]
+        .map(([route, v]) => ({ route, views: v.views, lastAt: v.lastAt }))
+        .sort((a, b) => b.views - a.views)
+        .slice(0, 25);
+    }
+
+    // Identity for signed-in people.
+    const userIds = [...new Set([...people.values()].map((p) => p.userId).filter(Boolean))] as string[];
+    if (userIds.length) {
+      const [{ data: profiles }, { data: roleRows }] = await Promise.all([
+        supabaseAdmin
+          .from("profiles")
+          .select("id, full_name, email, phone, investor_code")
+          .in("id", userIds),
+        supabaseAdmin.from("user_roles").select("user_id, role").in("user_id", userIds),
+      ]);
+      const roleFor = new Map<string, string[]>();
+      for (const r of ((roleRows ?? []) as any[])) {
+        roleFor.set(r.user_id, [...(roleFor.get(r.user_id) ?? []), r.role]);
+      }
+      const profileFor = new Map(((profiles ?? []) as any[]).map((p) => [p.id, p]));
+      for (const person of people.values()) {
+        if (!person.userId) continue;
+        const prof = profileFor.get(person.userId);
+        if (prof) {
+          person.name = prof.full_name ?? null;
+          person.email = prof.email ?? null;
+          person.phone = prof.phone ?? null;
+          person.investorCode = prof.investor_code ?? null;
+        }
+        const list = roleFor.get(person.userId) ?? [];
+        person.role = list.includes("super_admin")
+          ? "super_admin"
+          : list.includes("admin")
+            ? "admin"
+            : list.includes("adviser")
+              ? "adviser"
+              : "investor";
+      }
+    }
+
+    let rows = [...people.values()].sort((a, b) => b.lastSeen.localeCompare(a.lastSeen));
+    if (data.onlySignedIn) rows = rows.filter((r) => r.userId);
+    if (data.search) {
+      const q = data.search.toLowerCase();
+      rows = rows.filter((r) =>
+        [r.name, r.email, r.phone, r.investorCode, r.visitorId, r.country]
+          .filter(Boolean)
+          .some((v) => String(v).toLowerCase().includes(q)),
+      );
+    }
+    return { people: rows.slice(0, 300), total: rows.length };
+  });
+
 export const userFootprint = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => z.object({ userId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     await requireAnalytics(context as Caller);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const [{ data: profile }, { data: events }, { data: sessions }] = await Promise.all([
+    const [{ data: profile }, { data: events }, { data: sessions }, authUser] = await Promise.all([
       supabaseAdmin
         .from("profiles")
-        .select("id, full_name, email, investor_code, created_at")
+        .select("id, full_name, email, phone, investor_code, created_at")
         .eq("id", data.userId)
         .maybeSingle(),
       supabaseAdmin
         .from("activity_events")
-        .select("id, occurred_at, event_type, event_category, severity, result, route, device_category, country")
+        .select("id, occurred_at, event_type, event_category, severity, result, route, device_category, browser, os, country")
         .eq("actor", data.userId)
         .order("occurred_at", { ascending: false })
-        .limit(100),
+        .limit(200),
       supabaseAdmin
         .from("visitor_sessions")
-        .select("session_id, started_at, last_seen_at, page_views, device_category, browser, os, country")
+        .select("session_id, started_at, last_seen_at, page_views, entry_page, exit_page, referrer, device_category, browser, os, country")
         .eq("user_id", data.userId)
         .order("started_at", { ascending: false })
         .limit(25),
     ]);
+
+    // Login details straight from the auth records (server-side only).
+    let login: {
+      email: string | null;
+      lastSignInAt: string | null;
+      createdAt: string | null;
+      emailConfirmedAt: string | null;
+      providers: string[];
+    } | null = null;
+    try {
+      const { data: au } = await supabaseAdmin.auth.admin.getUserById(data.userId);
+      if (au?.user) {
+        login = {
+          email: au.user.email ?? null,
+          lastSignInAt: au.user.last_sign_in_at ?? null,
+          createdAt: au.user.created_at ?? null,
+          emailConfirmedAt: (au.user as any).email_confirmed_at ?? null,
+          providers: ((au.user.app_metadata as any)?.providers ?? []) as string[],
+        };
+      }
+    } catch {
+      login = null;
+    }
+
+    const pageCounts = new Map<string, { views: number; lastAt: string }>();
+    for (const e of ((events ?? []) as any[])) {
+      if (e.event_type !== "page_view" || !e.route) continue;
+      const entry = pageCounts.get(e.route) ?? { views: 0, lastAt: e.occurred_at };
+      entry.views += 1;
+      if (e.occurred_at > entry.lastAt) entry.lastAt = e.occurred_at;
+      pageCounts.set(e.route, entry);
+    }
+
     return {
       profile: profile ?? null,
+      login,
+      pages: [...pageCounts.entries()]
+        .map(([route, v]) => ({ route, views: v.views, lastAt: v.lastAt }))
+        .sort((a, b) => b.views - a.views),
       events: (events ?? []) as any[],
       sessions: (sessions ?? []) as any[],
     };
   });
+
 
 export const securitySignals = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
