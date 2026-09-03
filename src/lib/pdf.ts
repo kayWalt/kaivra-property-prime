@@ -453,14 +453,15 @@ export async function generateApplicationPdf(input: PdfInput): Promise<jsPDF> {
   } else {
     documents.forEach((d) => {
       ensure(18);
-      const isImage = looksLikeImage(d);
+      const attached = looksLikeImage(d) || looksLikePdf(d);
       doc.text(
-        `• ${d.label ?? d.kind.replace(/_/g, " ")} — ${d.file_name ?? "file"}${isImage ? " (attached overleaf)" : ""}`,
+        `• ${d.label ?? d.kind.replace(/_/g, " ")} — ${d.file_name ?? "file"}${attached ? " (attached overleaf)" : ""}`,
         M,
         y,
       );
       y += 15;
     });
+
   }
   y += 10;
 
