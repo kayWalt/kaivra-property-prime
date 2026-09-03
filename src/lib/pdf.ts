@@ -171,11 +171,17 @@ export async function generateApplicationPdf(input: PdfInput): Promise<jsPDF> {
     .reduce((sum, p) => sum + Number(p.amount ?? 0), 0);
   const outstanding = Math.max(0, totalValue - paid);
 
+  const imageCache = new Map<string, Promise<{ dataUrl: string; format: string } | null>>();
+  const getImage = (id: string) => {
+    if (!imageCache.has(id)) imageCache.set(id, fetchImage(id));
+    return imageCache.get(id)!;
+  };
+
   const passport = documents.find((d) => d.kind === "passport");
   const signature = documents.find((d) => d.kind === "signature");
   const [passportImg, signatureImg] = await Promise.all([
-    passport ? fetchImage(passport.id) : Promise.resolve(null),
-    signature ? fetchImage(signature.id) : Promise.resolve(null),
+    passport ? getImage(passport.id) : Promise.resolve(null),
+    signature ? getImage(signature.id) : Promise.resolve(null),
   ]);
 
   function footer() {
