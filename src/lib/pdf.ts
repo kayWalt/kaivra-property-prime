@@ -442,6 +442,39 @@ export async function generateApplicationPdf(input: PdfInput): Promise<jsPDF> {
   doc.setFontSize(9);
   doc.text(personal.full_name ?? input.investorName, M, y + 88);
 
+  // ---------- Appendix: embed every uploaded image document ----------
+  const appendixImages = await Promise.all(imageDocs.map(async (d) => ({ doc: d, img: await fetchImage(d.id) })));
+  for (const { doc: d, img } of appendixImages) {
+    if (!img) continue;
+    try {
+      const props = doc.getImageProperties(img.dataUrl);
+      doc.addPage();
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.setTextColor(...GREY);
+      doc.text("ATTACHED DOCUMENT", M, M);
+      doc.setFont("times", "normal");
+      doc.setFontSize(13);
+      doc.setTextColor(...ONYX);
+      doc.text(doc.splitTextToSize(d.label ?? d.kind.replace(/_/g, " "), W - M * 2)[0] ?? "", M, M + 16);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      doc.setTextColor(...GREY);
+      doc.text(d.file_name ?? "", M, M + 30);
+
+      const maxW = W - M * 2;
+      const maxH = H - M * 2 - 56;
+      const ratio = Math.min(maxW / props.width, maxH / props.height);
+      const imgW = props.width * ratio;
+      const imgH = props.height * ratio;
+      doc.addImage(img.dataUrl, img.format, (W - imgW) / 2, M + 44, imgW, imgH);
+      doc.setDrawColor(220, 218, 210);
+      doc.rect((W - imgW) / 2, M + 44, imgW, imgH);
+    } catch {
+      /* image unusable — skip this attachment page */
+    }
+  }
+
   footer();
   return doc;
 }
