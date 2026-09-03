@@ -68,6 +68,24 @@ function looksLikeImage(d: { mime_type: string | null; file_name: string | null;
   return !d.mime_type && (d.kind === "passport" || d.kind === "signature");
 }
 
+function looksLikePdf(d: { mime_type: string | null; file_name: string | null }) {
+  if ((d.mime_type ?? "").includes("pdf")) return true;
+  return !!d.file_name && /\.pdf$/i.test(d.file_name);
+}
+
+async function fetchBytes(documentId: string): Promise<ArrayBuffer | null> {
+  try {
+    const { url } = await getDocumentUrl({ data: { documentId } });
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const buf = await res.arrayBuffer();
+    return buf.byteLength ? buf : null;
+  } catch {
+    return null;
+  }
+}
+
+
 /**
  * Re-encode any browser-decodable image to PNG/JPEG so jsPDF can always embed
  * it (jsPDF cannot read webp/avif/heic data URLs directly).
