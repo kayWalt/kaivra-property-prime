@@ -484,7 +484,9 @@ export async function generateApplicationPdf(input: PdfInput): Promise<jsPDF> {
   doc.text(personal.full_name ?? input.investorName, M, y + 88);
 
   // ---------- Appendix: embed every uploaded image document ----------
-  const appendixImages = await Promise.all(imageDocs.map(async (d) => ({ doc: d, img: await fetchImage(d.id) })));
+  const appendixImages = await Promise.all(
+    imageDocs.map(async (d) => ({ doc: d, img: await getImage(d.id) })),
+  );
   for (const { doc: d, img } of appendixImages) {
     if (!img) continue;
     try {
