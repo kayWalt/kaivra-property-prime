@@ -421,7 +421,7 @@ export async function generateApplicationPdf(input: PdfInput): Promise<jsPDF> {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   doc.setTextColor(...ONYX);
-  const imageDocs = documents.filter((d) => (d.mime_type ?? "").startsWith("image/"));
+  const imageDocs = documents.filter(looksLikeImage);
   if (documents.length === 0) {
     doc.setTextColor(...GREY);
     doc.text("No documents uploaded.", M, y);
@@ -429,7 +429,7 @@ export async function generateApplicationPdf(input: PdfInput): Promise<jsPDF> {
   } else {
     documents.forEach((d) => {
       ensure(18);
-      const isImage = (d.mime_type ?? "").startsWith("image/");
+      const isImage = looksLikeImage(d);
       doc.text(
         `• ${d.label ?? d.kind.replace(/_/g, " ")} — ${d.file_name ?? "file"}${isImage ? " (attached overleaf)" : ""}`,
         M,
