@@ -149,6 +149,9 @@ export function UploadCard({
     }
     setBusy(true);
     setProgress(20);
+    // A single-slot card replaces its file: remember what was there so the old
+    // version can be cleared once the new one is stored.
+    const replaced = multiple ? [] : existing.map((d) => d.id);
     try {
       // Uploads are independent — run them concurrently instead of queueing.
       await Promise.all(
@@ -163,6 +166,7 @@ export function UploadCard({
           setProgress((p) => Math.min(90, p + 60 / list.length));
         }),
       );
+      await removeDocuments(replaced);
       setProgress(100);
       toast.success(`${title} uploaded`);
       onChanged();
