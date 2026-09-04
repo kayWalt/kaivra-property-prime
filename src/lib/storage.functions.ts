@@ -28,13 +28,32 @@ export const createUploadTicket = createServerFn({ method: "POST" })
     if (!allowed) throw new Error("You do not have permission to upload to this application.");
 
     const path = buildDocPath(data.applicationId, data.kind, data.fileName);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: ticket, error } = await supabaseAdmin.storage
-      .from(DOCS_BUCKET)
-      .createSignedUploadUrl(path);
-    if (error || !ticket) throw new Error("Upload could not be prepared. Please try again.");
-    return { path, token: ticket.token, bucket: DOCS_BUCKET };
+
+    // Preferred: sign with the caller's own client. Storage RLS already limits
+    // this bucket to the owner and authorised staff, so no server secret is
+    // needed and every deployment behaves identically.
+    try {
+      const { data: mine } = await context.supabase.storage
+        .from(DOCS_BUCKET)
+        .createSignedUploadUrl(path);
+      if (mine?.token) return { path, token: mine.token, bucket: DOCS_BUCKET };
+    } catch (err) {
+      console.error("[storage] caller upload signing failed", err);
+    }
+
+    try {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { data: ticket, error } = await supabaseAdmin.storage
+        .from(DOCS_BUCKET)
+        .createSignedUploadUrl(path);
+      if (error || !ticket) throw new Error("no ticket");
+      return { path, token: ticket.token, bucket: DOCS_BUCKET };
+    } catch (err) {
+      console.error("[storage] upload signing unavailable", err);
+      throw new Error("Upload could not be prepared. Please try again.");
+    }
   });
+
 
 export const getDocumentUrl = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
