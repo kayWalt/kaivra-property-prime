@@ -171,8 +171,12 @@ function useUnreadCount(userId?: string) {
   return useQuery({
     queryKey: ["notifications", "unread", userId],
     enabled: !!userId,
-    staleTime: 60_000,
-    refetchInterval: 120_000,
+    staleTime: 0,
+    refetchInterval: 30_000,
+    refetchIntervalInBackground: true,
+    refetchOnWindowFocus: true,
+    refetchOnMount: "always",
+    refetchOnReconnect: true,
     queryFn: async () => {
       const { count, error } = await supabase
         .from("notifications")
