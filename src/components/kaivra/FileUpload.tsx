@@ -244,7 +244,10 @@ export function UploadCard({
                   size="icon"
                   variant="ghost"
                   aria-label={`View ${doc.file_name}`}
-                  onClick={() => openDocument(doc.id)}
+                  onClick={async () => {
+                    const ok = await openDocument(doc.id);
+                    if (!ok) onChanged();
+                  }}
                 >
                   <Eye className="size-4" />
                 </AsyncButton>
