@@ -29,7 +29,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { UploadCard, uploadDocument, type UploadedDoc } from "@/components/kaivra/FileUpload";
+import {
+  UploadCard,
+  uploadDocument,
+  removeDocuments,
+  type UploadedDoc,
+} from "@/components/kaivra/FileUpload";
 import { SignaturePad } from "@/components/kaivra/SignaturePad";
 import { PaymentBadge } from "@/components/kaivra/StatusBadge";
 import { useProfile, useRoles, useSession, primaryRole } from "@/hooks/useAuth";
