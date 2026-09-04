@@ -1827,6 +1827,13 @@ function StepPayment({
               <Plus className="mr-2 size-4" />
               Add payment
             </AsyncButton>
+            {form.amount <= 0 || (accountRequired && !form.payment_account_id) ? (
+              <p className="mt-2 text-xs text-muted-foreground">
+                {accountRequired && !form.payment_account_id
+                  ? "Choose the account you paid into and enter the amount to add this payment."
+                  : "Enter the amount you paid to add this payment."}
+              </p>
+            ) : null}
           </div>
         ) : null}
       </section>
