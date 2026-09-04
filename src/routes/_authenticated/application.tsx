@@ -1891,6 +1891,7 @@ function StepDocuments({
                   saving={savingSignature}
                   onSave={async (blob) => {
                     setSavingSignature(true);
+                    const replaced = signatureDocs.map((d) => d.id);
                     try {
                       await uploadDocument({
                         applicationId,
@@ -1899,6 +1900,7 @@ function StepDocuments({
                         fileName: "investor-signature.png",
                         label: "Investor Signature",
                       });
+                      await removeDocuments(replaced);
                       toast.success("Signature saved.");
                       onChanged();
                       setDrawMode(false);
