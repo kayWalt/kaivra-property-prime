@@ -171,8 +171,12 @@ function useUnreadCount(userId?: string) {
   return useQuery({
     queryKey: ["notifications", "unread", userId],
     enabled: !!userId,
-    staleTime: 60_000,
-    refetchInterval: 120_000,
+    staleTime: 0,
+    refetchInterval: 30_000,
+    refetchIntervalInBackground: true,
+    refetchOnWindowFocus: true,
+    refetchOnMount: "always",
+    refetchOnReconnect: true,
     queryFn: async () => {
       const { count, error } = await supabase
         .from("notifications")
@@ -266,8 +270,36 @@ export function AppShell({ children }: { children: ReactNode }) {
           void queryClient.invalidateQueries({ queryKey: ["notifications"] });
         },
       )
+      // Any later change (marked read elsewhere, removed) also refreshes the badge.
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "notifications",
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          void queryClient.invalidateQueries({ queryKey: ["notifications"] });
+        },
+      )
       .subscribe();
+
+    // Realtime can drop silently (sleep, tab restore, flaky network); re-check
+    // whenever the tab becomes visible or the connection returns.
+    const refresh = () => {
+      void queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    };
+    const onVisible = () => {
+      if (document.visibilityState === "visible") refresh();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", refresh);
+    window.addEventListener("online", refresh);
     return () => {
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", refresh);
+      window.removeEventListener("online", refresh);
       void supabase.removeChannel(channel);
     };
   }, [user?.id, queryClient, navigate]);
