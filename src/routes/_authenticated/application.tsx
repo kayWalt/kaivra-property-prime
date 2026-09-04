@@ -29,7 +29,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { UploadCard, uploadDocument, type UploadedDoc } from "@/components/kaivra/FileUpload";
+import {
+  UploadCard,
+  uploadDocument,
+  removeDocuments,
+  type UploadedDoc,
+} from "@/components/kaivra/FileUpload";
 import { SignaturePad } from "@/components/kaivra/SignaturePad";
 import { PaymentBadge } from "@/components/kaivra/StatusBadge";
 import { useProfile, useRoles, useSession, primaryRole } from "@/hooks/useAuth";
@@ -1822,6 +1827,13 @@ function StepPayment({
               <Plus className="mr-2 size-4" />
               Add payment
             </AsyncButton>
+            {form.amount <= 0 || (accountRequired && !form.payment_account_id) ? (
+              <p className="mt-2 text-xs text-muted-foreground">
+                {accountRequired && !form.payment_account_id
+                  ? "Choose the account you paid into and enter the amount to add this payment."
+                  : "Enter the amount you paid to add this payment."}
+              </p>
+            ) : null}
           </div>
         ) : null}
       </section>
@@ -1891,6 +1903,7 @@ function StepDocuments({
                   saving={savingSignature}
                   onSave={async (blob) => {
                     setSavingSignature(true);
+                    const replaced = signatureDocs.map((d) => d.id);
                     try {
                       await uploadDocument({
                         applicationId,
@@ -1899,6 +1912,7 @@ function StepDocuments({
                         fileName: "investor-signature.png",
                         label: "Investor Signature",
                       });
+                      await removeDocuments(replaced);
                       toast.success("Signature saved.");
                       onChanged();
                       setDrawMode(false);
