@@ -299,22 +299,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
           <div className="ml-auto flex shrink-0 items-center gap-1 lg:ml-0">
             {role === "admin" || role === "super_admin" ? <ShareQrButton /> : null}
-            <Button
-              asChild
-              variant="ghost"
-              size="icon"
-              aria-label="Notifications"
-              className="relative"
-            >
-              <Link to="/notifications">
-                <Bell className="size-5" />
-                {unread.data ? (
-                  <span className="absolute right-1 top-1 min-w-4 rounded-full bg-primary px-1 text-[0.6rem] font-bold leading-4 text-primary-foreground">
-                    {unread.data > 9 ? "9+" : unread.data}
-                  </span>
-                ) : null}
-              </Link>
-            </Button>
+            <NotificationBell userId={user?.id} />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" aria-label="Account" className="rounded-full">
