@@ -85,10 +85,25 @@ export async function uploadDocument(options: {
   return data;
 }
 
+/**
+ * Single-slot documents (passport, signature) must not stack up: once the new
+ * file is safely stored, drop the versions it replaced. Best-effort — a failed
+ * clean-up must never make a successful upload look broken.
+ */
+export async function removeDocuments(ids: string[]) {
+  if (ids.length === 0) return;
+  try {
+    await supabase.from("application_documents").delete().in("id", ids);
+  } catch {
+    /* ignore */
+  }
+}
+
 export async function openDocument(documentId: string) {
   const { url } = await getDocumentUrl({ data: { documentId } });
   window.open(url, "_blank", "noopener,noreferrer");
 }
+
 
 export function UploadCard({
   title,
