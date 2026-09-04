@@ -99,9 +99,20 @@ export async function removeDocuments(ids: string[]) {
   }
 }
 
+/**
+ * Opens a stored document. A file that has since been replaced or removed is a
+ * normal outcome (the on-screen list can be a moment out of date), so it is
+ * reported to the person calmly instead of surfacing as a crash.
+ */
 export async function openDocument(documentId: string) {
-  const { url } = await getDocumentUrl({ data: { documentId } });
-  window.open(url, "_blank", "noopener,noreferrer");
+  try {
+    const { url } = await getDocumentUrl({ data: { documentId } });
+    window.open(url, "_blank", "noopener,noreferrer");
+    return true;
+  } catch {
+    toast.error("That file is no longer available. Please refresh and try again.");
+    return false;
+  }
 }
 
 
