@@ -17,7 +17,12 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { uploadDocument } from "@/components/kaivra/FileUpload";
-import { logEvent, notifyStaffForProject } from "@/lib/applications";
+import {
+  DUPLICATE_REFERENCE_MESSAGE,
+  isDuplicateReferenceError,
+  logEvent,
+  notifyStaffForProject,
+} from "@/lib/applications";
 import { accountLabel, useActivePaymentAccounts } from "@/lib/payment-accounts";
 import { PAYMENT_METHODS, type PaymentMethod } from "@/lib/kaivra";
 
@@ -120,7 +125,16 @@ export function AddPaymentDialog({
       reset();
       setOpen(false);
       onDone();
-    } catch {
+    } catch (err) {
+      if (isDuplicateReferenceError(err)) {
+        toast.error(DUPLICATE_REFERENCE_MESSAGE);
+        void logEvent(
+          applicationId,
+          "payment_duplicate_reference_rejected",
+          `Duplicate payment reference "${payRef.trim()}" rejected`,
+        );
+        return;
+      }
       toast.error("Your payment could not be recorded. Please try again.");
     }
   }

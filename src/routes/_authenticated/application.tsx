@@ -39,8 +39,10 @@ import { SignaturePad } from "@/components/kaivra/SignaturePad";
 import { PaymentBadge } from "@/components/kaivra/StatusBadge";
 import { useProfile, useRoles, useSession, primaryRole } from "@/hooks/useAuth";
 import {
+  DUPLICATE_REFERENCE_MESSAGE,
   fetchDocuments,
   fetchPayments,
+  isDuplicateReferenceError,
   logEvent,
   notifyStaffForProject,
   totals,
@@ -577,6 +579,15 @@ function ApplicationWizard() {
     });
 
     if (error) {
+      if (isDuplicateReferenceError(error)) {
+        toast.error(DUPLICATE_REFERENCE_MESSAGE);
+        void logEvent(
+          applicationId,
+          "payment_duplicate_reference_rejected",
+          `Duplicate payment reference "${(form.reference ?? "").trim()}" rejected`,
+        );
+        return false;
+      }
       toast.error(`Your payment record could not be saved. ${error.message}`);
       return false;
     }
