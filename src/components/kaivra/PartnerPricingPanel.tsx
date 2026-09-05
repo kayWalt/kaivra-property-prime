@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { Handshake } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { formatNaira, ROLE_LABEL, type AppRole } from "@/lib/kaivra";
 import {
   APPROVAL_LABEL,
