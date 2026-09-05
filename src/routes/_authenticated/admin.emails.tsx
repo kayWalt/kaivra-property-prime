@@ -29,6 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { PromotionsPanel } from "@/components/kaivra/PromotionsPanel";
 import { useRoles, useSession, primaryRole } from "@/hooks/useAuth";
 
 /**
@@ -179,6 +180,7 @@ function AdminEmailsPage() {
       <Tabs defaultValue="compose">
         <TabsList>
           <TabsTrigger value="compose">Announcement</TabsTrigger>
+          <TabsTrigger value="promotions">Promotions</TabsTrigger>
           <TabsTrigger value="operations">Operations</TabsTrigger>
           <TabsTrigger value="log">Delivery log</TabsTrigger>
         </TabsList>
@@ -300,6 +302,10 @@ function AdminEmailsPage() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="promotions" className="mt-4">
+          <PromotionsPanel />
         </TabsContent>
 
         <TabsContent value="operations" className="mt-4">
