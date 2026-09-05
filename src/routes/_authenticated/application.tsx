@@ -1267,7 +1267,9 @@ function PropertyCard({
       )}
     >
       <div className="relative">
+        <PlotPriceTag sizeLabel={property.size_label} price={property.unit_price} />
         <img
+
           src={current}
           alt={property.name}
           loading="lazy"
