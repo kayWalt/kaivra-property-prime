@@ -393,6 +393,56 @@ export type Database = {
           },
         ]
       }
+      application_installments: {
+        Row: {
+          amount_due: number
+          application_id: string
+          cancelled_at: string | null
+          created_at: string
+          created_by: string | null
+          due_date: string
+          id: string
+          label: string
+          sequence: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount_due: number
+          application_id: string
+          cancelled_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          due_date: string
+          id?: string
+          label?: string
+          sequence?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount_due?: number
+          application_id?: string
+          cancelled_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          due_date?: string
+          id?: string
+          label?: string
+          sequence?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "application_installments_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       application_payments: {
         Row: {
           amount: number
@@ -927,19 +977,28 @@ export type Database = {
       }
       email_preferences: {
         Row: {
+          campaigns_opt_in: boolean
           marketing_opt_in: boolean
+          new_property_opt_in: boolean
+          promotions_opt_in: boolean
           unsubscribe_token: string
           updated_at: string
           user_id: string
         }
         Insert: {
+          campaigns_opt_in?: boolean
           marketing_opt_in?: boolean
+          new_property_opt_in?: boolean
+          promotions_opt_in?: boolean
           unsubscribe_token?: string
           updated_at?: string
           user_id: string
         }
         Update: {
+          campaigns_opt_in?: boolean
           marketing_opt_in?: boolean
+          new_property_opt_in?: boolean
+          promotions_opt_in?: boolean
           unsubscribe_token?: string
           updated_at?: string
           user_id?: string
@@ -1242,6 +1301,84 @@ export type Database = {
         }
         Relationships: []
       }
+      promotions: {
+        Row: {
+          audience: string
+          created_at: string
+          created_by: string | null
+          cta_label: string | null
+          cta_url: string | null
+          description: string
+          ends_at: string | null
+          id: string
+          image_url: string | null
+          project_id: string | null
+          property_id: string | null
+          queued_count: number
+          sent_at: string | null
+          starts_at: string | null
+          status: string
+          subject: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          audience?: string
+          created_at?: string
+          created_by?: string | null
+          cta_label?: string | null
+          cta_url?: string | null
+          description: string
+          ends_at?: string | null
+          id?: string
+          image_url?: string | null
+          project_id?: string | null
+          property_id?: string | null
+          queued_count?: number
+          sent_at?: string | null
+          starts_at?: string | null
+          status?: string
+          subject: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          audience?: string
+          created_at?: string
+          created_by?: string | null
+          cta_label?: string | null
+          cta_url?: string | null
+          description?: string
+          ends_at?: string | null
+          id?: string
+          image_url?: string | null
+          project_id?: string | null
+          property_id?: string | null
+          queued_count?: number
+          sent_at?: string | null
+          starts_at?: string | null
+          status?: string
+          subject?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promotions_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "promotions_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       properties: {
         Row: {
           created_at: string
@@ -1294,6 +1431,44 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      property_price_events: {
+        Row: {
+          actor: string | null
+          created_at: string
+          effective_at: string
+          id: string
+          new_price: number
+          previous_price: number | null
+          property_id: string
+        }
+        Insert: {
+          actor?: string | null
+          created_at?: string
+          effective_at?: string
+          id?: string
+          new_price: number
+          previous_price?: number | null
+          property_id: string
+        }
+        Update: {
+          actor?: string | null
+          created_at?: string
+          effective_at?: string
+          id?: string
+          new_price?: number
+          previous_price?: number | null
+          property_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_price_events_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
             referencedColumns: ["id"]
           },
         ]

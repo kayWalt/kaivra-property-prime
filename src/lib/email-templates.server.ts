@@ -186,35 +186,70 @@ export function renderTemplate(
 
     case "payment_reminder": {
       const overdue = Boolean(payload["overdue"]);
-      const heading = overdue ? "Outstanding payment reminder" : "Your next payment is due";
+      const days = Number(payload["days"] ?? 0);
+      const heading = overdue
+        ? `Overdue payment — ${payload["installment_label"] ?? "installment"}`
+        : days === 0
+          ? "Your payment is due today"
+          : `Your payment is due in ${days} day${days === 1 ? "" : "s"}`;
+      const detail: [string, string][] = [
+        ["Application reference", String(payload["reference"] ?? "—")],
+        ["Property / project", String(payload["property_name"] ?? "—")],
+        ["Payment", String(payload["installment_label"] ?? "Installment")],
+        ["Due date", String(payload["due_date"] ?? "—")],
+        ["Amount due", money(payload["amount_due"], payload["currency"])],
+        ["Amount already paid", money(payload["paid"], payload["currency"])],
+        ["Outstanding balance", money(payload["outstanding"], payload["currency"])],
+      ];
       const body =
         `<p style="margin:0 0 16px;font-size:15px;line-height:24px;color:#2A2E2C;">Dear ${escapeHtml(
           payload["full_name"] || "Investor",
         )},</p>` +
         `<p style="margin:0 0 18px;font-size:15px;line-height:24px;color:#2A2E2C;">${
           overdue
-            ? "Our records show an outstanding balance on your KAIVRA investment that is now past the expected schedule."
-            : "This is a friendly reminder about the balance remaining on your KAIVRA investment."
+            ? "This payment on your KAIVRA purchase is now past its due date and still shows an outstanding balance."
+            : "This is a reminder about an upcoming payment on your KAIVRA purchase."
         }</p>` +
-        rows([
-          ["Application reference", String(payload["reference"] ?? "—")],
-          ["Property", String(payload["property_name"] ?? "—")],
-          ["Total investment", money(payload["total"], payload["currency"])],
-          ["Total verified payments", money(payload["paid"], payload["currency"])],
-          ["Outstanding balance", money(payload["outstanding"], payload["currency"])],
-          ["Last payment received", String(payload["last_payment"] ?? "No payment recorded yet")],
-        ]) +
-        `<p style="margin:0 0 16px;font-size:14px;line-height:22px;color:#6B7472;">If you have already paid, please upload your payment proof so our team can verify it.</p>`;
+        rows(detail) +
+        `<p style="margin:0 0 8px;font-size:14px;line-height:22px;color:#2A2E2C;font-weight:600;">How to pay</p>` +
+        `<p style="margin:0 0 16px;font-size:14px;line-height:22px;color:#6B7472;">Sign in to your KAIVRA workspace, open this application and use “Record a payment” to see the approved KAIVRA developer account details and upload your transfer receipt. Payments are confirmed once our team verifies the receipt.</p>` +
+        `<p style="margin:0 0 16px;font-size:14px;line-height:22px;color:#6B7472;">Need help? Contact KAIVRA support at <a href="mailto:support@kaivraa.com" style="color:${EMERALD};">support@kaivraa.com</a> or through the support desk in your workspace.</p>`;
       const html = layout({
         heading,
         bodyHtml: body,
         ctaLabel: "Record or review my payment",
         ctaUrl: `${SITE_URL}/applications/${payload["application_id"]}`,
         footerNote:
-          "This is a service message about payments on your KAIVRA investment and is sent to all investors with an outstanding balance.",
+          "This is a service message about payments on your KAIVRA purchase. It is sent to every customer with an outstanding payment obligation.",
       });
-      return { subject: `KAIVRA — ${heading} (${payload["reference"] ?? ""})`.trim(), html, text: stripHtml(html) };
+      return {
+        subject: `KAIVRA — ${heading} (${payload["reference"] ?? ""})`.trim(),
+        html,
+        text: stripHtml(html),
+      };
     }
+
+    case "promotion": {
+      const banner = payload["image_url"]
+        ? `<img src="${escapeHtml(String(payload["image_url"]))}" alt="${escapeHtml(
+            String(payload["title"] ?? "KAIVRA promotion"),
+          )}" style="width:100%;border-radius:12px;margin:0 0 18px;" />`
+        : "";
+      const html = layout({
+        heading: String(payload["title"] ?? "A KAIVRA offer"),
+        bodyHtml: banner + paragraphs(String(payload["description"] ?? "")),
+        ctaLabel: (payload["cta_label"] as string) || null,
+        ctaUrl: (payload["cta_url"] as string) || null,
+        footerNote: "You are receiving this because you opted in to KAIVRA promotions.",
+        unsubscribeUrl: opts.unsubscribeUrl ?? null,
+      });
+      return {
+        subject: String(payload["subject"] ?? payload["title"] ?? "A KAIVRA offer"),
+        html,
+        text: stripHtml(html),
+      };
+    }
+
 
     case "new_listing": {
       const body =
