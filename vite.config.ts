@@ -6,6 +6,21 @@
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
+// The lovable config wrapper's nitro types only declare a subset of nitro
+// options (preset/output/cloudflare.nodeCompat); nitro itself supports
+// runtime plugins and the full cloudflare.wrangler passthrough, so the
+// object is widened here without changing runtime behavior.
+type NitroOptions = {
+  preset?: string;
+  output?: { dir?: string; publicDir?: string; serverDir?: string };
+  plugins?: string[];
+  cloudflare?: {
+    nodeCompat?: boolean;
+    deployConfig?: boolean;
+    wrangler?: Record<string, unknown>;
+  };
+};
+
 export default defineConfig({
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
