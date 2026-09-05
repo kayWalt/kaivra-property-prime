@@ -37,6 +37,7 @@ import { linkApplicationToInvestor, type InvestorSummary } from "@/lib/investors
 import { ApplicationDetailView } from "./applications.$appId";
 import { useRoles, useSession, primaryRole, isStaffRole } from "@/hooks/useAuth";
 import { fetchPayments, logEvent, notify } from "@/lib/applications";
+import { InstallmentSchedule } from "@/components/kaivra/InstallmentSchedule";
 import {
   APPLICATION_STATUSES,
   STATUS_LABEL,
@@ -342,6 +343,11 @@ function ManageApplication() {
           ))}
         </ul>
       </section>
+
+      <InstallmentSchedule
+        applicationId={appId}
+        currency={(application.data as any)?.projects?.currency ?? "NGN"}
+      />
 
       <section className="mt-6 rounded-lg border border-border bg-card p-5 print:hidden">
         <h2 className="font-display text-2xl">Application status</h2>

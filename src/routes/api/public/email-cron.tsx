@@ -20,10 +20,13 @@ export const Route = createFileRoute("/api/public/email-cron")({
         const denied = await authenticateCronRequest(request);
         if (denied) return denied;
         try {
-          const { scanPaymentReminders, processQueue } = await import("@/lib/email.server");
+          const { scanPaymentReminders, processQueue, processPromotions } = await import(
+            "@/lib/email.server"
+          );
           const reminders = await scanPaymentReminders();
+          const promotions = await processPromotions();
           const queue = await processQueue(60);
-          return Response.json({ ok: true, reminders, queue });
+          return Response.json({ ok: true, reminders, promotions, queue });
         } catch (err) {
           console.error("[email-cron] run failed", err);
           return Response.json({ error: "Email run failed." }, { status: 500 });
