@@ -208,7 +208,7 @@ async function handler({ request }: { request: Request }) {
     }),
     list_properties: tool({
       description:
-        "List the properties (type, size, price, units available) for a KAIVRA project. Use when asked about sizes, plots, duplexes, availability, cheapest option or prices. Optionally filter by a size term such as '400' or '4-bedroom'.",
+        "List the properties (type, size, price) for a KAIVRA project. Use when asked about sizes, plots, duplexes, cheapest option or prices. Optionally filter by a size term such as '400' or '4-bedroom'.",
       inputSchema: z.object({
         projectName: z.string().nullable(),
         sizeOrType: z.string().nullable().optional(),
@@ -218,7 +218,7 @@ async function handler({ request }: { request: Request }) {
         let query = supabase
           .from("properties")
           .select(
-            "name, property_type, size_label, unit_price, units_available, payment_plan, description, projects(name, location)",
+            "name, property_type, size_label, unit_price, payment_plan, description, projects(name, location)",
           )
           .eq("is_active", true)
           .order("unit_price");
@@ -251,10 +251,6 @@ async function handler({ request }: { request: Request }) {
           properties: (data ?? []).map((p) => ({
             ...p,
             unit_price: p.unit_price ?? "unknown — no verified price on record",
-            units_available:
-              p.units_available === null || p.units_available === undefined
-                ? "unknown — no verified availability on record"
-                : p.units_available,
             payment_plan: p.payment_plan || "unknown — not configured in the database",
           })),
         };

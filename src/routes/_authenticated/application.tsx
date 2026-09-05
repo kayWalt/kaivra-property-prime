@@ -1332,9 +1332,6 @@ function PropertyCard({
           <span className="mt-0.5 block text-xs text-muted-foreground">{property.size_label}</span>
         ) : null}
         <span className="mt-2 block font-display text-xl">{formatNaira(property.unit_price)}</span>
-        <span className="mt-1 block text-xs text-muted-foreground">
-          {property.units_available ?? 0} units available
-        </span>
       </button>
     </div>
   );
