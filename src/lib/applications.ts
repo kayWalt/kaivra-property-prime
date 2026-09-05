@@ -107,3 +107,22 @@ export function totals(
 }
 
 export const EDITABLE_STATUSES: ApplicationStatus[] = ["draft", "requires_correction"];
+
+export const DUPLICATE_REFERENCE_MESSAGE =
+  "Payment reference already exists. This transfer reference has already been submitted and cannot be recorded again.";
+
+/**
+ * The database enforces global, case-insensitive uniqueness of payment
+ * references (trigger + unique index), so a duplicate surfaces as a 23505 /
+ * DUPLICATE_PAYMENT_REFERENCE error whatever role submitted it.
+ */
+export function isDuplicateReferenceError(error: unknown): boolean {
+  const e = error as { code?: string; message?: string } | null;
+  if (!e) return false;
+  const text = `${e.message ?? ""}`;
+  return (
+    text.includes("DUPLICATE_PAYMENT_REFERENCE") ||
+    text.includes("application_payments_reference_unique_ci") ||
+    (e.code === "23505" && text.toLowerCase().includes("reference"))
+  );
+}
