@@ -17,7 +17,12 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { uploadDocument } from "@/components/kaivra/FileUpload";
-import { logEvent, notifyStaffForProject } from "@/lib/applications";
+import {
+  DUPLICATE_REFERENCE_MESSAGE,
+  isDuplicateReferenceError,
+  logEvent,
+  notifyStaffForProject,
+} from "@/lib/applications";
 import { accountLabel, useActivePaymentAccounts } from "@/lib/payment-accounts";
 import { PAYMENT_METHODS, type PaymentMethod } from "@/lib/kaivra";
 
