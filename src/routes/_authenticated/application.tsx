@@ -58,6 +58,17 @@ import {
 } from "@/lib/kaivra";
 import { accountLabel, snapshotLabel, useActivePaymentAccounts } from "@/lib/payment-accounts";
 
+import {
+  PartnerPricingPanel,
+  EMPTY_PARTNER_DRAFT,
+  type PartnerDraft,
+} from "@/components/kaivra/PartnerPricingPanel";
+import {
+  canPartnerPurchase,
+  derivePricing,
+  type DiscountApproval,
+  type PricingMethod,
+} from "@/lib/partner-pricing";
 import { openAiAssist } from "@/lib/ai-assist";
 import { cn } from "@/lib/utils";
 import { mediaSrc, FALLBACK_PROPERTY_IMAGE } from "@/lib/media";
@@ -101,6 +112,7 @@ interface DraftState {
   payment_info: PaymentInfo;
   declaration_accepted: boolean;
   current_step: number;
+  partner: PartnerDraft;
 }
 
 const EMPTY_DRAFT: DraftState = {
@@ -112,6 +124,7 @@ const EMPTY_DRAFT: DraftState = {
   payment_info: {},
   declaration_accepted: false,
   current_step: 1,
+  partner: EMPTY_PARTNER_DRAFT,
 };
 
 function localKey(id: string) {
@@ -126,6 +139,7 @@ function ApplicationWizard() {
   const { data: profile } = useProfile(user?.id);
   const { data: staffRoles } = useRoles(user?.id);
   const staffRole = primaryRole(staffRoles);
+  const partnerAllowed = canPartnerPurchase(staffRoles);
 
   const [applicationId, setApplicationId] = useState<string | null>(search.id ?? null);
   const [draft, setDraft] = useState<DraftState>(EMPTY_DRAFT);
@@ -395,15 +409,37 @@ function ApplicationWizard() {
       // PDF all read the same totals as the wizard.
       const savedUnits = Math.max(1, Number(next.investment.units ?? 1));
       const savedUnitPrice = Number(next.investment.unit_price ?? 0);
-      const normalisedInvestment = {
+      const normalisedInvestment: Record<string, unknown> = {
         ...next.investment,
         units: savedUnits,
         unit_price: savedUnitPrice,
         total_value: savedUnitPrice * savedUnits,
       };
+      const partner = next.partner;
+      const partnerDerived = derivePricing({
+        method: partner.pricing_method,
+        standardPrice: partner.standard_price,
+        discountPercent: partner.discount_percent,
+        negotiatedPrice: partner.negotiated_price,
+      });
+      // Partner purchases are valued at the negotiated price; investor
+      // applications keep the existing unit-price maths untouched.
+      if (partnerAllowed && partner.enabled && partner.standard_price > 0) {
+        normalisedInvestment.total_value = partnerDerived.negotiated;
+      }
+      const partnerFields = partnerAllowed
+        ? {
+            application_type: partner.enabled ? "partner" : "investor",
+            pricing_method: partner.enabled ? partner.pricing_method : null,
+            standard_price: partner.enabled ? partner.standard_price : null,
+            discount_percent: partner.enabled ? partnerDerived.percent : null,
+            negotiated_price: partner.enabled ? partnerDerived.negotiated : null,
+          }
+        : {};
       const { error } = await supabase
         .from("applications")
         .update({
+          ...partnerFields,
           project_id: next.project_id,
           property_id: next.property_id,
           personal: next.personal as never,
@@ -422,7 +458,7 @@ function ApplicationWizard() {
       pendingRef.current = null;
       setSaveState("saved");
     },
-    [applicationId],
+    [applicationId, partnerAllowed],
   );
 
   useEffect(() => {
