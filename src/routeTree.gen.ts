@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as RealEstateInvestmentAbujaRouteImport } from './routes/real-estate-investment-abuja'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as AuthenticatedApplicationRouteImport } from './routes/_authenticated/application'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authenticated/documents'
@@ -42,6 +43,7 @@ import { Route as AuthenticatedInspectionsNewRouteImport } from './routes/_authe
 import { Route as ApiPublicAiChatRouteImport } from './routes/api/public/ai-chat'
 import { Route as ApiPublicContactRouteImport } from './routes/api/public/contact'
 import { Route as ApiPublicDocumentUrlRouteImport } from './routes/api/public/document-url'
+import { Route as ApiPublicEmailCronRouteImport } from './routes/api/public/email-cron'
 import { Route as ApiPublicPassportAvatarsRouteImport } from './routes/api/public/passport-avatars'
 import { Route as ApiPublicPaymentAccountNumberRouteImport } from './routes/api/public/payment-account-number'
 import { Route as ApiPublicTrackRouteImport } from './routes/api/public/track'
@@ -78,6 +80,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UnsubscribeRoute = UnsubscribeRouteImport.update({
+  id: '/unsubscribe',
+  path: '/unsubscribe',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedApplicationRoute =
@@ -233,6 +240,11 @@ const ApiPublicDocumentUrlRoute = ApiPublicDocumentUrlRouteImport.update({
   path: '/api/public/document-url',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicEmailCronRoute = ApiPublicEmailCronRouteImport.update({
+  id: '/api/public/email-cron',
+  path: '/api/public/email-cron',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicPassportAvatarsRoute =
   ApiPublicPassportAvatarsRouteImport.update({
     id: '/api/public/passport-avatars',
@@ -280,6 +292,7 @@ export interface FileRoutesByFullPath {
   '/real-estate-investment-abuja': typeof RealEstateInvestmentAbujaRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/unsubscribe': typeof UnsubscribeRoute
   '/application': typeof AuthenticatedApplicationRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/documents': typeof AuthenticatedDocumentsRoute
@@ -304,6 +317,7 @@ export interface FileRoutesByFullPath {
   '/api/public/ai-chat': typeof ApiPublicAiChatRoute
   '/api/public/contact': typeof ApiPublicContactRoute
   '/api/public/document-url': typeof ApiPublicDocumentUrlRoute
+  '/api/public/email-cron': typeof ApiPublicEmailCronRoute
   '/api/public/passport-avatars': typeof ApiPublicPassportAvatarsRoute
   '/api/public/payment-account-number': typeof ApiPublicPaymentAccountNumberRoute
   '/api/public/track': typeof ApiPublicTrackRoute
@@ -321,6 +335,7 @@ export interface FileRoutesByTo {
   '/real-estate-investment-abuja': typeof RealEstateInvestmentAbujaRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/unsubscribe': typeof UnsubscribeRoute
   '/application': typeof AuthenticatedApplicationRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/documents': typeof AuthenticatedDocumentsRoute
@@ -345,6 +360,7 @@ export interface FileRoutesByTo {
   '/api/public/ai-chat': typeof ApiPublicAiChatRoute
   '/api/public/contact': typeof ApiPublicContactRoute
   '/api/public/document-url': typeof ApiPublicDocumentUrlRoute
+  '/api/public/email-cron': typeof ApiPublicEmailCronRoute
   '/api/public/passport-avatars': typeof ApiPublicPassportAvatarsRoute
   '/api/public/payment-account-number': typeof ApiPublicPaymentAccountNumberRoute
   '/api/public/track': typeof ApiPublicTrackRoute
@@ -364,6 +380,7 @@ export interface FileRoutesById {
   '/real-estate-investment-abuja': typeof RealEstateInvestmentAbujaRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/unsubscribe': typeof UnsubscribeRoute
   '/_authenticated/application': typeof AuthenticatedApplicationRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/documents': typeof AuthenticatedDocumentsRoute
@@ -388,6 +405,7 @@ export interface FileRoutesById {
   '/api/public/ai-chat': typeof ApiPublicAiChatRoute
   '/api/public/contact': typeof ApiPublicContactRoute
   '/api/public/document-url': typeof ApiPublicDocumentUrlRoute
+  '/api/public/email-cron': typeof ApiPublicEmailCronRoute
   '/api/public/passport-avatars': typeof ApiPublicPassportAvatarsRoute
   '/api/public/payment-account-number': typeof ApiPublicPaymentAccountNumberRoute
   '/api/public/track': typeof ApiPublicTrackRoute
@@ -407,6 +425,7 @@ export interface FileRouteTypes {
     | '/real-estate-investment-abuja'
     | '/reset-password'
     | '/sitemap.xml'
+    | '/unsubscribe'
     | '/application'
     | '/dashboard'
     | '/documents'
@@ -431,6 +450,7 @@ export interface FileRouteTypes {
     | '/api/public/ai-chat'
     | '/api/public/contact'
     | '/api/public/document-url'
+    | '/api/public/email-cron'
     | '/api/public/passport-avatars'
     | '/api/public/payment-account-number'
     | '/api/public/track'
@@ -448,6 +468,7 @@ export interface FileRouteTypes {
     | '/real-estate-investment-abuja'
     | '/reset-password'
     | '/sitemap.xml'
+    | '/unsubscribe'
     | '/application'
     | '/dashboard'
     | '/documents'
@@ -472,6 +493,7 @@ export interface FileRouteTypes {
     | '/api/public/ai-chat'
     | '/api/public/contact'
     | '/api/public/document-url'
+    | '/api/public/email-cron'
     | '/api/public/passport-avatars'
     | '/api/public/payment-account-number'
     | '/api/public/track'
@@ -490,6 +512,7 @@ export interface FileRouteTypes {
     | '/real-estate-investment-abuja'
     | '/reset-password'
     | '/sitemap.xml'
+    | '/unsubscribe'
     | '/_authenticated/application'
     | '/_authenticated/dashboard'
     | '/_authenticated/documents'
@@ -514,6 +537,7 @@ export interface FileRouteTypes {
     | '/api/public/ai-chat'
     | '/api/public/contact'
     | '/api/public/document-url'
+    | '/api/public/email-cron'
     | '/api/public/passport-avatars'
     | '/api/public/payment-account-number'
     | '/api/public/track'
@@ -533,11 +557,13 @@ export interface RootRouteChildren {
   RealEstateInvestmentAbujaRoute: typeof RealEstateInvestmentAbujaRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  UnsubscribeRoute: typeof UnsubscribeRoute
   ProjectsProjectIdRoute: typeof ProjectsProjectIdRoute
   ProjectsIndexRoute: typeof ProjectsIndexRoute
   ApiPublicAiChatRoute: typeof ApiPublicAiChatRoute
   ApiPublicContactRoute: typeof ApiPublicContactRoute
   ApiPublicDocumentUrlRoute: typeof ApiPublicDocumentUrlRoute
+  ApiPublicEmailCronRoute: typeof ApiPublicEmailCronRoute
   ApiPublicPassportAvatarsRoute: typeof ApiPublicPassportAvatarsRoute
   ApiPublicPaymentAccountNumberRoute: typeof ApiPublicPaymentAccountNumberRoute
   ApiPublicTrackRoute: typeof ApiPublicTrackRoute
@@ -587,6 +613,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/unsubscribe': {
+      id: '/unsubscribe'
+      path: '/unsubscribe'
+      fullPath: '/unsubscribe'
+      preLoaderRoute: typeof UnsubscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/application': {
@@ -778,6 +811,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicDocumentUrlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/email-cron': {
+      id: '/api/public/email-cron'
+      path: '/api/public/email-cron'
+      fullPath: '/api/public/email-cron'
+      preLoaderRoute: typeof ApiPublicEmailCronRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/passport-avatars': {
       id: '/api/public/passport-avatars'
       path: '/api/public/passport-avatars'
@@ -897,11 +937,13 @@ const rootRouteChildren: RootRouteChildren = {
   RealEstateInvestmentAbujaRoute: RealEstateInvestmentAbujaRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  UnsubscribeRoute: UnsubscribeRoute,
   ProjectsProjectIdRoute: ProjectsProjectIdRoute,
   ProjectsIndexRoute: ProjectsIndexRoute,
   ApiPublicAiChatRoute: ApiPublicAiChatRoute,
   ApiPublicContactRoute: ApiPublicContactRoute,
   ApiPublicDocumentUrlRoute: ApiPublicDocumentUrlRoute,
+  ApiPublicEmailCronRoute: ApiPublicEmailCronRoute,
   ApiPublicPassportAvatarsRoute: ApiPublicPassportAvatarsRoute,
   ApiPublicPaymentAccountNumberRoute: ApiPublicPaymentAccountNumberRoute,
   ApiPublicTrackRoute: ApiPublicTrackRoute,
