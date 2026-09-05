@@ -44,43 +44,7 @@ function isH3SwallowedErrorBody(body: string): boolean {
   }
 }
 
-/**
- * Runs the existing KAIVRA email processors (payment reminders, promotion
- * lifecycle, queue sending). Shared by the Cloudflare Cron `scheduled` handler
- * and never crosses HTTP, so no cron secret is needed for scheduled runs —
- * Cloudflare invokes the Worker's scheduled() handler directly.
- */
-async function runEmailProcessors(): Promise<void> {
-  const { scanPaymentReminders, processPromotions, processQueue } = await import(
-    "./lib/email.server"
-  );
-  const reminders = await scanPaymentReminders();
-  const promotions = await processPromotions();
-  const queue = await processQueue(60);
-  console.log(
-    `[email-cron] scheduled run complete: reminders=${JSON.stringify(reminders)} promotions=${JSON.stringify(promotions)} queue=${JSON.stringify(queue)}`,
-  );
-}
-
-type ExecutionContextLike = { waitUntil: (promise: Promise<unknown>) => void };
-
 export default {
-  /**
-   * Cloudflare Cron Trigger entry point. Configure a Cron Trigger on the
-   * kaivra-property-prime Worker (recommended: every 15 minutes) and Cloudflare
-   * invokes this handler directly — the /api/public/email-cron HTTP endpoint
-   * stays protected by the shared cron bearer secret and is only a fallback
-   * for external schedulers. Idempotency lives in the database, so repeated
-   * or overlapping runs cannot double-send.
-   */
-  scheduled(_event: unknown, _env: unknown, ctx: ExecutionContextLike) {
-    ctx.waitUntil(
-      runEmailProcessors().catch((error) => {
-        console.error("[email-cron] scheduled run failed", error);
-      }),
-    );
-  },
-
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
       const handler = await getServerEntry();
