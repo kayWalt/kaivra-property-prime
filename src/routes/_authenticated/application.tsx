@@ -16,6 +16,8 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { AsyncButton } from "@/components/kaivra/AsyncButton";
+import { PlotPriceTag } from "@/components/kaivra/PlotPriceTag";
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -1267,7 +1269,9 @@ function PropertyCard({
       )}
     >
       <div className="relative">
+        <PlotPriceTag sizeLabel={property.size_label} price={property.unit_price} />
         <img
+
           src={current}
           alt={property.name}
           loading="lazy"
