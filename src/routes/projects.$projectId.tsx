@@ -259,14 +259,22 @@ function ProjectDetail() {
                 key={property.id}
                 className="overflow-hidden rounded-lg border border-border bg-card shadow-card"
               >
-                <img
-                  src={mediaSrc(images[0], FALLBACK_PROPERTY_IMAGE)}
-                  alt={property.name}
-                  loading="lazy"
-                  width={1280}
-                  height={960}
-                  className="aspect-[4/3] w-full object-cover"
-                />
+                <div className="relative">
+                  <img
+                    src={mediaSrc(images[0], FALLBACK_PROPERTY_IMAGE)}
+                    alt={property.name}
+                    loading="lazy"
+                    width={1280}
+                    height={960}
+                    className="aspect-[4/3] w-full object-cover"
+                  />
+                  <PlotPriceTag
+                    sizeLabel={property.size_label}
+                    price={property.unit_price}
+                    currency={project.currency}
+                  />
+                </div>
+
                 <div className="p-5">
                   <p className="eyebrow text-gold-foreground">{property.size_label}</p>
                   <h3 className="mt-2 text-lg font-semibold leading-snug">{property.name}</h3>
