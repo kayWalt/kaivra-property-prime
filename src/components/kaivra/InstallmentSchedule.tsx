@@ -7,7 +7,7 @@ import { deleteInstallment, listInstallments, saveInstallment } from "@/lib/emai
 import { AsyncButton } from "@/components/kaivra/AsyncButton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { formatDate, formatMoney } from "@/lib/kaivra";
+import { formatDate, formatNaira } from "@/lib/kaivra";
 
 /**
  * Staff-managed payment schedule for one application.
@@ -79,7 +79,7 @@ export function InstallmentSchedule({
           >
             <span className="font-medium">{row.label}</span>
             <span className="text-muted-foreground">
-              {formatMoney(Number(row.amount_due), currency)} · due {formatDate(row.due_date)} ·{" "}
+              {formatNaira(Number(row.amount_due), currency)} · due {formatDate(row.due_date)} ·{" "}
               {row.status}
             </span>
             <AsyncButton
