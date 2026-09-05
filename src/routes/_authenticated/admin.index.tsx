@@ -18,7 +18,6 @@ import {
   formatCompact,
   formatDate,
   formatNaira,
-  ROLE_LABEL,
   type AppRole,
   type ApplicationStatus,
 } from "@/lib/kaivra";
