@@ -232,6 +232,59 @@ export function PartnerPricingPanel(props: {
             </div>
           </dl>
 
+          {props.onPaymentPlan ? (
+            <div>
+              <p className="text-sm font-medium">Payment plan</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {["Outright", "Installment", "Custom"].map((plan) => (
+                  <Button
+                    key={plan}
+                    type="button"
+                    size="sm"
+                    variant={props.paymentPlan === plan ? "default" : "outline"}
+                    disabled={props.disabled}
+                    onClick={() => props.onPaymentPlan?.(plan)}
+                  >
+                    {plan}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {props.onRecordPayment ? (
+            <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
+              <div>
+                <Label htmlFor="partner-amount-paid">Payment amount made (₦)</Label>
+                <Input
+                  id="partner-amount-paid"
+                  type="number"
+                  inputMode="decimal"
+                  min={0}
+                  step="0.01"
+                  disabled={props.disabled || recording}
+                  value={amountPaid}
+                  onChange={(e) => setAmountPaid(e.target.value)}
+                  className="mt-1.5"
+                />
+              </div>
+              <Button
+                type="button"
+                disabled={props.disabled || recording || !(Number(amountPaid) > 0)}
+                onClick={async () => {
+                  const amount = Number(amountPaid);
+                  if (!(amount > 0)) return;
+                  setRecording(true);
+                  const ok = await props.onRecordPayment?.(amount);
+                  setRecording(false);
+                  if (ok) setAmountPaid("");
+                }}
+              >
+                {recording ? "Recording…" : "Record payment"}
+              </Button>
+            </div>
+          ) : null}
+
           <p className="text-xs text-muted-foreground">
             Amount paid comes from the recorded payments on this application, so the existing
             verification steps are unchanged. The discount you enter is recorded exactly as typed
