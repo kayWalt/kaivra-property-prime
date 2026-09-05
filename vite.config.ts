@@ -24,6 +24,8 @@ export default defineConfig({
         name: "kaivra-property-prime",
         triggers: { crons: ["*/15 * * * *"] },
       },
-    },
+      // The lovable config wrapper types only declare nodeCompat/deployConfig;
+      // nitro itself supports the full cloudflare.wrangler passthrough.
+    } as { nodeCompat?: boolean; deployConfig?: boolean; wrangler?: Record<string, unknown> },
   },
 });
