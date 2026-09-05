@@ -346,7 +346,7 @@ function ManageApplication() {
 
       <InstallmentSchedule
         applicationId={appId}
-        currency={(app as any)?.projects?.currency ?? "NGN"}
+        currency={(application.data as any)?.projects?.currency ?? "NGN"}
       />
 
       <section className="mt-6 rounded-lg border border-border bg-card p-5 print:hidden">
