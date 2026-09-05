@@ -206,6 +206,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             label: m.label,
           })),
           ...(canAnalytics(access) ? [{ to: "/admin/analytics", label: "Analytics" }] : []),
+          ...(access.isSuperAdmin ? [{ to: "/admin/emails", label: "Emails" }] : []),
           ...(access.isSuperAdmin ? [{ to: "/admin/access", label: "Admin Access" }] : []),
         ]
       : NAV[role as "investor" | "adviser"];

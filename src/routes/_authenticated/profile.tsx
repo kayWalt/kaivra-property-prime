@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { useProfile, useRoles, useSession, primaryRole } from "@/hooks/useAuth";
 import { useAvatarSrc } from "@/hooks/useAvatarSrc";
 import { ThemeToggle } from "@/components/kaivra/ThemeToggle";
+import { EmailPreferences } from "@/components/kaivra/EmailPreferences";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({
@@ -241,6 +242,8 @@ function ProfilePage() {
         </p>
         <ThemeToggle className="mt-3 max-w-sm" />
       </section>
+
+      <EmailPreferences />
 
       <Button variant="outline" className="mt-6" onClick={() => void signOut()}>
         Sign out
