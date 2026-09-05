@@ -884,6 +884,19 @@ function ApplicationWizard() {
               }
               pricingSetBy={existing.data?.pricing_set_at ? formatDate(existing.data.pricing_set_at) : null}
               disabled={!!readOnly}
+              paymentPlan={draft.investment.payment_plan ?? "Outright"}
+              onPaymentPlan={(plan) =>
+                setDraft((p) => ({ ...p, investment: { ...p.investment, payment_plan: plan } }))
+              }
+              onRecordPayment={(amount) =>
+                addPayment({
+                  ...EMPTY_PAYMENT,
+                  amount,
+                  paid_on: new Date().toISOString().slice(0, 10),
+                  sender: draft.personal.full_name ?? "",
+                  description: "Partner purchase payment",
+                })
+              }
             />
           </div>
         ) : null}
