@@ -910,7 +910,10 @@ function ApplicationWizard() {
           </div>
         ) : null}
 
-        {step === 4 ? (
+        {/* When a partner purchase is active the partner panel above is the single
+            authoritative pricing form, so the standard investment panel is hidden
+            to avoid two copies of the same form on the same step. */}
+        {step === 4 && !partnerActive ? (
           <StepInvestment
             projectName={selectedProject?.name ?? "—"}
             propertyName={selectedProperty?.name ?? "—"}
