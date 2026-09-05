@@ -19,7 +19,7 @@ import { definePlugin } from "nitro";
  * or overlapping cron runs cannot double-send. EMAIL_TEST_MODE stays enabled
  * on the Lovable side; no real investor email can be sent while it is on.
  */
-const ENDPOINT = "https://kaivra-com.lovable.app/api/public/email-cron";
+const ENDPOINT = "https://kaivraa-com.lovable.app/api/public/email-cron";
 
 export default definePlugin((nitroApp) => {
   nitroApp.hooks.hook("cloudflare:scheduled", async () => {
