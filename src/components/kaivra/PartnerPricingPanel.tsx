@@ -51,8 +51,13 @@ export function PartnerPricingPanel(props: {
   approval: DiscountApproval;
   pricingSetBy?: string | null;
   disabled?: boolean;
+  paymentPlan?: string;
+  onPaymentPlan?: (plan: string) => void;
+  onRecordPayment?: (amount: number) => Promise<boolean>;
 }) {
   const v = props.value;
+  const [amountPaid, setAmountPaid] = useState("");
+  const [recording, setRecording] = useState(false);
   const derived = derivePricing({
     method: v.pricing_method,
     standardPrice: v.standard_price,
