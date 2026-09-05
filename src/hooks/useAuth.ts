@@ -109,6 +109,7 @@ export function primaryRole(roles: AppRole[] | undefined): AppRole {
   if (roles.includes("super_admin")) return "super_admin";
   if (roles.includes("admin")) return "admin";
   if (roles.includes("adviser")) return "adviser";
+  if (roles.includes("partner")) return "partner";
   return "investor";
 }
 

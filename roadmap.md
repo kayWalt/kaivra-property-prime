@@ -18,3 +18,4 @@
 - [x] Verified People tab, footprint view, CSV export, security tab on Lovable origin
 - [x] Verified no service-role key exposure in production bundles
 - [x] Confirmed all existing security controls remain intact
+- [x] Partner/Adviser/Super Admin property purchase workflow (role-gated pricing, KVP references, discount approval, admin filters)

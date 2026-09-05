@@ -58,6 +58,17 @@ import {
 } from "@/lib/kaivra";
 import { accountLabel, snapshotLabel, useActivePaymentAccounts } from "@/lib/payment-accounts";
 
+import {
+  PartnerPricingPanel,
+  EMPTY_PARTNER_DRAFT,
+  type PartnerDraft,
+} from "@/components/kaivra/PartnerPricingPanel";
+import {
+  canPartnerPurchase,
+  derivePricing,
+  type DiscountApproval,
+  type PricingMethod,
+} from "@/lib/partner-pricing";
 import { openAiAssist } from "@/lib/ai-assist";
 import { cn } from "@/lib/utils";
 import { mediaSrc, FALLBACK_PROPERTY_IMAGE } from "@/lib/media";
@@ -101,6 +112,7 @@ interface DraftState {
   payment_info: PaymentInfo;
   declaration_accepted: boolean;
   current_step: number;
+  partner: PartnerDraft;
 }
 
 const EMPTY_DRAFT: DraftState = {
@@ -112,10 +124,27 @@ const EMPTY_DRAFT: DraftState = {
   payment_info: {},
   declaration_accepted: false,
   current_step: 1,
+  partner: EMPTY_PARTNER_DRAFT,
 };
 
 function localKey(id: string) {
   return `kaivra:application:${id}`;
+}
+
+function partnerFromRow(row: {
+  application_type?: string | null;
+  pricing_method?: string | null;
+  standard_price?: number | string | null;
+  discount_percent?: number | string | null;
+  negotiated_price?: number | string | null;
+}): PartnerDraft {
+  return {
+    enabled: row.application_type === "partner",
+    pricing_method: (row.pricing_method === "negotiated" ? "negotiated" : "discount") as PricingMethod,
+    standard_price: Number(row.standard_price ?? 0),
+    discount_percent: Number(row.discount_percent ?? 0),
+    negotiated_price: Number(row.negotiated_price ?? 0),
+  };
 }
 
 function ApplicationWizard() {
@@ -126,6 +155,7 @@ function ApplicationWizard() {
   const { data: profile } = useProfile(user?.id);
   const { data: staffRoles } = useRoles(user?.id);
   const staffRole = primaryRole(staffRoles);
+  const partnerAllowed = canPartnerPurchase(staffRoles);
 
   const [applicationId, setApplicationId] = useState<string | null>(search.id ?? null);
   const [draft, setDraft] = useState<DraftState>(EMPTY_DRAFT);
@@ -283,6 +313,7 @@ function ApplicationWizard() {
             payment_info: (data.payment_info ?? {}) as PaymentInfo,
             declaration_accepted: !!data.declaration_accepted,
             current_step: data.current_step ?? 1,
+            partner: partnerFromRow(data),
           };
           let next = base;
           if (cached) {
@@ -338,6 +369,7 @@ function ApplicationWizard() {
           payment_info: (reusable.payment_info ?? {}) as PaymentInfo,
           declaration_accepted: !!reusable.declaration_accepted,
           current_step: reusable.current_step ?? 1,
+          partner: partnerFromRow(reusable),
         };
         // Only ask when the investor actually started filling something in.
         const started =
@@ -395,15 +427,37 @@ function ApplicationWizard() {
       // PDF all read the same totals as the wizard.
       const savedUnits = Math.max(1, Number(next.investment.units ?? 1));
       const savedUnitPrice = Number(next.investment.unit_price ?? 0);
-      const normalisedInvestment = {
+      const normalisedInvestment: Record<string, unknown> = {
         ...next.investment,
         units: savedUnits,
         unit_price: savedUnitPrice,
         total_value: savedUnitPrice * savedUnits,
       };
+      const partner = next.partner;
+      const partnerDerived = derivePricing({
+        method: partner.pricing_method,
+        standardPrice: partner.standard_price,
+        discountPercent: partner.discount_percent,
+        negotiatedPrice: partner.negotiated_price,
+      });
+      // Partner purchases are valued at the negotiated price; investor
+      // applications keep the existing unit-price maths untouched.
+      if (partnerAllowed && partner.enabled && partner.standard_price > 0) {
+        normalisedInvestment['total_value'] = partnerDerived.negotiated;
+      }
+      const partnerFields = partnerAllowed
+        ? {
+            application_type: partner.enabled ? "partner" : "investor",
+            pricing_method: partner.enabled ? partner.pricing_method : null,
+            standard_price: partner.enabled ? partner.standard_price : null,
+            discount_percent: partner.enabled ? partnerDerived.percent : null,
+            negotiated_price: partner.enabled ? partnerDerived.negotiated : null,
+          }
+        : {};
       const { error } = await supabase
         .from("applications")
         .update({
+          ...partnerFields,
           project_id: next.project_id,
           property_id: next.property_id,
           personal: next.personal as never,
@@ -422,7 +476,7 @@ function ApplicationWizard() {
       pendingRef.current = null;
       setSaveState("saved");
     },
-    [applicationId],
+    [applicationId, partnerAllowed],
   );
 
   useEffect(() => {
@@ -447,7 +501,14 @@ function ApplicationWizard() {
   const selectedProperty = properties.data?.find((p) => p.id === draft.property_id) ?? null;
   const unitPrice = Number(draft.investment.unit_price ?? selectedProperty?.unit_price ?? 0);
   const units = Math.max(1, Number(draft.investment.units ?? 1));
-  const totalValue = unitPrice * units;
+  const partnerDerived = derivePricing({
+    method: draft.partner.pricing_method,
+    standardPrice: draft.partner.standard_price,
+    discountPercent: draft.partner.discount_percent,
+    negotiatedPrice: draft.partner.negotiated_price,
+  });
+  const partnerActive = partnerAllowed && draft.partner.enabled && draft.partner.standard_price > 0;
+  const totalValue = partnerActive ? partnerDerived.negotiated : unitPrice * units;
   const { paid, outstanding } = useMemo(
     () => totals(payments.data ?? [], totalValue),
     [payments.data, totalValue],
@@ -804,6 +865,27 @@ function ApplicationWizard() {
             disabled={!!readOnly}
             onChange={(contact) => set("contact", contact)}
           />
+        ) : null}
+
+        {step === 4 && partnerAllowed ? (
+          <div className="mb-8">
+            <PartnerPricingPanel
+              value={draft.partner}
+              onChange={(partner) => set("partner", partner)}
+              role={staffRole}
+              applicant={draft.personal.full_name ?? profile?.full_name ?? ""}
+              propertyName={selectedProperty?.name ?? "—"}
+              listPrice={unitPrice}
+              paid={paid}
+              reference={(existing.data?.partner_reference as string | null) ?? null}
+              approval={
+                ((existing.data?.discount_approval as string | undefined) ??
+                  "pending") as DiscountApproval
+              }
+              pricingSetBy={existing.data?.pricing_set_at ? formatDate(existing.data.pricing_set_at) : null}
+              disabled={!!readOnly}
+            />
+          </div>
         ) : null}
 
         {step === 4 ? (

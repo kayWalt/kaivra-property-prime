@@ -18,9 +18,15 @@ import {
   formatCompact,
   formatDate,
   formatNaira,
+  type AppRole,
   type ApplicationStatus,
 } from "@/lib/kaivra";
 import { RequireModule } from "@/components/kaivra/RequireModule";
+import {
+  PAYMENT_STATE_LABEL,
+  paymentState,
+  type PartnerPaymentState,
+} from "@/lib/partner-pricing";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
   head: () => ({
@@ -53,6 +59,8 @@ function AdminDashboard() {
 
   const [term, setTerm] = useState("");
   const [status, setStatus] = useState<"" | ApplicationStatus>("");
+  const [applicantType, setApplicantType] = useState<"" | "investor" | AppRole>("");
+  const [payState, setPayState] = useState<"" | PartnerPaymentState>("");
   const [page, setPage] = useState(0);
   const [debouncedTerm, setDebouncedTerm] = useState("");
 
@@ -63,24 +71,38 @@ function AdminDashboard() {
   }, [term]);
 
   const apps = useQuery({
-    queryKey: ["admin-applications", debouncedTerm, status, page],
+    queryKey: ["admin-applications", debouncedTerm, status, applicantType, page],
     enabled: staff,
     placeholderData: keepPreviousData,
     queryFn: async () => {
       let query = supabase
         .from("applications")
         .select(
-          "id, reference, status, investor_id, created_at, submitted_at, investment, personal, contact, projects(name), properties(name), application_payments(amount, status)",
+          "id, reference, partner_reference, application_type, standard_price, discount_percent, negotiated_price, discount_approval, status, investor_id, created_at, submitted_at, investment, personal, contact, projects(name), properties(name), application_payments(amount, status)",
           { count: "exact" },
         )
         .neq("status", "draft")
         .order("submitted_at", { ascending: false, nullsFirst: false })
         .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
       if (status) query = query.eq("status", status);
+      if (applicantType === "investor") {
+        query = query.eq("application_type", "investor");
+      } else if (applicantType) {
+        // Applicant role comes from the authenticated role table, never from
+        // anything typed into the application itself.
+        const { data: holders } = await supabase
+          .from("user_roles")
+          .select("user_id")
+          .eq("role", applicantType);
+        const ids = (holders ?? []).map((r) => r.user_id);
+        query = query.in("investor_id", ids.length > 0 ? ids : [
+          "00000000-0000-0000-0000-000000000000",
+        ]);
+      }
       if (debouncedTerm.trim()) {
         const q = `%${debouncedTerm.trim()}%`;
         query = query.or(
-          `reference.ilike.${q},personal->>full_name.ilike.${q},contact->>email.ilike.${q}`,
+          `reference.ilike.${q},partner_reference.ilike.${q},personal->>full_name.ilike.${q},contact->>email.ilike.${q}`,
         );
       }
       const { data, error, count } = await query;
@@ -127,9 +149,21 @@ function AdminDashboard() {
     },
   });
 
+  const visibleRows = useMemo(() => {
+    const rows = apps.data?.rows ?? [];
+    if (!payState) return rows;
+    return rows.filter((r) => {
+      const total = Number(
+        r.negotiated_price ?? ((r.investment ?? {}) as { total_value?: number }).total_value ?? 0,
+      );
+      const { paid } = totals(r.application_payments ?? [], total);
+      return paymentState(paid, total) === payState;
+    });
+  }, [apps.data, payState]);
+
   const investorIds = useMemo(
-    () => (apps.data?.rows ?? []).map((r) => r.investor_id),
-    [apps.data],
+    () => visibleRows.map((r) => r.investor_id),
+    [visibleRows],
   );
   const { avatars, isLoading: avatarsLoading } = usePassportAvatars(investorIds);
 
@@ -221,6 +255,34 @@ function AdminDashboard() {
             </option>
           ))}
         </select>
+        <select
+          value={applicantType}
+          onChange={(e) => {
+            setPage(0);
+            setApplicantType(e.target.value as "" | "investor" | AppRole);
+          }}
+          aria-label="Filter by applicant type"
+          className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+        >
+          <option value="">All applicants</option>
+          <option value="investor">Investor applications</option>
+          <option value="partner">Partner</option>
+          <option value="adviser">Adviser</option>
+          <option value="super_admin">Super Admin</option>
+        </select>
+        <select
+          value={payState}
+          onChange={(e) => setPayState(e.target.value as "" | PartnerPaymentState)}
+          aria-label="Filter by payment state"
+          className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+        >
+          <option value="">Any payment state</option>
+          {(["unpaid", "partially_paid", "fully_paid"] as PartnerPaymentState[]).map((s) => (
+            <option key={s} value={s}>
+              {PAYMENT_STATE_LABEL[s]}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="mt-6">
@@ -232,7 +294,7 @@ function AdminDashboard() {
           </div>
         ) : null}
 
-        {apps.data?.rows.length === 0 ? (
+        {apps.data && visibleRows.length === 0 ? (
           <EmptyState
             title="No applications found."
             body="Adjust your search or filters to see more results."
@@ -240,7 +302,7 @@ function AdminDashboard() {
         ) : null}
 
         <div className="hidden overflow-hidden rounded-lg border border-border md:block">
-          {apps.data && apps.data.rows.length > 0 ? (
+          {visibleRows.length > 0 ? (
             <table className="w-full text-left text-sm">
               <thead className="bg-muted/60 text-xs uppercase tracking-wide text-muted-foreground">
                 <tr>
@@ -254,16 +316,28 @@ function AdminDashboard() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {apps.data.rows.map((row) => {
+                {visibleRows.map((row) => {
                   const investment = (row.investment ?? {}) as { total_value?: number };
                   const personal = (row.personal ?? {}) as Record<string, string>;
-                  const { paid } = totals(
-                    row.application_payments ?? [],
-                    Number(investment.total_value ?? 0),
+                  const isPartner = row.application_type === "partner";
+                  const total = Number(
+                    isPartner ? (row.negotiated_price ?? 0) : (investment.total_value ?? 0),
                   );
+                  const { paid } = totals(row.application_payments ?? [], total);
+                  const payLabel = PAYMENT_STATE_LABEL[paymentState(paid, total)];
                   return (
                     <tr key={row.id} className="hover:bg-accent/40">
-                      <td className="px-4 py-3 font-medium">{row.reference}</td>
+                      <td className="px-4 py-3 font-medium">
+                        {isPartner ? (row.partner_reference ?? row.reference) : row.reference}
+                        {isPartner ? (
+                          <span className="mt-1 block text-[11px] font-normal uppercase tracking-wide text-primary">
+                            Partner purchase
+                            {row.discount_percent
+                              ? ` · ${Number(row.discount_percent)}% off`
+                              : ""}
+                          </span>
+                        ) : null}
+                      </td>
                       <td className="px-4 py-3">
                         <span className="flex items-center gap-2.5">
                           <PassportAvatar
@@ -277,8 +351,11 @@ function AdminDashboard() {
                         </span>
                       </td>
                       <td className="px-4 py-3">{row.projects?.name ?? "—"}</td>
-                      <td className="px-4 py-3">{formatNaira(investment.total_value ?? 0)}</td>
-                      <td className="px-4 py-3">{formatNaira(paid)}</td>
+                      <td className="px-4 py-3">{formatNaira(total)}</td>
+                      <td className="px-4 py-3">
+                        {formatNaira(paid)}
+                        <span className="block text-[11px] text-muted-foreground">{payLabel}</span>
+                      </td>
                       <td className="px-4 py-3">
                         <StatusBadge status={row.status as ApplicationStatus} />
                       </td>
@@ -315,7 +392,7 @@ function AdminDashboard() {
         </div>
 
         <div className="space-y-2 md:hidden">
-          {apps.data?.rows.map((row) => {
+          {visibleRows.map((row) => {
             const investment = (row.investment ?? {}) as { total_value?: number };
             const personal = (row.personal ?? {}) as Record<string, string>;
             return (

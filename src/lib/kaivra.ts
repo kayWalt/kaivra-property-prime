@@ -1,4 +1,12 @@
-export type AppRole = "super_admin" | "admin" | "adviser" | "investor";
+export type AppRole = "super_admin" | "admin" | "adviser" | "partner" | "investor";
+
+export const ROLE_LABEL: Record<AppRole, string> = {
+  super_admin: "Super Admin",
+  admin: "Admin",
+  adviser: "Adviser",
+  partner: "Partner",
+  investor: "Investor",
+};
 
 export type ApplicationStatus =
   | "draft"
