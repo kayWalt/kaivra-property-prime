@@ -11,22 +11,22 @@ import { definePlugin } from "nitro";
  * Cloud endpoint, which executes scanPaymentReminders() -> processPromotions()
  * -> processQueue(60) server-side.
  *
- * Authentication: Authorization: Bearer <LOVABLE_CRON_SECRET>, read from a
- * Cloudflare Worker secret binding at runtime. The secret is never hardcoded,
- * never logged, and never present in source control.
+ * Authentication: Authorization: Bearer <KAIVRA_CRON_RELAY_SECRET>, read from
+ * a Cloudflare Worker secret binding at runtime. The secret is never
+ * hardcoded, never logged, and never present in source control.
  *
  * Idempotency lives in the database (email_outbox dedupe keys), so repeated
  * or overlapping cron runs cannot double-send. EMAIL_TEST_MODE stays enabled
  * on the Lovable side; no real investor email can be sent while it is on.
  */
-const ENDPOINT = "https://kaivraa-com.lovable.app/api/public/email-cron";
+const ENDPOINT = "https://kaivra-com.lovable.app/api/public/email-cron";
 
 export default definePlugin((nitroApp) => {
   nitroApp.hooks.hook("cloudflare:scheduled", async () => {
-    const secret = process.env["LOVABLE_CRON_SECRET"];
+    const secret = process.env["KAIVRA_CRON_RELAY_SECRET"];
     if (!secret) {
       console.error(
-        "[email-cron] LOVABLE_CRON_SECRET is not configured on the Cloudflare Worker; skipping scheduled email run.",
+        "[email-cron] KAIVRA_CRON_RELAY_SECRET is not configured on the Cloudflare Worker; skipping scheduled email run.",
       );
       return;
     }
