@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Brand } from "@/components/kaivra/Brand";
 import { parseGallery, type GalleryImage } from "@/components/kaivra/ProjectImageFields";
+import { PlotPriceTag } from "@/components/kaivra/PlotPriceTag";
+
 import { formatNaira } from "@/lib/kaivra";
 import { mediaSrc, FALLBACK_PROPERTY_IMAGE } from "@/lib/media";
 
