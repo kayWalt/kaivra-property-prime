@@ -820,6 +820,132 @@ export type Database = {
         }
         Relationships: []
       }
+      email_campaigns: {
+        Row: {
+          audience: string
+          body: string
+          category: string
+          created_at: string
+          created_by: string | null
+          cta_label: string | null
+          cta_url: string | null
+          heading: string
+          id: string
+          queued_count: number
+          subject: string
+          test_mode: boolean
+        }
+        Insert: {
+          audience: string
+          body: string
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          cta_label?: string | null
+          cta_url?: string | null
+          heading: string
+          id?: string
+          queued_count?: number
+          subject: string
+          test_mode?: boolean
+        }
+        Update: {
+          audience?: string
+          body?: string
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          cta_label?: string | null
+          cta_url?: string | null
+          heading?: string
+          id?: string
+          queued_count?: number
+          subject?: string
+          test_mode?: boolean
+        }
+        Relationships: []
+      }
+      email_outbox: {
+        Row: {
+          attempts: number
+          category: string
+          created_at: string
+          dedupe_key: string | null
+          delivered_to: string | null
+          id: string
+          kind: string
+          last_error: string | null
+          payload: Json
+          provider_message_id: string | null
+          recipient_email: string | null
+          recipient_user_id: string | null
+          scheduled_for: string
+          sent_at: string | null
+          status: string
+          subject: string | null
+          test_mode: boolean
+        }
+        Insert: {
+          attempts?: number
+          category?: string
+          created_at?: string
+          dedupe_key?: string | null
+          delivered_to?: string | null
+          id?: string
+          kind: string
+          last_error?: string | null
+          payload?: Json
+          provider_message_id?: string | null
+          recipient_email?: string | null
+          recipient_user_id?: string | null
+          scheduled_for?: string
+          sent_at?: string | null
+          status?: string
+          subject?: string | null
+          test_mode?: boolean
+        }
+        Update: {
+          attempts?: number
+          category?: string
+          created_at?: string
+          dedupe_key?: string | null
+          delivered_to?: string | null
+          id?: string
+          kind?: string
+          last_error?: string | null
+          payload?: Json
+          provider_message_id?: string | null
+          recipient_email?: string | null
+          recipient_user_id?: string | null
+          scheduled_for?: string
+          sent_at?: string | null
+          status?: string
+          subject?: string | null
+          test_mode?: boolean
+        }
+        Relationships: []
+      }
+      email_preferences: {
+        Row: {
+          marketing_opt_in: boolean
+          unsubscribe_token: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          marketing_opt_in?: boolean
+          unsubscribe_token?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          marketing_opt_in?: boolean
+          unsubscribe_token?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       inspection_appointments: {
         Row: {
           admin_note: string | null
