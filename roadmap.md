@@ -8,6 +8,7 @@
 - [ ] Harden configuration error messages (done in source; needs republish to custom domain)
 
 ## New Request
+- [ ] Investor email notification system (Resend) — built, test mode only; awaiting Resend key, test recipient, DNS verification and deploy
 - [ ] Clarify/confirm Supabase status — user asked to "Enable Supabase for this project"
   - Project already uses Lovable Cloud (Supabase-backed); secrets and tables are configured
 
