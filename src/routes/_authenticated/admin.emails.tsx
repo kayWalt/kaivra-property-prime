@@ -111,7 +111,7 @@ function AdminEmailsPage() {
     return (
       <EmptyState
         title="Access restricted"
-        description="Investor email notifications are a KAIVRA Super Admin function."
+        body="Investor email notifications are a KAIVRA Super Admin function."
       />
     );
   }
@@ -377,7 +377,7 @@ function AdminEmailsPage() {
           {logQuery.isLoading ? (
             <Skeleton className="h-64" />
           ) : (logQuery.data ?? []).length === 0 ? (
-            <EmptyState title="No messages yet" description="Queued email will appear here." />
+            <EmptyState title="No messages yet" body="Queued email will appear here." />
           ) : (
             <div className="overflow-x-auto rounded-lg border border-border">
               <table className="w-full text-sm">
