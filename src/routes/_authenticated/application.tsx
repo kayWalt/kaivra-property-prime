@@ -597,7 +597,12 @@ function ApplicationWizard() {
 
   async function submit() {
     if (!applicationId || !user) return;
+    // Synchronous guard: state updates are async, so a rapid double click could
+    // otherwise fire the submit twice before `submitting` flips.
+    if (submitLockRef.current) return;
+    submitLockRef.current = true;
     setSubmitting(true);
+
     try {
       await persist({ ...draft, current_step: 7 });
       const { data, error } = await supabase
