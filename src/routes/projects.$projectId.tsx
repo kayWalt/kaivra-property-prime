@@ -284,15 +284,8 @@ function ProjectDetail() {
                   <p className="mt-4 font-display text-2xl text-primary">
                     {formatNaira(property.unit_price, project.currency)}
                   </p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {property.units_available > 0
-                      ? `${property.units_available} units available`
-                      : "Sold out"}
-                  </p>
                   <Button
                     className="mt-5 h-11 w-full uppercase tracking-[0.12em]"
-                    variant={property.units_available > 0 ? "default" : "outline"}
-                    disabled={property.units_available <= 0}
                     onClick={() => invest(property.id)}
                   >
                     Subscribe / Invest
