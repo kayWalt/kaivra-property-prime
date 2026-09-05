@@ -173,7 +173,9 @@ function ApplicationWizard() {
   } | null>(null);
   const [discarding, setDiscarding] = useState(false);
   const pendingRef = useRef<DraftState | null>(null);
+  const submitLockRef = useRef(false);
   const bootRef = useRef(false);
+
 
   // Creates a brand-new draft row and puts the wizard on step 1.
   const startFreshDraft = useCallback(async () => {
@@ -597,7 +599,12 @@ function ApplicationWizard() {
 
   async function submit() {
     if (!applicationId || !user) return;
+    // Synchronous guard: state updates are async, so a rapid double click could
+    // otherwise fire the submit twice before `submitting` flips.
+    if (submitLockRef.current) return;
+    submitLockRef.current = true;
     setSubmitting(true);
+
     try {
       await persist({ ...draft, current_step: 7 });
       const { data, error } = await supabase
@@ -645,8 +652,10 @@ function ApplicationWizard() {
     } catch {
       toast.error("Something went wrong. Please try again.");
     } finally {
+      submitLockRef.current = false;
       setSubmitting(false);
     }
+
   }
 
   if (submitted) {
@@ -901,7 +910,10 @@ function ApplicationWizard() {
           </div>
         ) : null}
 
-        {step === 4 ? (
+        {/* When a partner purchase is active the partner panel above is the single
+            authoritative pricing form, so the standard investment panel is hidden
+            to avoid two copies of the same form on the same step. */}
+        {step === 4 && !partnerActive ? (
           <StepInvestment
             projectName={selectedProject?.name ?? "—"}
             propertyName={selectedProperty?.name ?? "—"}
