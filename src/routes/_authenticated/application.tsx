@@ -652,8 +652,10 @@ function ApplicationWizard() {
     } catch {
       toast.error("Something went wrong. Please try again.");
     } finally {
+      submitLockRef.current = false;
       setSubmitting(false);
     }
+
   }
 
   if (submitted) {
