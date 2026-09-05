@@ -39,8 +39,10 @@ import { SignaturePad } from "@/components/kaivra/SignaturePad";
 import { PaymentBadge } from "@/components/kaivra/StatusBadge";
 import { useProfile, useRoles, useSession, primaryRole } from "@/hooks/useAuth";
 import {
+  DUPLICATE_REFERENCE_MESSAGE,
   fetchDocuments,
   fetchPayments,
+  isDuplicateReferenceError,
   logEvent,
   notifyStaffForProject,
   totals,
