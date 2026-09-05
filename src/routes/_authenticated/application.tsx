@@ -173,7 +173,9 @@ function ApplicationWizard() {
   } | null>(null);
   const [discarding, setDiscarding] = useState(false);
   const pendingRef = useRef<DraftState | null>(null);
+  const submitLockRef = useRef(false);
   const bootRef = useRef(false);
+
 
   // Creates a brand-new draft row and puts the wizard on step 1.
   const startFreshDraft = useCallback(async () => {
