@@ -11,6 +11,7 @@ import { openDocument } from "@/components/kaivra/FileUpload";
 import { PassportAvatar } from "@/components/kaivra/PassportAvatar";
 import { useProfile } from "@/hooks/useAuth";
 import { usePassportAvatars } from "@/hooks/usePassportAvatars";
+import { supabase } from "@/integrations/supabase/client";
 import { AddPaymentDialog } from "@/components/kaivra/AddPaymentDialog";
 import {
   APPROVAL_LABEL,
