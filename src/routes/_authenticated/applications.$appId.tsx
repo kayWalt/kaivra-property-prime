@@ -129,6 +129,20 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
   const isIncomplete =
     record.status === "draft" || !record.project_id || !record.property_id || totalValue <= 0;
 
+  async function setApproval(next: "approved" | "rejected") {
+    const { error } = await supabase
+      .from("applications")
+      .update({ discount_approval: next })
+      .eq("id", appId);
+    if (error) {
+      toast.error("The discount approval could not be updated.");
+      return;
+    }
+    toast.success(`Partner discount ${next}.`);
+    void logEvent(appId, "partner_discount_" + next, `Partner discount ${next}`);
+    void app.refetch();
+  }
+
   async function handleDownload() {
     if (isIncomplete) {
       toast.error("Complete and submit your application before downloading the PDF.");
@@ -250,6 +264,26 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
               </div>
             ))}
           </dl>
+          {manage ? (
+            <div className="mt-4 flex flex-wrap gap-2 print:hidden">
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={partner.discount_approval === "approved"}
+                onClick={() => void setApproval("approved")}
+              >
+                Approve discount
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={partner.discount_approval === "rejected"}
+                onClick={() => void setApproval("rejected")}
+              >
+                Reject discount
+              </Button>
+            </div>
+          ) : null}
         </section>
       ) : null}
 
