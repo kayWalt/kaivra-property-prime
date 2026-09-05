@@ -12,6 +12,11 @@ import { PassportAvatar } from "@/components/kaivra/PassportAvatar";
 import { useProfile } from "@/hooks/useAuth";
 import { usePassportAvatars } from "@/hooks/usePassportAvatars";
 import { AddPaymentDialog } from "@/components/kaivra/AddPaymentDialog";
+import {
+  APPROVAL_LABEL,
+  PAYMENT_STATE_LABEL,
+  paymentState,
+} from "@/lib/partner-pricing";
 import { ReferenceChip } from "@/components/kaivra/ReferenceChip";
 import { RequestCorrectionDialog } from "@/components/kaivra/RequestCorrectionDialog";
 import {
@@ -103,7 +108,19 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
   };
   const personal = (record.personal ?? {}) as Record<string, string>;
   const contact = (record.contact ?? {}) as Record<string, string>;
-  const totalValue = Number(investment.total_value ?? 0);
+  const isPartner = (record as { application_type?: string }).application_type === "partner";
+  const partner = record as unknown as {
+    partner_reference: string | null;
+    pricing_method: string | null;
+    standard_price: number | null;
+    discount_percent: number | null;
+    negotiated_price: number | null;
+    discount_approval: string | null;
+    pricing_set_at: string | null;
+  };
+  const totalValue = isPartner
+    ? Number(partner.negotiated_price ?? investment.total_value ?? 0)
+    : Number(investment.total_value ?? 0);
   const { paid, outstanding } = totals(payments.data ?? [], totalValue);
   const docs = documents.data ?? [];
 
@@ -193,9 +210,52 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
         </div>
       </header>
 
+      {isPartner ? (
+        <section className="rounded-lg border border-primary/40 bg-primary/5 p-5">
+          <p className="eyebrow text-primary">KAIVRA Partner / Adviser purchase</p>
+          <dl className="mt-4 grid gap-3 sm:grid-cols-3">
+            {[
+              ["Application reference", partner.partner_reference ?? "—"],
+              ["Standard property price", formatNaira(partner.standard_price ?? 0)],
+              [
+                "Partner discount",
+                `${Number(partner.discount_percent ?? 0).toLocaleString("en-NG", { maximumFractionDigits: 2 })}%`,
+              ],
+              [
+                "Discount amount",
+                formatNaira(
+                  Math.max(
+                    0,
+                    Number(partner.standard_price ?? 0) - Number(partner.negotiated_price ?? 0),
+                  ),
+                ),
+              ],
+              ["Negotiated purchase price", formatNaira(partner.negotiated_price ?? 0)],
+              ["Balance", formatNaira(Math.max(0, totalValue - paid))],
+              [
+                "Payment status",
+                PAYMENT_STATE_LABEL[paymentState(paid, Number(partner.negotiated_price ?? 0))],
+              ],
+              [
+                "Discount approval",
+                APPROVAL_LABEL[
+                  (partner.discount_approval ?? "pending") as keyof typeof APPROVAL_LABEL
+                ],
+              ],
+              ["Pricing recorded", formatDate(partner.pricing_set_at)],
+            ].map(([label, value]) => (
+              <div key={label} className="rounded-md border border-border bg-background px-4 py-3">
+                <dt className="eyebrow text-muted-foreground">{label}</dt>
+                <dd className="mt-1 text-sm font-medium break-words">{value}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      ) : null}
+
       <div className="grid gap-4 sm:grid-cols-3">
         {[
-          ["Total investment", formatNaira(totalValue)],
+          [isPartner ? "Negotiated price" : "Total investment", formatNaira(totalValue)],
           ["Total paid", formatNaira(paid)],
           ["Outstanding", formatNaira(outstanding)],
         ].map(([label, value], index) => (
