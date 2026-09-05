@@ -475,23 +475,32 @@ export type Database = {
         Row: {
           adviser_id: string | null
           application_method: string
+          application_type: string
           contact: Json
           created_at: string
           created_by: string | null
           current_step: number
           declaration_accepted: boolean
+          discount_approval: string
+          discount_percent: number | null
           id: string
           investment: Json
           investor_id: string
           legacy_reference: string | null
+          negotiated_price: number | null
+          partner_reference: string | null
           payment_info: Json
           personal: Json
+          pricing_method: string | null
+          pricing_set_at: string | null
+          pricing_set_by: string | null
           project_id: string | null
           property_id: string | null
           reference: string | null
           review_note: string | null
           reviewed_at: string | null
           reviewed_by: string | null
+          standard_price: number | null
           status: Database["public"]["Enums"]["application_status"]
           submitted_at: string | null
           updated_at: string
@@ -499,23 +508,32 @@ export type Database = {
         Insert: {
           adviser_id?: string | null
           application_method?: string
+          application_type?: string
           contact?: Json
           created_at?: string
           created_by?: string | null
           current_step?: number
           declaration_accepted?: boolean
+          discount_approval?: string
+          discount_percent?: number | null
           id?: string
           investment?: Json
           investor_id: string
           legacy_reference?: string | null
+          negotiated_price?: number | null
+          partner_reference?: string | null
           payment_info?: Json
           personal?: Json
+          pricing_method?: string | null
+          pricing_set_at?: string | null
+          pricing_set_by?: string | null
           project_id?: string | null
           property_id?: string | null
           reference?: string | null
           review_note?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          standard_price?: number | null
           status?: Database["public"]["Enums"]["application_status"]
           submitted_at?: string | null
           updated_at?: string
@@ -523,23 +541,32 @@ export type Database = {
         Update: {
           adviser_id?: string | null
           application_method?: string
+          application_type?: string
           contact?: Json
           created_at?: string
           created_by?: string | null
           current_step?: number
           declaration_accepted?: boolean
+          discount_approval?: string
+          discount_percent?: number | null
           id?: string
           investment?: Json
           investor_id?: string
           legacy_reference?: string | null
+          negotiated_price?: number | null
+          partner_reference?: string | null
           payment_info?: Json
           personal?: Json
+          pricing_method?: string | null
+          pricing_set_at?: string | null
+          pricing_set_by?: string | null
           project_id?: string | null
           property_id?: string | null
           reference?: string | null
           review_note?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          standard_price?: number | null
           status?: Database["public"]["Enums"]["application_status"]
           submitted_at?: string | null
           updated_at?: string
@@ -1431,7 +1458,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      app_role: "super_admin" | "admin" | "adviser" | "investor"
+      app_role: "super_admin" | "admin" | "adviser" | "investor" | "partner"
       application_status:
         | "draft"
         | "submitted"
@@ -1582,7 +1609,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["super_admin", "admin", "adviser", "investor"],
+      app_role: ["super_admin", "admin", "adviser", "investor", "partner"],
       application_status: [
         "draft",
         "submitted",
