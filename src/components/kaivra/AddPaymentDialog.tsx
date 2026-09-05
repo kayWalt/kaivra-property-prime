@@ -125,7 +125,16 @@ export function AddPaymentDialog({
       reset();
       setOpen(false);
       onDone();
-    } catch {
+    } catch (err) {
+      if (isDuplicateReferenceError(err)) {
+        toast.error(DUPLICATE_REFERENCE_MESSAGE);
+        void logEvent(
+          applicationId,
+          "payment_duplicate_reference_rejected",
+          `Duplicate payment reference "${payRef.trim()}" rejected`,
+        );
+        return;
+      }
       toast.error("Your payment could not be recorded. Please try again.");
     }
   }
