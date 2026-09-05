@@ -2,6 +2,7 @@
 export async function authenticateCronRequest(request: Request): Promise<Response | null> {
   const currentSecret = process.env["LOVABLE_CRON_SECRET"];
   const previousSecret = process.env["LOVABLE_CRON_SECRET_PREVIOUS"];
+  const relaySecret = process.env["KAIVRA_CRON_RELAY_SECRET"];
 
   if (!currentSecret) {
     return new Response("Server configuration error", { status: 500 });
@@ -16,10 +17,15 @@ export async function authenticateCronRequest(request: Request): Promise<Respons
   const { createHash, timingSafeEqual } = await import("node:crypto");
   const digest = (value: string) => createHash("sha256").update(value, "utf8").digest();
   const providedDigest = digest(token);
-  const currentMatches = timingSafeEqual(providedDigest, digest(currentSecret));
-  const previousMatches = timingSafeEqual(providedDigest, digest(previousSecret ?? currentSecret));
 
-  if (!currentMatches && !previousMatches) {
+  const allowedSecrets = [currentSecret, previousSecret, relaySecret].filter(
+    (s): s is string => typeof s === "string" && s.length > 0
+  );
+  const isAuthorized = allowedSecrets.some((secret) =>
+    timingSafeEqual(providedDigest, digest(secret))
+  );
+
+  if (!isAuthorized) {
     return new Response("Unauthorized", { status: 401 });
   }
 
