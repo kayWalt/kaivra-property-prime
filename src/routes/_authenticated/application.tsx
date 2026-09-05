@@ -443,7 +443,7 @@ function ApplicationWizard() {
       // Partner purchases are valued at the negotiated price; investor
       // applications keep the existing unit-price maths untouched.
       if (partnerAllowed && partner.enabled && partner.standard_price > 0) {
-        normalisedInvestment.total_value = partnerDerived.negotiated;
+        normalisedInvestment['total_value'] = partnerDerived.negotiated;
       }
       const partnerFields = partnerAllowed
         ? {
