@@ -38,6 +38,10 @@ export default defineConfig({
         // no cron secret required for scheduled runs.
         name: "kaivra-property-prime",
         triggers: { crons: ["*/15 * * * *"] },
+        // Workers Observability / Workers Logs, enabled at the source level so
+        // it survives every build/deploy. 100% head sampling; tracing not
+        // enabled (logs do not require it).
+        observability: { enabled: true, head_sampling_rate: 1 },
       },
     },
   } satisfies NitroOptions as NitroOptions,
