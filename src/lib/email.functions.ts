@@ -162,16 +162,36 @@ export const queueAnnouncement = createServerFn({ method: "POST" })
         .filter((p) => p.email && !staffIds.has(p.id))
         .map((p) => ({ id: p.id, email: String(p.email).toLowerCase(), full_name: p.full_name ?? "" }));
     } else {
-      const statuses =
-        data.audience === "applicants"
-          ? ["submitted", "under_review", "payment_verification", "approved"]
-          : ["submitted", "under_review", "payment_verification", "approved"];
+      const statuses = ["submitted", "under_review", "payment_verification", "approved"];
       const { data: apps } = await db
         .from("applications")
-        .select("id, investor_id, contact, personal")
+        .select("id, investor_id, contact, personal, investment")
         .in("status", statuses);
+      let rows = (apps ?? []) as any[];
+
+      if (data.audience === "outstanding_balance") {
+        // Only applications whose verified payments do not yet cover the
+        // agreed total value are considered to carry an outstanding balance.
+        const ids = rows.map((a) => a.id);
+        const paid = new Map<string, number>();
+        if (ids.length) {
+          const { data: pays } = await db
+            .from("application_payments")
+            .select("application_id, amount, status")
+            .in("application_id", ids)
+            .eq("status", "verified");
+          for (const p of ((pays ?? []) as any[])) {
+            paid.set(p.application_id, (paid.get(p.application_id) ?? 0) + Number(p.amount ?? 0));
+          }
+        }
+        rows = rows.filter((a) => {
+          const total = Number(a.investment?.total_value ?? 0);
+          return total > 0 && (paid.get(a.id) ?? 0) < total;
+        });
+      }
+
       const seen = new Set<string>();
-      for (const app of (apps ?? []) as any[]) {
+      for (const app of rows) {
         const email = String(app.contact?.email ?? "").trim().toLowerCase();
         if (!email || seen.has(email) || staffIds.has(app.investor_id)) continue;
         seen.add(email);
