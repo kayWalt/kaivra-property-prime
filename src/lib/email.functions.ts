@@ -176,6 +176,12 @@ export const savePromotion = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { userId } = context as Caller;
     await requireSuperAdmin(context as Caller);
+    if (!process.env["SUPABASE_SERVICE_ROLE_KEY"]) {
+      const { relayEmailAdmin } = await import("@/lib/email-status-relay.server");
+      const relayed = await relayEmailAdmin<{ ok: boolean }>("savePromotion", data);
+      if (!relayed) throw new Error("The promotion could not be saved.");
+      return relayed;
+    }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const payload: Record<string, unknown> = {
       ...data,
@@ -194,6 +200,7 @@ export const savePromotion = createServerFn({ method: "POST" })
     if (error) throw new Error("The promotion could not be saved.");
     return { ok: true };
   });
+
 
 export const setPromotionStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
