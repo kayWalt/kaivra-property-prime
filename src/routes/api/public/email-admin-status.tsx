@@ -94,6 +94,82 @@ export const Route = createFileRoute("/api/public/email-admin-status")({
             return Response.json({ rows: rows ?? [] });
           }
 
+          if (op === "savePromotion") {
+            const { z } = await import("zod");
+            const parsed = z
+              .object({
+                id: z.string().uuid().optional(),
+                title: z.string().trim().min(3).max(160),
+                subject: z.string().trim().min(3).max(160),
+                description: z.string().trim().min(10).max(5000),
+                image_url: z.string().trim().url().max(500).optional().nullable(),
+                cta_label: z.string().trim().max(60).optional().nullable(),
+                cta_url: z.string().trim().url().max(300).optional().nullable(),
+                starts_at: z.string().optional().nullable(),
+                ends_at: z.string().optional().nullable(),
+                project_id: z.string().uuid().optional().nullable(),
+                property_id: z.string().uuid().optional().nullable(),
+                audience: z.enum([
+                  "opted_in_investors",
+                  "property_related",
+                  "outstanding_balance",
+                ]),
+                status: z
+                  .enum(["draft", "scheduled", "active", "cancelled", "expired"])
+                  .default("draft"),
+              })
+              .safeParse(body.data ?? {});
+            if (!parsed.success) {
+              return Response.json({ error: "Invalid promotion." }, { status: 400 });
+            }
+            const d = parsed.data;
+            const payload: Record<string, unknown> = {
+              ...d,
+              image_url: d.image_url || null,
+              cta_label: d.cta_label || null,
+              cta_url: d.cta_url || null,
+              starts_at: d.starts_at || null,
+              ends_at: d.ends_at || null,
+              project_id: d.project_id || null,
+              property_id: d.property_id || null,
+              created_by: userId,
+            };
+            const { error } = await db.from("promotions").upsert(payload, { onConflict: "id" });
+            if (error) {
+              return Response.json(
+                { error: "The promotion could not be saved." },
+                { status: 500 },
+              );
+            }
+            return Response.json({ ok: true });
+          }
+
+          if (op === "setPromotionStatus") {
+            const { z } = await import("zod");
+            const parsed = z
+              .object({
+                id: z.string().uuid(),
+                status: z.enum(["draft", "scheduled", "active", "cancelled", "expired"]),
+              })
+              .safeParse(body.data ?? {});
+            if (!parsed.success) {
+              return Response.json({ error: "Invalid promotion status." }, { status: 400 });
+            }
+            const { error } = await db
+              .from("promotions")
+              .update({ status: parsed.data.status })
+              .eq("id", parsed.data.id);
+            if (error) {
+              return Response.json(
+                { error: "The promotion could not be updated." },
+                { status: 500 },
+              );
+            }
+            return Response.json({ ok: true });
+          }
+
+
+
 
           if (op === "queueAnnouncement") {
             const { z } = await import("zod");

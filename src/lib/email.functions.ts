@@ -176,6 +176,12 @@ export const savePromotion = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { userId } = context as Caller;
     await requireSuperAdmin(context as Caller);
+    if (!process.env["SUPABASE_SERVICE_ROLE_KEY"]) {
+      const { relayEmailAdmin } = await import("@/lib/email-status-relay.server");
+      const relayed = await relayEmailAdmin<{ ok: boolean }>("savePromotion", data);
+      if (!relayed) throw new Error("The promotion could not be saved.");
+      return relayed;
+    }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const payload: Record<string, unknown> = {
       ...data,
@@ -195,6 +201,7 @@ export const savePromotion = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+
 export const setPromotionStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) =>
@@ -207,7 +214,14 @@ export const setPromotionStatus = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await requireSuperAdmin(context as Caller);
+    if (!process.env["SUPABASE_SERVICE_ROLE_KEY"]) {
+      const { relayEmailAdmin } = await import("@/lib/email-status-relay.server");
+      const relayed = await relayEmailAdmin<{ ok: boolean }>("setPromotionStatus", data);
+      if (!relayed) throw new Error("The promotion could not be updated.");
+      return relayed;
+    }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
     const { error } = await (supabaseAdmin as any)
       .from("promotions")
       .update({ status: data.status })
