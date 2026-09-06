@@ -260,6 +260,8 @@ function AnalyticsDashboard({ canExport }: { canExport: boolean }) {
           </CardContent>
         </Card>
       ) : (
+        <>
+
 
           <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             <Stat label="Unique visitors" value={String(totals?.visitors ?? 0)} />
