@@ -333,105 +333,27 @@ export const queueAnnouncement = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { userId } = context as Caller;
     await requireSuperAdmin(context as Caller);
-    const { enqueue, emailConfig } = await import("@/lib/email.server");
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const db = supabaseAdmin as any;
 
-    // Staff are never mailed as an audience: partner / adviser / super admin
-    // activity must not be exposed through investor mailing lists.
-    const { data: staff } = await db
-      .from("user_roles")
-      .select("user_id")
-      .in("role", ["admin", "super_admin", "adviser", "partner"]);
-    const staffIds = new Set(((staff ?? []) as any[]).map((s) => s.user_id));
-
-    let targets: { id: string | null; email: string; full_name: string }[] = [];
-    if (data.audience === "investors") {
-      const { data: rows } = await db.from("profiles").select("id, email, full_name");
-      targets = ((rows ?? []) as any[])
-        .filter((p) => p.email && !staffIds.has(p.id))
-        .map((p) => ({ id: p.id, email: String(p.email).toLowerCase(), full_name: p.full_name ?? "" }));
-    } else {
-      const statuses = ["submitted", "under_review", "payment_verification", "approved"];
-      const { data: apps } = await db
-        .from("applications")
-        .select("id, investor_id, contact, personal, investment")
-        .in("status", statuses);
-      let rows = (apps ?? []) as any[];
-
-      if (data.audience === "outstanding_balance") {
-        // Only applications whose verified payments do not yet cover the
-        // agreed total value are considered to carry an outstanding balance.
-        const ids = rows.map((a) => a.id);
-        const paid = new Map<string, number>();
-        if (ids.length) {
-          const { data: pays } = await db
-            .from("application_payments")
-            .select("application_id, amount, status")
-            .in("application_id", ids)
-            .eq("status", "verified");
-          for (const p of ((pays ?? []) as any[])) {
-            paid.set(p.application_id, (paid.get(p.application_id) ?? 0) + Number(p.amount ?? 0));
-          }
-        }
-        rows = rows.filter((a) => {
-          const total = Number(a.investment?.total_value ?? 0);
-          return total > 0 && (paid.get(a.id) ?? 0) < total;
-        });
+    // Cloudflare deliberately has no service-role key: relay the validated
+    // payload plus the caller's own bearer token to Lovable Cloud, which
+    // re-checks super_admin before running the identical queue logic.
+    if (!process.env["SUPABASE_SERVICE_ROLE_KEY"]) {
+      const { relayEmailAdmin } = await import("@/lib/email-status-relay.server");
+      const relayed = await relayEmailAdmin<{
+        queued: number;
+        recipients: number;
+        testMode: boolean;
+      }>("queueAnnouncement", data);
+      if (!relayed || typeof relayed.queued !== "number") {
+        throw new Error("The announcement could not be queued.");
       }
-
-      const seen = new Set<string>();
-      for (const app of rows) {
-        const email = String(app.contact?.email ?? "").trim().toLowerCase();
-        if (!email || seen.has(email) || staffIds.has(app.investor_id)) continue;
-        seen.add(email);
-        targets.push({
-          id: app.investor_id ?? null,
-          email,
-          full_name: app.personal?.full_name ?? "",
-        });
-      }
+      return relayed;
     }
 
-    const { data: campaign, error: campaignError } = await db
-      .from("email_campaigns")
-      .insert({
-        subject: data.subject,
-        heading: data.heading,
-        body: data.body,
-        cta_label: data.cta_label || null,
-        cta_url: data.cta_url || null,
-        audience: data.audience,
-        category: data.category,
-        test_mode: emailConfig().testMode,
-        queued_count: targets.length,
-        created_by: userId,
-      })
-      .select("id")
-      .single();
-    if (campaignError || !campaign) throw new Error("The announcement could not be recorded.");
-
-    const queued = await enqueue(
-      targets.map((t) => ({
-        kind: "announcement",
-        category: data.category,
-        recipient_email: t.email,
-        recipient_user_id: t.id,
-        subject: data.subject,
-        payload: {
-          subject: data.subject,
-          heading: data.heading,
-          body: data.body,
-          cta_label: data.cta_label ?? null,
-          cta_url: data.cta_url ?? null,
-          category: data.category,
-          full_name: t.full_name,
-        },
-        dedupe_key: `campaign:${campaign.id}:${t.email}`,
-      })),
-    );
-    return { queued, recipients: targets.length, testMode: emailConfig().testMode };
+    const { queueAnnouncementCore } = await import("@/lib/email-announce.server");
+    return queueAnnouncementCore(data, userId);
   });
+
 
 export const runEmailQueue = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
