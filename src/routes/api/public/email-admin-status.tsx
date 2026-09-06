@@ -202,6 +202,45 @@ export const Route = createFileRoute("/api/public/email-admin-status")({
             return Response.json({ requeued: (data ?? []).length });
           }
 
+          if (op === "runEmailQueue") {
+            const { processQueue } = await import("@/lib/email.server");
+            return Response.json(await processQueue(40));
+          }
+
+          if (op === "runPaymentReminderScan") {
+            const { scanPaymentReminders } = await import("@/lib/email.server");
+            return Response.json(await scanPaymentReminders());
+          }
+
+          if (op === "runPromotionCycle") {
+            const { processPromotions } = await import("@/lib/email.server");
+            return Response.json(await processPromotions());
+          }
+
+          if (op === "sendTestEmail") {
+            const { emailConfig, deliver } = await import("@/lib/email.server");
+            const { renderTemplate } = await import("@/lib/email-templates.server");
+            const cfg = emailConfig();
+            if (!cfg.configured) {
+              return Response.json(
+                { error: "The email provider is not configured yet." },
+                { status: 400 },
+              );
+            }
+            if (!cfg.testRecipient) {
+              return Response.json({ error: "No test recipient is configured." }, { status: 400 });
+            }
+            const rendered = renderTemplate("test", {});
+            const res = await deliver({
+              intendedTo: cfg.testRecipient,
+              subject: rendered.subject,
+              html: rendered.html,
+              text: rendered.text,
+            });
+            if (!res.ok) return Response.json({ error: res.error }, { status: 502 });
+            return Response.json({ ok: true });
+          }
+
           if (op !== "status") {
             return Response.json({ error: "Unknown operation" }, { status: 400 });
           }

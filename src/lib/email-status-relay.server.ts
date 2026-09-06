@@ -28,7 +28,11 @@ export type EmailAdminOp =
   | "savePromotion"
   | "setPromotionStatus"
   | "queueAnnouncement"
-  | "retryFailedEmails";
+  | "retryFailedEmails"
+  | "runEmailQueue"
+  | "runPaymentReminderScan"
+  | "runPromotionCycle"
+  | "sendTestEmail";
 
 
 /** Forward one admin email read to Lovable Cloud with the caller's own token. */
