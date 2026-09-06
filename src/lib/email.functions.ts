@@ -138,6 +138,12 @@ export const listPromotions = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await requireSuperAdmin(context as Caller);
+    if (!process.env["SUPABASE_SERVICE_ROLE_KEY"]) {
+      const { relayEmailAdmin } = await import("@/lib/email-status-relay.server");
+      const relayed = await relayEmailAdmin<{ rows: any[] }>("promotions");
+      if (!relayed) throw new Error("Promotions could not be read.");
+      return relayed.rows ?? [];
+    }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data, error } = await (supabaseAdmin as any)
       .from("promotions")
