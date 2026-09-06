@@ -387,6 +387,12 @@ export const runEmailQueue = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await requireSuperAdmin(context as Caller);
+    if (!process.env["SUPABASE_SERVICE_ROLE_KEY"]) {
+      const { relayEmailAdmin } = await import("@/lib/email-status-relay.server");
+      const relayed = await relayEmailAdmin<any>("runEmailQueue");
+      if (!relayed) throw new Error("The email queue could not be processed.");
+      return relayed;
+    }
     const { processQueue } = await import("@/lib/email.server");
     return processQueue(40);
   });
@@ -395,6 +401,12 @@ export const runPaymentReminderScan = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await requireSuperAdmin(context as Caller);
+    if (!process.env["SUPABASE_SERVICE_ROLE_KEY"]) {
+      const { relayEmailAdmin } = await import("@/lib/email-status-relay.server");
+      const relayed = await relayEmailAdmin<any>("runPaymentReminderScan");
+      if (!relayed) throw new Error("The payment reminder scan could not be run.");
+      return relayed;
+    }
     const { scanPaymentReminders } = await import("@/lib/email.server");
     return scanPaymentReminders();
   });
