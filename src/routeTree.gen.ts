@@ -44,6 +44,7 @@ import { Route as AuthenticatedInspectionsNewRouteImport } from './routes/_authe
 import { Route as ApiPublicAiChatRouteImport } from './routes/api/public/ai-chat'
 import { Route as ApiPublicContactRouteImport } from './routes/api/public/contact'
 import { Route as ApiPublicDocumentUrlRouteImport } from './routes/api/public/document-url'
+import { Route as ApiPublicEmailAdminStatusRouteImport } from './routes/api/public/email-admin-status'
 import { Route as ApiPublicEmailCronRouteImport } from './routes/api/public/email-cron'
 import { Route as ApiPublicPassportAvatarsRouteImport } from './routes/api/public/passport-avatars'
 import { Route as ApiPublicPaymentAccountNumberRouteImport } from './routes/api/public/payment-account-number'
@@ -247,6 +248,12 @@ const ApiPublicDocumentUrlRoute = ApiPublicDocumentUrlRouteImport.update({
   path: '/api/public/document-url',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicEmailAdminStatusRoute =
+  ApiPublicEmailAdminStatusRouteImport.update({
+    id: '/api/public/email-admin-status',
+    path: '/api/public/email-admin-status',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicEmailCronRoute = ApiPublicEmailCronRouteImport.update({
   id: '/api/public/email-cron',
   path: '/api/public/email-cron',
@@ -325,6 +332,7 @@ export interface FileRoutesByFullPath {
   '/api/public/ai-chat': typeof ApiPublicAiChatRoute
   '/api/public/contact': typeof ApiPublicContactRoute
   '/api/public/document-url': typeof ApiPublicDocumentUrlRoute
+  '/api/public/email-admin-status': typeof ApiPublicEmailAdminStatusRoute
   '/api/public/email-cron': typeof ApiPublicEmailCronRoute
   '/api/public/passport-avatars': typeof ApiPublicPassportAvatarsRoute
   '/api/public/payment-account-number': typeof ApiPublicPaymentAccountNumberRoute
@@ -369,6 +377,7 @@ export interface FileRoutesByTo {
   '/api/public/ai-chat': typeof ApiPublicAiChatRoute
   '/api/public/contact': typeof ApiPublicContactRoute
   '/api/public/document-url': typeof ApiPublicDocumentUrlRoute
+  '/api/public/email-admin-status': typeof ApiPublicEmailAdminStatusRoute
   '/api/public/email-cron': typeof ApiPublicEmailCronRoute
   '/api/public/passport-avatars': typeof ApiPublicPassportAvatarsRoute
   '/api/public/payment-account-number': typeof ApiPublicPaymentAccountNumberRoute
@@ -415,6 +424,7 @@ export interface FileRoutesById {
   '/api/public/ai-chat': typeof ApiPublicAiChatRoute
   '/api/public/contact': typeof ApiPublicContactRoute
   '/api/public/document-url': typeof ApiPublicDocumentUrlRoute
+  '/api/public/email-admin-status': typeof ApiPublicEmailAdminStatusRoute
   '/api/public/email-cron': typeof ApiPublicEmailCronRoute
   '/api/public/passport-avatars': typeof ApiPublicPassportAvatarsRoute
   '/api/public/payment-account-number': typeof ApiPublicPaymentAccountNumberRoute
@@ -461,6 +471,7 @@ export interface FileRouteTypes {
     | '/api/public/ai-chat'
     | '/api/public/contact'
     | '/api/public/document-url'
+    | '/api/public/email-admin-status'
     | '/api/public/email-cron'
     | '/api/public/passport-avatars'
     | '/api/public/payment-account-number'
@@ -505,6 +516,7 @@ export interface FileRouteTypes {
     | '/api/public/ai-chat'
     | '/api/public/contact'
     | '/api/public/document-url'
+    | '/api/public/email-admin-status'
     | '/api/public/email-cron'
     | '/api/public/passport-avatars'
     | '/api/public/payment-account-number'
@@ -550,6 +562,7 @@ export interface FileRouteTypes {
     | '/api/public/ai-chat'
     | '/api/public/contact'
     | '/api/public/document-url'
+    | '/api/public/email-admin-status'
     | '/api/public/email-cron'
     | '/api/public/passport-avatars'
     | '/api/public/payment-account-number'
@@ -576,6 +589,7 @@ export interface RootRouteChildren {
   ApiPublicAiChatRoute: typeof ApiPublicAiChatRoute
   ApiPublicContactRoute: typeof ApiPublicContactRoute
   ApiPublicDocumentUrlRoute: typeof ApiPublicDocumentUrlRoute
+  ApiPublicEmailAdminStatusRoute: typeof ApiPublicEmailAdminStatusRoute
   ApiPublicEmailCronRoute: typeof ApiPublicEmailCronRoute
   ApiPublicPassportAvatarsRoute: typeof ApiPublicPassportAvatarsRoute
   ApiPublicPaymentAccountNumberRoute: typeof ApiPublicPaymentAccountNumberRoute
@@ -831,6 +845,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicDocumentUrlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/email-admin-status': {
+      id: '/api/public/email-admin-status'
+      path: '/api/public/email-admin-status'
+      fullPath: '/api/public/email-admin-status'
+      preLoaderRoute: typeof ApiPublicEmailAdminStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/email-cron': {
       id: '/api/public/email-cron'
       path: '/api/public/email-cron'
@@ -965,6 +986,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicAiChatRoute: ApiPublicAiChatRoute,
   ApiPublicContactRoute: ApiPublicContactRoute,
   ApiPublicDocumentUrlRoute: ApiPublicDocumentUrlRoute,
+  ApiPublicEmailAdminStatusRoute: ApiPublicEmailAdminStatusRoute,
   ApiPublicEmailCronRoute: ApiPublicEmailCronRoute,
   ApiPublicPassportAvatarsRoute: ApiPublicPassportAvatarsRoute,
   ApiPublicPaymentAccountNumberRoute: ApiPublicPaymentAccountNumberRoute,

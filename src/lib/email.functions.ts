@@ -225,6 +225,15 @@ export const emailSystemStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await requireSuperAdmin(context as Caller);
+
+    // Self-hosted (Cloudflare) frontend has no email/service-role secrets: ask
+    // the Lovable Cloud backend, forwarding the caller's own bearer token.
+    if (!process.env["SUPABASE_SERVICE_ROLE_KEY"] || !process.env["RESEND_API_KEY"]) {
+      const { relayEmailStatus } = await import("@/lib/email-status-relay.server");
+      const relayed = await relayEmailStatus();
+      if (relayed) return relayed;
+    }
+
     const { safeConfigSummary } = await import("@/lib/email.server");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const counts: Record<string, number> = {};
@@ -237,6 +246,7 @@ export const emailSystemStatus = createServerFn({ method: "POST" })
     }
     return { config: safeConfigSummary(), counts };
   });
+
 
 export const listEmailLog = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

@@ -140,32 +140,38 @@ function AdminEmailsPage() {
         <CardContent className="grid gap-3 text-sm sm:grid-cols-2">
           {statusQuery.isLoading ? (
             <Skeleton className="h-20 sm:col-span-2" />
+          ) : !cfg ? (
+            <p className="sm:col-span-2 flex items-start gap-2 rounded-md border border-border bg-muted/40 p-3 text-muted-foreground">
+              <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden />
+              The delivery configuration could not be read right now, so it is not shown. Nothing
+              has changed in how email is sent — try Refresh in a moment.
+            </p>
           ) : (
             <>
               <div className="flex items-center gap-2">
                 Provider:
-                <Badge variant={cfg?.configured ? "default" : "destructive"}>
-                  {cfg?.configured ? "Connected" : "Not configured"}
+                <Badge variant={cfg.configured ? "default" : "destructive"}>
+                  {cfg.configured ? "Connected" : "Not configured"}
                 </Badge>
               </div>
               <div className="flex items-center gap-2">
                 Mode:
-                <Badge variant={cfg?.testMode ? "secondary" : "default"}>
-                  {cfg?.testMode ? "Test mode — no investor is emailed" : "Live sending"}
+                <Badge variant={cfg.testMode ? "secondary" : "default"}>
+                  {cfg.testMode ? "Test mode — no investor is emailed" : "Live sending"}
                 </Badge>
               </div>
-              <div className="text-muted-foreground">Sender: {cfg?.from ?? "—"}</div>
+              <div className="text-muted-foreground">Sender: {cfg.from ?? "—"}</div>
               <div className="text-muted-foreground">
-                Test recipient: {cfg?.testRecipient ?? "not set"}
+                Test recipient: {cfg.testRecipient ?? "not set"}
               </div>
               <div className="sm:col-span-2 flex flex-wrap gap-2 text-muted-foreground">
                 {Object.entries(statusQuery.data?.counts ?? {}).map(([k, v]) => (
                   <Badge key={k} variant="outline">
-                    {k}: {v}
+                    {k}: {String(v)}
                   </Badge>
                 ))}
               </div>
-              {cfg?.testMode ? (
+              {cfg.testMode ? (
                 <p className="sm:col-span-2 flex items-start gap-2 rounded-md border border-border bg-muted/40 p-3 text-muted-foreground">
                   <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden />
                   Test mode is on. Every message is redirected to the configured test address, with
@@ -174,6 +180,7 @@ function AdminEmailsPage() {
               ) : null}
             </>
           )}
+
         </CardContent>
       </Card>
 
