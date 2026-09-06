@@ -42,6 +42,7 @@ import { Route as AuthenticatedApplicationsAppIdRouteImport } from './routes/_au
 import { Route as AuthenticatedInspectionsIndexRouteImport } from './routes/_authenticated/inspections.index'
 import { Route as AuthenticatedInspectionsNewRouteImport } from './routes/_authenticated/inspections.new'
 import { Route as ApiPublicAiChatRouteImport } from './routes/api/public/ai-chat'
+import { Route as ApiPublicAnalyticsAdminRouteImport } from './routes/api/public/analytics-admin'
 import { Route as ApiPublicContactRouteImport } from './routes/api/public/contact'
 import { Route as ApiPublicDocumentUrlRouteImport } from './routes/api/public/document-url'
 import { Route as ApiPublicEmailAdminStatusRouteImport } from './routes/api/public/email-admin-status'
@@ -238,6 +239,11 @@ const ApiPublicAiChatRoute = ApiPublicAiChatRouteImport.update({
   path: '/api/public/ai-chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicAnalyticsAdminRoute = ApiPublicAnalyticsAdminRouteImport.update({
+  id: '/api/public/analytics-admin',
+  path: '/api/public/analytics-admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicContactRoute = ApiPublicContactRouteImport.update({
   id: '/api/public/contact',
   path: '/api/public/contact',
@@ -330,6 +336,7 @@ export interface FileRoutesByFullPath {
   '/applications/$appId': typeof AuthenticatedApplicationsAppIdRoute
   '/inspections/new': typeof AuthenticatedInspectionsNewRoute
   '/api/public/ai-chat': typeof ApiPublicAiChatRoute
+  '/api/public/analytics-admin': typeof ApiPublicAnalyticsAdminRoute
   '/api/public/contact': typeof ApiPublicContactRoute
   '/api/public/document-url': typeof ApiPublicDocumentUrlRoute
   '/api/public/email-admin-status': typeof ApiPublicEmailAdminStatusRoute
@@ -375,6 +382,7 @@ export interface FileRoutesByTo {
   '/applications/$appId': typeof AuthenticatedApplicationsAppIdRoute
   '/inspections/new': typeof AuthenticatedInspectionsNewRoute
   '/api/public/ai-chat': typeof ApiPublicAiChatRoute
+  '/api/public/analytics-admin': typeof ApiPublicAnalyticsAdminRoute
   '/api/public/contact': typeof ApiPublicContactRoute
   '/api/public/document-url': typeof ApiPublicDocumentUrlRoute
   '/api/public/email-admin-status': typeof ApiPublicEmailAdminStatusRoute
@@ -422,6 +430,7 @@ export interface FileRoutesById {
   '/_authenticated/applications/$appId': typeof AuthenticatedApplicationsAppIdRoute
   '/_authenticated/inspections/new': typeof AuthenticatedInspectionsNewRoute
   '/api/public/ai-chat': typeof ApiPublicAiChatRoute
+  '/api/public/analytics-admin': typeof ApiPublicAnalyticsAdminRoute
   '/api/public/contact': typeof ApiPublicContactRoute
   '/api/public/document-url': typeof ApiPublicDocumentUrlRoute
   '/api/public/email-admin-status': typeof ApiPublicEmailAdminStatusRoute
@@ -469,6 +478,7 @@ export interface FileRouteTypes {
     | '/applications/$appId'
     | '/inspections/new'
     | '/api/public/ai-chat'
+    | '/api/public/analytics-admin'
     | '/api/public/contact'
     | '/api/public/document-url'
     | '/api/public/email-admin-status'
@@ -514,6 +524,7 @@ export interface FileRouteTypes {
     | '/applications/$appId'
     | '/inspections/new'
     | '/api/public/ai-chat'
+    | '/api/public/analytics-admin'
     | '/api/public/contact'
     | '/api/public/document-url'
     | '/api/public/email-admin-status'
@@ -560,6 +571,7 @@ export interface FileRouteTypes {
     | '/_authenticated/applications/$appId'
     | '/_authenticated/inspections/new'
     | '/api/public/ai-chat'
+    | '/api/public/analytics-admin'
     | '/api/public/contact'
     | '/api/public/document-url'
     | '/api/public/email-admin-status'
@@ -587,6 +599,7 @@ export interface RootRouteChildren {
   ProjectsProjectIdRoute: typeof ProjectsProjectIdRoute
   ProjectsIndexRoute: typeof ProjectsIndexRoute
   ApiPublicAiChatRoute: typeof ApiPublicAiChatRoute
+  ApiPublicAnalyticsAdminRoute: typeof ApiPublicAnalyticsAdminRoute
   ApiPublicContactRoute: typeof ApiPublicContactRoute
   ApiPublicDocumentUrlRoute: typeof ApiPublicDocumentUrlRoute
   ApiPublicEmailAdminStatusRoute: typeof ApiPublicEmailAdminStatusRoute
@@ -831,6 +844,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicAiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/analytics-admin': {
+      id: '/api/public/analytics-admin'
+      path: '/api/public/analytics-admin'
+      fullPath: '/api/public/analytics-admin'
+      preLoaderRoute: typeof ApiPublicAnalyticsAdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/contact': {
       id: '/api/public/contact'
       path: '/api/public/contact'
@@ -984,6 +1004,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProjectsProjectIdRoute: ProjectsProjectIdRoute,
   ProjectsIndexRoute: ProjectsIndexRoute,
   ApiPublicAiChatRoute: ApiPublicAiChatRoute,
+  ApiPublicAnalyticsAdminRoute: ApiPublicAnalyticsAdminRoute,
   ApiPublicContactRoute: ApiPublicContactRoute,
   ApiPublicDocumentUrlRoute: ApiPublicDocumentUrlRoute,
   ApiPublicEmailAdminStatusRoute: ApiPublicEmailAdminStatusRoute,
