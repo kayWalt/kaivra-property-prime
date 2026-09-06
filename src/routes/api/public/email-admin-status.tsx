@@ -94,9 +94,32 @@ export const Route = createFileRoute("/api/public/email-admin-status")({
             return Response.json({ rows: rows ?? [] });
           }
 
+
+          if (op === "queueAnnouncement") {
+            const { z } = await import("zod");
+            const parsed = z
+              .object({
+                subject: z.string().trim().min(3).max(160),
+                heading: z.string().trim().min(3).max(160),
+                body: z.string().trim().min(10).max(5000),
+                cta_label: z.string().trim().max(60).optional().nullable(),
+                cta_url: z.string().trim().url().max(300).optional().nullable(),
+                audience: z.enum(["investors", "applicants", "outstanding_balance"]),
+                category: z.enum(["marketing", "transactional"]).default("marketing"),
+              })
+              .safeParse(body.data ?? {});
+            if (!parsed.success) {
+              return Response.json({ error: "Invalid announcement." }, { status: 400 });
+            }
+            const { queueAnnouncementCore } = await import("@/lib/email-announce.server");
+            const result = await queueAnnouncementCore(parsed.data, userId);
+            return Response.json(result);
+          }
+
           if (op !== "status") {
             return Response.json({ error: "Unknown operation" }, { status: 400 });
           }
+
 
           const { safeConfigSummary } = await import("@/lib/email.server");
           const counts: Record<string, number> = {};

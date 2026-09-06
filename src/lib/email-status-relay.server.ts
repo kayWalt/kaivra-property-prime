@@ -21,7 +21,7 @@ export type EmailStatusPayload = {
   counts: Record<string, number>;
 };
 
-export type EmailAdminOp = "status" | "emailLog" | "promotions";
+export type EmailAdminOp = "status" | "emailLog" | "promotions" | "queueAnnouncement";
 
 /** Forward one admin email read to Lovable Cloud with the caller's own token. */
 export async function relayEmailAdmin<T>(op: EmailAdminOp, data?: unknown): Promise<T | null> {
