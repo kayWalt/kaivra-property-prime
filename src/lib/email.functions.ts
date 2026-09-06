@@ -234,10 +234,15 @@ export const emailSystemStatus = createServerFn({ method: "POST" })
 
     // Self-hosted (Cloudflare) frontend has no email/service-role secrets: ask
     // the Lovable Cloud backend, forwarding the caller's own bearer token.
-    if (!process.env["SUPABASE_SERVICE_ROLE_KEY"] || !process.env["RESEND_API_KEY"]) {
+    const hasLocalSecrets =
+      Boolean(process.env["SUPABASE_SERVICE_ROLE_KEY"]) && Boolean(process.env["RESEND_API_KEY"]);
+    if (!hasLocalSecrets) {
       const { relayEmailStatus } = await import("@/lib/email-status-relay.server");
       const relayed = await relayEmailStatus();
       if (relayed) return relayed;
+      if (!process.env["SUPABASE_SERVICE_ROLE_KEY"]) {
+        throw new Error("The email configuration could not be read right now.");
+      }
     }
 
     const { safeConfigSummary } = await import("@/lib/email.server");
