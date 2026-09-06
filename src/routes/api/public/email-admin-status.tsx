@@ -49,11 +49,59 @@ export const Route = createFileRoute("/api/public/email-admin-status")({
             return Response.json({ error: "Forbidden" }, { status: 403 });
           }
 
-          const { safeConfigSummary } = await import("@/lib/email.server");
+          const body = (await request.json().catch(() => ({}))) as {
+            op?: string;
+            data?: Record<string, unknown>;
+          };
+          const op = body?.op ?? "status";
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+          const db = supabaseAdmin as any;
+
+          if (op === "emailLog") {
+            const input = (body.data ?? {}) as Record<string, unknown>;
+            const allowed = ["all", "pending", "sent", "failed", "skipped", "expanded"];
+            const statusFilter =
+              typeof input["status"] === "string" && allowed.includes(input["status"] as string)
+                ? (input["status"] as string)
+                : "all";
+            const limit = Math.min(Math.max(Number(input["limit"] ?? 100) || 100, 1), 200);
+            let query = db
+              .from("email_outbox")
+              .select(
+                "id, kind, category, recipient_email, subject, status, attempts, last_error, test_mode, delivered_to, sent_at, created_at",
+              )
+              .order("created_at", { ascending: false })
+              .limit(limit);
+            if (statusFilter !== "all") query = query.eq("status", statusFilter);
+            if (typeof input["kind"] === "string" && input["kind"]) {
+              query = query.eq("kind", input["kind"]);
+            }
+            if (typeof input["search"] === "string" && input["search"]) {
+              query = query.ilike("recipient_email", `%${String(input["search"]).slice(0, 120)}%`);
+            }
+            const { data: rows, error } = await query;
+            if (error) throw error;
+            return Response.json({ rows: rows ?? [] });
+          }
+
+          if (op === "promotions") {
+            const { data: rows, error } = await db
+              .from("promotions")
+              .select("*")
+              .order("created_at", { ascending: false })
+              .limit(100);
+            if (error) throw error;
+            return Response.json({ rows: rows ?? [] });
+          }
+
+          if (op !== "status") {
+            return Response.json({ error: "Unknown operation" }, { status: 400 });
+          }
+
+          const { safeConfigSummary } = await import("@/lib/email.server");
           const counts: Record<string, number> = {};
           for (const status of ["pending", "sent", "failed", "skipped", "expanded"]) {
-            const { count } = await (supabaseAdmin as any)
+            const { count } = await db
               .from("email_outbox")
               .select("id", { count: "exact", head: true })
               .eq("status", status);
