@@ -244,8 +244,23 @@ function AnalyticsDashboard({ canExport }: { canExport: boolean }) {
 
       {overview.isLoading ? (
         <Skeleton className="h-72 w-full" />
+      ) : overview.isError ? (
+        <Card className="border-destructive/40">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Analytics data could not be loaded</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm text-muted-foreground">
+            <p>
+              This is not an empty period — the figures could not be retrieved at all, so nothing
+              is shown rather than misleading zeros.
+            </p>
+            <AsyncButton variant="outline" onClick={() => overview.refetch()}>
+              Try again
+            </AsyncButton>
+          </CardContent>
+        </Card>
       ) : (
-        <>
+
           <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             <Stat label="Unique visitors" value={String(totals?.visitors ?? 0)} />
             <Stat label="Sessions" value={String(totals?.sessions ?? 0)} />
