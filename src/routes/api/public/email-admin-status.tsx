@@ -35,7 +35,9 @@ export const Route = createFileRoute("/api/public/email-admin-status")({
             global: { headers: { Authorization: `Bearer ${token}`, apikey: publishable } },
             auth: { persistSession: false, autoRefreshToken: false },
           });
-          const { data: claims, error: claimsError } = await scoped.auth.getClaims(token);
+          const { data: claims, error: claimsError } = await scoped.auth
+            .getClaims(token)
+            .catch(() => ({ data: null, error: new Error("invalid token") }) as any);
           const userId = claims?.claims?.sub;
           if (claimsError || !userId) {
             return Response.json({ error: "Unauthorized" }, { status: 401 });
@@ -200,6 +202,45 @@ export const Route = createFileRoute("/api/public/email-admin-status")({
               .select("id");
             if (error) throw error;
             return Response.json({ requeued: (data ?? []).length });
+          }
+
+          if (op === "runEmailQueue") {
+            const { processQueue } = await import("@/lib/email.server");
+            return Response.json(await processQueue(40));
+          }
+
+          if (op === "runPaymentReminderScan") {
+            const { scanPaymentReminders } = await import("@/lib/email.server");
+            return Response.json(await scanPaymentReminders());
+          }
+
+          if (op === "runPromotionCycle") {
+            const { processPromotions } = await import("@/lib/email.server");
+            return Response.json(await processPromotions());
+          }
+
+          if (op === "sendTestEmail") {
+            const { emailConfig, deliver } = await import("@/lib/email.server");
+            const { renderTemplate } = await import("@/lib/email-templates.server");
+            const cfg = emailConfig();
+            if (!cfg.configured) {
+              return Response.json(
+                { error: "The email provider is not configured yet." },
+                { status: 400 },
+              );
+            }
+            if (!cfg.testRecipient) {
+              return Response.json({ error: "No test recipient is configured." }, { status: 400 });
+            }
+            const rendered = renderTemplate("test", {});
+            const res = await deliver({
+              intendedTo: cfg.testRecipient,
+              subject: rendered.subject,
+              html: rendered.html,
+              text: rendered.text,
+            });
+            if (!res.ok) return Response.json({ error: res.error }, { status: 502 });
+            return Response.json({ ok: true });
           }
 
           if (op !== "status") {
