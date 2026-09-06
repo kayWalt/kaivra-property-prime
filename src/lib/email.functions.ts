@@ -234,6 +234,12 @@ export const runPromotionCycle = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await requireSuperAdmin(context as Caller);
+    if (!process.env["SUPABASE_SERVICE_ROLE_KEY"]) {
+      const { relayEmailAdmin } = await import("@/lib/email-status-relay.server");
+      const relayed = await relayEmailAdmin<any>("runPromotionCycle");
+      if (!relayed) throw new Error("The promotion cycle could not be run.");
+      return relayed;
+    }
     const { processPromotions } = await import("@/lib/email.server");
     return processPromotions();
   });
@@ -313,6 +319,14 @@ export const sendTestEmail = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await requireSuperAdmin(context as Caller);
+    // Cloudflare has no Resend/service-role secrets: run the identical send on
+    // Lovable Cloud, which re-checks super_admin itself.
+    if (!process.env["RESEND_API_KEY"] || !process.env["SUPABASE_SERVICE_ROLE_KEY"]) {
+      const { relayEmailAdmin } = await import("@/lib/email-status-relay.server");
+      const relayed = await relayEmailAdmin<{ ok: boolean }>("sendTestEmail");
+      if (!relayed?.ok) throw new Error("The test email could not be sent.");
+      return relayed;
+    }
     const { emailConfig, deliver } = await import("@/lib/email.server");
     const { renderTemplate } = await import("@/lib/email-templates.server");
     const cfg = emailConfig();
