@@ -35,7 +35,9 @@ export const Route = createFileRoute("/api/public/email-admin-status")({
             global: { headers: { Authorization: `Bearer ${token}`, apikey: publishable } },
             auth: { persistSession: false, autoRefreshToken: false },
           });
-          const { data: claims, error: claimsError } = await scoped.auth.getClaims(token);
+          const { data: claims, error: claimsError } = await scoped.auth
+            .getClaims(token)
+            .catch(() => ({ data: null, error: new Error("invalid token") }) as any);
           const userId = claims?.claims?.sub;
           if (claimsError || !userId) {
             return Response.json({ error: "Unauthorized" }, { status: 401 });
