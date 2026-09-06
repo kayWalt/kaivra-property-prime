@@ -389,6 +389,17 @@ function AdminEmailsPage() {
           </Select>
           {logQuery.isLoading ? (
             <Skeleton className="h-64" />
+          ) : logQuery.isError ? (
+            <div className="flex flex-col items-start gap-3 rounded-md border border-border bg-muted/40 p-4 text-sm text-muted-foreground">
+              <p className="flex items-start gap-2">
+                <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden />
+                The email history could not be loaded. This is a read problem only — nothing has
+                changed in how email is sent.
+              </p>
+              <AsyncButton variant="outline" size="sm" onClick={async () => void logQuery.refetch()}>
+                <RefreshCw className="mr-2 size-4" aria-hidden /> Try again
+              </AsyncButton>
+            </div>
           ) : (logQuery.data ?? []).length === 0 ? (
             <EmptyState title="No messages yet" body="Queued email will appear here." />
           ) : (
