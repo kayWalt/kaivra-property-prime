@@ -375,6 +375,12 @@ export const retryFailedEmails = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await requireSuperAdmin(context as Caller);
+    if (!process.env["SUPABASE_SERVICE_ROLE_KEY"]) {
+      const { relayEmailAdmin } = await import("@/lib/email-status-relay.server");
+      const relayed = await relayEmailAdmin<{ requeued: number }>("retryFailedEmails");
+      if (!relayed) throw new Error("Failed messages could not be re-queued.");
+      return relayed;
+    }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data, error } = await (supabaseAdmin as any)
       .from("email_outbox")

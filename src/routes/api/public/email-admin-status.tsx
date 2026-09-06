@@ -116,6 +116,16 @@ export const Route = createFileRoute("/api/public/email-admin-status")({
             return Response.json(result);
           }
 
+          if (op === "retryFailedEmails") {
+            const { data, error } = await db
+              .from("email_outbox")
+              .update({ status: "pending", attempts: 0, scheduled_for: new Date().toISOString() })
+              .eq("status", "failed")
+              .select("id");
+            if (error) throw error;
+            return Response.json({ requeued: (data ?? []).length });
+          }
+
           if (op !== "status") {
             return Response.json({ error: "Unknown operation" }, { status: 400 });
           }
