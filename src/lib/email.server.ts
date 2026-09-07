@@ -287,6 +287,17 @@ export async function processQueue(limit = 40): Promise<ProcessResult> {
     testMode: cfg.testMode,
   };
 
+  // Recovery: a worker that claimed a row ("processing") but was interrupted
+  // before writing the final status would otherwise leave the row stuck
+  // forever. Claiming stamps scheduled_for with the claim time, so release
+  // rows claimed more than 15 minutes ago back to "pending" for retry.
+  // No schema change required; 15 minutes matches the cron cadence.
+  await db
+    .from("email_outbox")
+    .update({ status: "pending" })
+    .eq("status", "processing")
+    .lt("scheduled_for", new Date(Date.now() - 15 * 60 * 1000).toISOString());
+
   const { data: rows, error } = await db
     .from("email_outbox")
     .select("*")
