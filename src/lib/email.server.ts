@@ -287,6 +287,17 @@ export async function processQueue(limit = 40): Promise<ProcessResult> {
     testMode: cfg.testMode,
   };
 
+  // Recovery: a worker that claimed a row ("processing") but was interrupted
+  // before writing the final status would otherwise leave the row stuck
+  // forever. Claiming stamps scheduled_for with the claim time, so release
+  // rows claimed more than 15 minutes ago back to "pending" for retry.
+  // No schema change required; 15 minutes matches the cron cadence.
+  await db
+    .from("email_outbox")
+    .update({ status: "pending" })
+    .eq("status", "processing")
+    .lt("scheduled_for", new Date(Date.now() - 15 * 60 * 1000).toISOString());
+
   const { data: rows, error } = await db
     .from("email_outbox")
     .select("*")
@@ -297,12 +308,28 @@ export async function processQueue(limit = 40): Promise<ProcessResult> {
   if (error) throw new Error("The email queue could not be read.");
 
   for (const row of (rows ?? []) as any[]) {
+    // Atomically claim the row: only the worker that observes it as "pending"
+    // transitions it to "processing". A concurrent worker's conditional update
+    // affects zero rows and must not deliver. The claim also stamps
+    // scheduled_for with the claim time so an interrupted worker's row can be
+    // recovered below (stale "processing" rows are released back to "pending").
+    const { data: claimed } = await db
+      .from("email_outbox")
+      .update({ status: "processing", scheduled_for: new Date().toISOString() })
+      .eq("id", row.id)
+      .eq("status", "pending")
+      .select("id");
+    if (!claimed || claimed.length === 0) {
+      // Already claimed/processed by another worker — do not deliver.
+      continue;
+    }
     result.processed += 1;
 
     if (!row.recipient_email) {
       result.expanded += await expandBroadcast(row);
       continue;
     }
+
 
     if (
       row.category === "marketing" &&
