@@ -43,8 +43,15 @@ export const submitInvestmentPayment = createServerFn({ method: "POST" })
       .maybeSingle();
     if (appError) throw new Error("This investment could not be verified. Please try again.");
     if (!application) throw new Error("You do not have permission to pay for this investment.");
+    // Ownership, not role. Staff can *see* every investment, so visibility alone
+    // is not enough here: only the investor the investment belongs to may record
+    // a payment through this endpoint — including when that person is also an
+    // admin, adviser or partner. Reviewing/verifying payments stays untouched.
+    if (application.investor_id !== context.userId)
+      throw new Error("You can only record a payment on your own investment.");
     if (application.status === "draft")
       throw new Error("Finish and submit this investment before recording a payment.");
+
 
     const reference = data.reference?.trim() || null;
     const paidOn = data.paidOn || null;
