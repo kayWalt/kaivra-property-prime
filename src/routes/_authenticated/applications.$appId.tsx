@@ -20,12 +20,14 @@ import {
 } from "@/lib/partner-pricing";
 import { ReferenceChip } from "@/components/kaivra/ReferenceChip";
 import { RequestCorrectionDialog } from "@/components/kaivra/RequestCorrectionDialog";
+import { Progress } from "@/components/ui/progress";
 import {
   fetchApplication,
   fetchDocuments,
   fetchEvents,
   fetchPayments,
   logEvent,
+  paymentLedger,
   totals,
 } from "@/lib/applications";
 
@@ -123,6 +125,7 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
     ? Number(partner.negotiated_price ?? investment.total_value ?? 0)
     : Number(investment.total_value ?? 0);
   const { paid, outstanding } = totals(payments.data ?? [], totalValue);
+  const ledger = paymentLedger(payments.data ?? [], totalValue);
   const docs = documents.data ?? [];
 
   // A form with no project/property selection and no investment value is
@@ -288,20 +291,54 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
         </section>
       ) : null}
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        {[
-          [isPartner ? "Negotiated price" : "Total investment", formatNaira(totalValue)],
-          ["Total paid", formatNaira(paid)],
-          ["Outstanding", formatNaira(outstanding)],
-        ].map(([label, value], index) => (
-          <div key={label} className="rounded-lg border border-border bg-card p-4">
-            <p className="eyebrow text-muted-foreground">{label}</p>
-            <p className={`mt-2 font-display text-2xl ${index === 1 ? "text-primary" : ""}`}>
-              {value}
+      <section className="rounded-lg border border-border bg-card p-5">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="eyebrow text-muted-foreground">Payment progress</p>
+            <p className="mt-2 font-display text-3xl">
+              {formatNaira(ledger.acknowledged)}{" "}
+              <span className="text-base text-muted-foreground">
+                of {formatNaira(totalValue)} acknowledged
+              </span>
             </p>
           </div>
-        ))}
-      </div>
+          {manage ? null : (
+            <AddPaymentDialog
+              applicationId={appId}
+              projectId={record.project_id}
+              reference={record.reference}
+              outstanding={ledger.outstanding}
+              triggerLabel="Make payment"
+              triggerSize="lg"
+              triggerVariant="default"
+              onDone={() => {
+                void payments.refetch();
+                void documents.refetch();
+              }}
+            />
+          )}
+        </div>
+        <Progress value={ledger.progress} className="mt-4 h-2" />
+        <dl className="mt-5 grid gap-4 sm:grid-cols-4">
+          {[
+            [isPartner ? "Negotiated price" : "Investment value", formatNaira(totalValue)],
+            ["Acknowledged paid", formatNaira(ledger.acknowledged)],
+            ["Awaiting acknowledgement", formatNaira(ledger.pending)],
+            ["Outstanding balance", formatNaira(ledger.outstanding)],
+          ].map(([label, value], index) => (
+            <div key={label} className="rounded-md border border-border bg-background px-4 py-3">
+              <dt className="eyebrow text-muted-foreground">{label}</dt>
+              <dd className={`mt-1 text-sm font-semibold ${index === 1 ? "text-primary" : ""}`}>
+                {value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+        <p className="mt-3 text-xs text-muted-foreground">
+          Recorded to date, including payments still being checked: {formatNaira(paid)} · remaining
+          after those clear: {formatNaira(outstanding)}
+        </p>
+      </section>
 
       <section className="rounded-lg border border-border bg-card p-5">
         <div className="flex items-center gap-4">
@@ -343,6 +380,7 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
               applicationId={appId}
               projectId={record.project_id}
               reference={record.reference}
+              outstanding={ledger.outstanding}
               onDone={() => {
                 void payments.refetch();
                 void documents.refetch();

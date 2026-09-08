@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { submitInvestmentPayment } from "@/lib/payments.functions";
 import { AsyncButton } from "@/components/kaivra/AsyncButton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,7 +25,7 @@ import {
   notifyStaffForProject,
 } from "@/lib/applications";
 import { accountLabel, useActivePaymentAccounts } from "@/lib/payment-accounts";
-import { PAYMENT_METHODS, type PaymentMethod } from "@/lib/kaivra";
+import { PAYMENT_METHODS, formatNaira, type PaymentMethod } from "@/lib/kaivra";
 
 
 /**
@@ -36,13 +37,23 @@ export function AddPaymentDialog({
   projectId,
   reference,
   onDone,
+  triggerLabel = "Make payment",
+  triggerSize = "sm",
+  triggerVariant = "outline",
+  outstanding,
 }: {
   applicationId: string;
   projectId?: string | null;
   reference?: string | null;
   onDone: () => void;
+  triggerLabel?: string;
+  triggerSize?: "sm" | "default" | "lg";
+  triggerVariant?: "outline" | "default";
+  outstanding?: number;
 }) {
+  const submitPayment = useServerFn(submitInvestmentPayment);
   const [open, setOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [amount, setAmount] = useState("");
   const [paidOn, setPaidOn] = useState("");
   const [bank, setBank] = useState("");
@@ -82,31 +93,32 @@ export function AddPaymentDialog({
       toast.error("Select the account you paid into.");
       return;
     }
+    if (submitting) return;
+    setSubmitting(true);
     try {
-      const { data: payment, error } = await supabase
-        .from("application_payments")
-        .insert({
-          application_id: applicationId,
+      // The server re-checks that this investment belongs to the signed-in
+      // investor, forces the status to pending and blocks duplicates. The
+      // browser never writes the payment row itself.
+      const payment = await submitPayment({
+        data: {
+          applicationId,
           amount: value,
-          paid_on: paidOn || null,
+          paidOn: paidOn || null,
           bank: bank || null,
           sender: sender || null,
           reference: payRef || null,
           method,
-          description: note || null,
-          payment_account_id: accountId || null,
-        })
-
-        .select()
-        .single();
-      if (error || !payment) throw error ?? new Error("insert failed");
+          note: note || null,
+          paymentAccountId: accountId || null,
+        },
+      });
 
       await uploadDocument({
         applicationId,
         kind: "proof_of_payment",
         file,
         label: `Proof of payment · ${payRef || value}`,
-        paymentId: payment.id,
+        paymentId: payment.paymentId,
       });
 
       void logEvent(
@@ -135,7 +147,11 @@ export function AddPaymentDialog({
         );
         return;
       }
-      toast.error("Your payment could not be recorded. Please try again.");
+      toast.error(
+        err instanceof Error ? err.message : "Your payment could not be recorded. Please try again.",
+      );
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -148,16 +164,19 @@ export function AddPaymentDialog({
       }}
     >
       <DialogTrigger asChild>
-        <Button size="sm" variant="outline">
-          <Plus className="mr-2 size-4" /> Upload payment proof
+        <Button size={triggerSize} variant={triggerVariant}>
+          <Plus className="mr-2 size-4" /> {triggerLabel}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Upload proof of payment</DialogTitle>
+          <DialogTitle>Make a payment</DialogTitle>
           <DialogDescription>
-            Record what you paid and attach the bank receipt. Our team will verify it and update
-            your balance.
+            Record what you paid on this existing investment and attach the bank receipt. Your
+            investment details stay exactly as they are.
+            {typeof outstanding === "number" && outstanding > 0
+              ? ` Outstanding balance: ${formatNaira(outstanding)}.`
+              : ""}
           </DialogDescription>
         </DialogHeader>
 
@@ -270,7 +289,7 @@ export function AddPaymentDialog({
           <Button variant="ghost" onClick={() => setOpen(false)}>
             Cancel
           </Button>
-          <AsyncButton onClick={() => submit()} pendingLabel="Submitting…">
+          <AsyncButton onClick={() => submit()} disabled={submitting} pendingLabel="Submitting…">
             Submit payment
           </AsyncButton>
         </DialogFooter>

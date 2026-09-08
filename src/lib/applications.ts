@@ -106,6 +106,30 @@ export function totals(
   return { paid, outstanding: Math.max(0, totalValue - paid) };
 }
 
+/**
+ * Ledger view of an investment: what has been acknowledged (verified) by
+ * KAIVRA, what is still awaiting acknowledgement, and the balance. The
+ * existing `totals()` behaviour is unchanged — it counts pending payments, as
+ * the platform has always done — so this only adds the acknowledged split.
+ */
+export function paymentLedger(
+  payments: { amount: number | string; status: string }[],
+  totalValue: number,
+) {
+  const acknowledged = payments
+    .filter((p) => p.status === "verified")
+    .reduce((sum, p) => sum + Number(p.amount ?? 0), 0);
+  const pending = payments
+    .filter((p) => p.status === "pending")
+    .reduce((sum, p) => sum + Number(p.amount ?? 0), 0);
+  const rejected = payments
+    .filter((p) => p.status === "rejected")
+    .reduce((sum, p) => sum + Number(p.amount ?? 0), 0);
+  const outstanding = Math.max(0, totalValue - acknowledged);
+  const progress = totalValue > 0 ? Math.min(100, (acknowledged / totalValue) * 100) : 0;
+  return { acknowledged, pending, rejected, outstanding, progress };
+}
+
 export const EDITABLE_STATUSES: ApplicationStatus[] = ["draft", "requires_correction"];
 
 export const DUPLICATE_REFERENCE_MESSAGE =
