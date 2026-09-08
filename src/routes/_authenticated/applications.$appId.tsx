@@ -307,7 +307,7 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
               </span>
             </p>
           </div>
-          {manage ? null : (
+          {canPay ? (
             <AddPaymentDialog
               applicationId={appId}
               projectId={record.project_id}
@@ -380,7 +380,7 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
       <section id="payments" className="rounded-lg border border-border bg-card p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="font-display text-2xl">Payments</h2>
-          {manage ? null : (
+          {canPay ? (
             <AddPaymentDialog
               applicationId={appId}
               projectId={record.project_id}
