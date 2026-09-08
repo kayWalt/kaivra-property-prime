@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { assertAdminCan } from "@/lib/admin-permissions.server";
-import { assertUploadAllowed } from "@/lib/upload-rules";
+import { assertUploadAllowed, isSafeStoragePath } from "@/lib/upload-rules";
 
 export const PROJECT_IMAGES_BUCKET = "project-images";
 
@@ -43,3 +43,28 @@ export const createProjectImageUploadTicket = createServerFn({ method: "POST" })
       url: `/api/public/project-image/${path}`,
     };
   });
+
+/**
+ * Confirms a just-uploaded project image really is an image before its URL can
+ * be attached to a project. Admin-only, same permission as the ticket.
+ */
+export const finalizeProjectImageUpload = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) =>
+    z
+      .object({
+        scope: z.enum(["project", "property"]),
+        path: z.string().min(1).max(300),
+      })
+      .parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdminCan(context.supabase as never, context.userId, "projects", "manage");
+    if (!isSafeStoragePath(data.path, `${data.scope}/`))
+      throw new Error("You do not have permission to do that.");
+
+    const { verifyOrThrow } = await import("./upload-verify.server");
+    await verifyOrThrow(PROJECT_IMAGES_BUCKET, data.path, "project_image");
+    return { url: `/api/public/project-image/${data.path}` };
+  });
+

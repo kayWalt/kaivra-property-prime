@@ -4,7 +4,12 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { DOCS_BUCKET, buildDocPath } from "./storage.server";
 import { LOVABLE_ORIGIN, isLovableOrigin } from "./origin-fallback";
-import { assertUploadAllowed, categoryForDocumentKind } from "./upload-rules";
+import {
+  assertUploadAllowed,
+  categoryForDocumentKind,
+  isSafeStoragePath,
+} from "./upload-rules";
+
 
 export const createUploadTicket = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -61,6 +66,74 @@ export const createUploadTicket = createServerFn({ method: "POST" })
       console.error("[storage] upload signing unavailable", err);
       throw new Error("Upload could not be prepared. Please try again.");
     }
+  });
+
+/**
+ * The only way an `application_documents` row is created.
+ *
+ * The browser can no longer insert this row directly (the table's insert policy
+ * was removed), so an uploaded object cannot become a referenced document
+ * unless the server has confirmed access, re-checked the category rules and
+ * inspected the stored bytes.
+ */
+export const finalizeDocumentUpload = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) =>
+    z
+      .object({
+        applicationId: z.string().uuid(),
+        kind: z
+          .string()
+          .min(1)
+          .max(40)
+          .regex(/^[a-z][a-z0-9_]*$/),
+        path: z.string().min(1).max(400),
+        fileName: z.string().min(1).max(200),
+        size: z.number().int().nonnegative().optional(),
+        label: z.string().max(200).nullish(),
+        paymentId: z.string().uuid().nullish(),
+      })
+      .parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    const category = categoryForDocumentKind(data.kind);
+    assertUploadAllowed(category, { fileName: data.fileName, size: data.size ?? null });
+
+    // Authorisation first: RLS on `applications` decides whether this caller
+    // may attach anything at all to this application.
+    const { data: allowed, error: accessError } = await context.supabase
+      .from("applications")
+      .select("id")
+      .eq("id", data.applicationId)
+      .maybeSingle();
+    if (accessError || !allowed) throw new Error("You do not have permission to do that.");
+
+    // The object must sit exactly where the ticket for this application and
+    // kind placed it — no traversal, no borrowed path, no other category.
+    if (!isSafeStoragePath(data.path, `${data.applicationId}/${data.kind}/`))
+      throw new Error("You do not have permission to do that.");
+
+    const { verifyOrThrow } = await import("./upload-verify.server");
+    const contentType = await verifyOrThrow(DOCS_BUCKET, data.path, category);
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row, error } = await supabaseAdmin
+      .from("application_documents")
+      .insert({
+        application_id: data.applicationId,
+        kind: data.kind as never,
+        label: data.label ?? null,
+        file_path: data.path,
+        file_name: data.fileName,
+        mime_type: contentType,
+        size_bytes: data.size ?? null,
+        payment_id: data.paymentId ?? null,
+      })
+      .select()
+      .single();
+    if (error || !row)
+      throw new Error("Your document was uploaded but could not be saved. Please try again.");
+    return row;
   });
 
 

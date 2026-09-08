@@ -2,8 +2,12 @@ import { useRef, useState } from "react";
 import { Camera, Check, Loader2, Trash2, Upload, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { createUploadTicket, getDocumentUrl } from "@/lib/storage.functions";
-import { verifyUploadedFile } from "@/lib/upload-verify.functions";
+import {
+  createUploadTicket,
+  finalizeDocumentUpload,
+  getDocumentUrl,
+} from "@/lib/storage.functions";
+
 import { assertUploadAllowed, categoryForDocumentKind } from "@/lib/upload-rules";
 import { Button } from "@/components/ui/button";
 import { AsyncButton } from "@/components/kaivra/AsyncButton";
@@ -82,31 +86,23 @@ export async function uploadDocument(options: {
     .uploadToSignedUrl(ticket.path, ticket.token, file);
   if (uploadError) throw new Error("Your document could not be uploaded. Please try again.");
 
-  // The bytes only exist once the upload finishes, so the real file type is
-  // confirmed here. A disguised file is removed again and never recorded.
-  await verifyUploadedFile({
-    data: { bucket: ticket.bucket as "kaivra-docs", path: ticket.path, category },
-  });
-
-
-  const { data, error } = await supabase
-    .from("application_documents")
-    .insert({
-      application_id: options.applicationId,
-      kind: options.kind as never,
+  // The bytes only exist once the upload finishes, so the server confirms the
+  // real file type and writes the document row itself. The browser has no
+  // insert path of its own, so an unverified file can never be referenced.
+  const data = await finalizeDocumentUpload({
+    data: {
+      applicationId: options.applicationId,
+      kind: options.kind,
+      path: ticket.path,
+      fileName: file.name,
+      size: file.size,
       label: options.label ?? null,
-      file_path: ticket.path,
-      file_name: file.name,
-      mime_type: file.type,
-      size_bytes: file.size,
-      payment_id: options.paymentId ?? null,
-    })
-    .select()
-    .single();
-  if (error)
-    throw new Error("Your document was uploaded but could not be saved. Please try again.");
+      paymentId: options.paymentId ?? null,
+    },
+  });
   return data;
 }
+
 
 /**
  * Single-slot documents (passport, signature) must not stack up: once the new

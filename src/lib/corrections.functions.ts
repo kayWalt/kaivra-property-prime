@@ -510,6 +510,62 @@ export const createCorrectionUploadTicket = createServerFn({ method: "POST" })
     return { path, token: ticket.token, bucket: DOCS_BUCKET };
   });
 
+/**
+ * The only way a `correction_request_documents` row is created: the caller must
+ * be allowed to see the correction request, the object must sit under that
+ * request's own folder, and the stored bytes must be a genuine allowed file.
+ */
+export const finalizeCorrectionDocumentUpload = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) =>
+    z
+      .object({
+        correctionRequestId: z.string().uuid(),
+        path: z.string().min(1).max(400),
+        fileName: z.string().min(1).max(200),
+        size: z.number().int().nonnegative().optional(),
+      })
+      .parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    const ctx = context as unknown as Ctx;
+    const { assertUploadAllowed, isSafeStoragePath } = await import("./upload-rules");
+    assertUploadAllowed("correction_document", {
+      fileName: data.fileName,
+      size: data.size ?? null,
+    });
+
+    const { data: allowed, error } = await ctx.supabase
+      .from("correction_requests")
+      .select("id")
+      .eq("id", data.correctionRequestId)
+      .maybeSingle();
+    if (error || !allowed) throw new Error("You do not have permission to do that.");
+
+    if (!isSafeStoragePath(data.path, `corrections/${data.correctionRequestId}/`))
+      throw new Error("You do not have permission to do that.");
+
+    const { DOCS_BUCKET } = await import("./storage.server");
+    const { verifyOrThrow } = await import("./upload-verify.server");
+    const contentType = await verifyOrThrow(DOCS_BUCKET, data.path, "correction_document");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error: insertError } = await supabaseAdmin
+      .from("correction_request_documents")
+      .insert({
+        correction_request_id: data.correctionRequestId,
+        file_path: data.path,
+        file_name: data.fileName,
+        mime_type: contentType,
+        size_bytes: data.size ?? null,
+        uploaded_by: ctx.userId,
+      });
+    if (insertError) throw new Error("That attachment could not be saved. Please try again.");
+    return { ok: true as const };
+  });
+
+
+
 export const getCorrectionDocumentUrl = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) => z.object({ documentId: z.string().uuid() }).parse(data))

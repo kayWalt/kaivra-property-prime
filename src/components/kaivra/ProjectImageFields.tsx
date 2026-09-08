@@ -2,8 +2,11 @@ import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ArrowLeft, ArrowRight, ImagePlus, Loader2, Trash2, UploadCloud } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { createProjectImageUploadTicket } from "@/lib/project-media.functions";
-import { verifyUploadedFile } from "@/lib/upload-verify.functions";
+import {
+  createProjectImageUploadTicket,
+  finalizeProjectImageUpload,
+} from "@/lib/project-media.functions";
+
 import { assertUploadAllowed } from "@/lib/upload-rules";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -90,11 +93,12 @@ async function uploadImage(file: File, scope: "project" | "property") {
     .from(ticket.bucket)
     .uploadToSignedUrl(ticket.path, ticket.token, prepared);
   if (error) throw error;
-  await verifyUploadedFile({
-    data: { bucket: "project-images", path: ticket.path, category: "project_image" },
-  });
-  return ticket.url;
+  // The server confirms the stored bytes are a real image and returns the URL
+  // that may be attached to the project; an unverified upload yields nothing.
+  const { url } = await finalizeProjectImageUpload({ data: { scope, path: ticket.path } });
+  return url;
 }
+
 
 function useDropZone(onFiles: (files: FileList | File[]) => void) {
   const [over, setOver] = useState(false);
