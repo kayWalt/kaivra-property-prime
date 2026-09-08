@@ -329,7 +329,7 @@ export function renderTemplate(
     case "announcement": {
       const html = layout({
         heading: String(payload["heading"] ?? "A message from KAIVRA"),
-        bodyHtml: paragraphs(String(payload["body"] ?? "")),
+        bodyHtml: paragraphsWithMarks(String(payload["body"] ?? "")),
         ctaLabel: (payload["cta_label"] as string) || null,
         ctaUrl: (payload["cta_url"] as string) || null,
         footerNote:

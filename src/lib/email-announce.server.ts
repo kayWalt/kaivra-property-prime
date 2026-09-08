@@ -14,7 +14,7 @@ export type AnnouncementInput = {
   body: string;
   cta_label?: string | null | undefined;
   cta_url?: string | null | undefined;
-  audience: "investors" | "applicants" | "outstanding_balance";
+  audience: "investors" | "registered_users" | "applicants" | "outstanding_balance";
   category: "marketing" | "transactional";
 };
 
