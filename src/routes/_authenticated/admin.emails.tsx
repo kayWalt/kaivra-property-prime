@@ -259,6 +259,7 @@ function AdminEmailsPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="investors">All investors</SelectItem>
+                    <SelectItem value="registered_users">All registered users</SelectItem>
                     <SelectItem value="applicants">Investors with an active application</SelectItem>
                     <SelectItem value="outstanding_balance">
                       Investors with an outstanding balance
