@@ -44,7 +44,8 @@ export type AdminAction = (typeof ADMIN_ACTIONS)[number];
 export const MODULE_ACTIONS: Record<AdminModule, AdminAction[]> = {
   applications: ["view", "create", "edit", "approve", "export"],
   investors: ["view", "create", "edit", "export"],
-  transactions: ["view", "approve", "export"],
+  // "create" = record a payment on behalf of an investor (admin-assisted).
+  transactions: ["view", "create", "approve", "export"],
   payment_accounts: ["view", "create", "edit", "manage"],
   inspections: ["view", "edit", "manage"],
   projects: ["view", "manage"],
