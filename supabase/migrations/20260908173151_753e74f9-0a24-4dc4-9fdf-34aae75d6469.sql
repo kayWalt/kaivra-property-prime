@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.protect_avatar_url() FROM PUBLIC, anon, authenticated;
