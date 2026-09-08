@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { assertUploadAllowed, isSafeStoragePath } from "@/lib/upload-rules";
+import { relayUploadOp } from "@/lib/upload-relay.server";
 
 export const AVATARS_BUCKET = "avatars";
 
@@ -21,6 +22,13 @@ export const createAvatarUploadTicket = createServerFn({ method: "POST" })
       .parse(data),
   )
   .handler(async ({ data, context }) => {
+    const relayed = await relayUploadOp<{
+      path: string;
+      token: string;
+      bucket: string;
+      url: string;
+    }>("avatarTicket", data);
+    if (relayed) return relayed;
     assertUploadAllowed("avatar", {
       fileName: data.fileName,
       contentType: data.contentType ?? null,
@@ -44,6 +52,8 @@ export const finalizeAvatarUpload = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) => z.object({ path: z.string().min(1).max(300) }).parse(data))
   .handler(async ({ data, context }) => {
+    const relayed = await relayUploadOp<{ url: string }>("avatarFinalize", data);
+    if (relayed) return relayed;
     if (!isSafeStoragePath(data.path, `${context.userId}/`))
       throw new Error("You do not have permission to do that.");
 
@@ -64,6 +74,8 @@ export const removeAvatarFile = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) => z.object({ path: z.string().min(1).max(300) }).parse(data))
   .handler(async ({ data, context }) => {
+    const relayed = await relayUploadOp<{ ok: boolean }>("avatarRemove", data);
+    if (relayed) return relayed;
     if (!isSafeStoragePath(data.path, `${context.userId}/`))
       throw new Error("You can only remove your own picture.");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

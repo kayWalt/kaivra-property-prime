@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { assertAdminCan } from "@/lib/admin-permissions.server";
 import { assertUploadAllowed, isSafeStoragePath } from "@/lib/upload-rules";
+import { relayUploadOp } from "@/lib/upload-relay.server";
 
 export const PROJECT_IMAGES_BUCKET = "project-images";
 
@@ -23,6 +24,13 @@ export const createProjectImageUploadTicket = createServerFn({ method: "POST" })
       .parse(data),
   )
   .handler(async ({ data, context }) => {
+    const relayed = await relayUploadOp<{
+      path: string;
+      token: string;
+      bucket: string;
+      url: string;
+    }>("projectImageTicket", data);
+    if (relayed) return relayed;
     await assertAdminCan(context.supabase as never, context.userId, "projects", "manage");
     assertUploadAllowed("project_image", {
       fileName: data.fileName,
@@ -59,6 +67,8 @@ export const finalizeProjectImageUpload = createServerFn({ method: "POST" })
       .parse(data),
   )
   .handler(async ({ data, context }) => {
+    const relayed = await relayUploadOp<{ url: string }>("projectImageFinalize", data);
+    if (relayed) return relayed;
     await assertAdminCan(context.supabase as never, context.userId, "projects", "manage");
     if (!isSafeStoragePath(data.path, `${data.scope}/`))
       throw new Error("You do not have permission to do that.");

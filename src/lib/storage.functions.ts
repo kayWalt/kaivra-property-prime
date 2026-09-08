@@ -4,6 +4,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { DOCS_BUCKET, buildDocPath } from "./storage.server";
 import { LOVABLE_ORIGIN, isLovableOrigin } from "./origin-fallback";
+import { relayUploadOp } from "./upload-relay.server";
 import {
   assertUploadAllowed,
   categoryForDocumentKind,
@@ -96,6 +97,8 @@ export const finalizeDocumentUpload = createServerFn({ method: "POST" })
       .parse(data),
   )
   .handler(async ({ data, context }) => {
+    const relayed = await relayUploadOp<Record<string, unknown>>("documentFinalize", data);
+    if (relayed) return relayed as never;
     const category = categoryForDocumentKind(data.kind);
     assertUploadAllowed(category, { fileName: data.fileName, size: data.size ?? null });
 
