@@ -1,0 +1,2 @@
+ALTER TABLE public.email_outbox DROP CONSTRAINT email_outbox_status_chk;
+ALTER TABLE public.email_outbox ADD CONSTRAINT email_outbox_status_chk CHECK (status IN ('pending','processing','sent','failed','skipped','expanded','cancelled'));
