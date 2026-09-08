@@ -128,6 +128,10 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
   const { paid, outstanding } = totals(payments.data ?? [], totalValue);
   const ledger = paymentLedger(payments.data ?? [], totalValue);
   const docs = documents.data ?? [];
+  // Ownership, not role: the payment button belongs to the person the
+  // investment belongs to — including staff who invest personally — and never
+  // appears on somebody else's investment.
+  const canPay = !manage && !!user && record.investor_id === user.id && record.status !== "draft";
 
   // A form with no project/property selection and no investment value is
   // "empty" — block PDF download and guide the investor back to the wizard.
