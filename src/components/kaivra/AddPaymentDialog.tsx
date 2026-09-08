@@ -92,31 +92,32 @@ export function AddPaymentDialog({
       toast.error("Select the account you paid into.");
       return;
     }
+    if (submitting) return;
+    setSubmitting(true);
     try {
-      const { data: payment, error } = await supabase
-        .from("application_payments")
-        .insert({
-          application_id: applicationId,
+      // The server re-checks that this investment belongs to the signed-in
+      // investor, forces the status to pending and blocks duplicates. The
+      // browser never writes the payment row itself.
+      const payment = await submitPayment({
+        data: {
+          applicationId,
           amount: value,
-          paid_on: paidOn || null,
+          paidOn: paidOn || null,
           bank: bank || null,
           sender: sender || null,
           reference: payRef || null,
           method,
-          description: note || null,
-          payment_account_id: accountId || null,
-        })
-
-        .select()
-        .single();
-      if (error || !payment) throw error ?? new Error("insert failed");
+          note: note || null,
+          paymentAccountId: accountId || null,
+        },
+      });
 
       await uploadDocument({
         applicationId,
         kind: "proof_of_payment",
         file,
         label: `Proof of payment · ${payRef || value}`,
-        paymentId: payment.id,
+        paymentId: payment.paymentId,
       });
 
       void logEvent(
