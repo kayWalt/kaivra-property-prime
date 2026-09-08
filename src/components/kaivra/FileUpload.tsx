@@ -3,6 +3,8 @@ import { Camera, Check, Loader2, Trash2, Upload, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { createUploadTicket, getDocumentUrl } from "@/lib/storage.functions";
+import { verifyUploadedFile } from "@/lib/upload-verify.functions";
+import { assertUploadAllowed, categoryForDocumentKind } from "@/lib/upload-rules";
 import { Button } from "@/components/ui/button";
 import { AsyncButton } from "@/components/kaivra/AsyncButton";
 import { Progress } from "@/components/ui/progress";
@@ -58,13 +60,34 @@ export async function uploadDocument(options: {
           type: options.file.type || "image/png",
         });
   const file = await compressImage(raw);
+  const category = categoryForDocumentKind(options.kind);
+  // Fast, friendly rejection before any network work; the server repeats this
+  // check when it issues the ticket, so the browser can never bypass it.
+  assertUploadAllowed(category, {
+    fileName: file.name,
+    contentType: file.type,
+    size: file.size,
+  });
   const ticket = await createUploadTicket({
-    data: { applicationId: options.applicationId, kind: options.kind, fileName: file.name },
+    data: {
+      applicationId: options.applicationId,
+      kind: options.kind,
+      fileName: file.name,
+      contentType: file.type || undefined,
+      size: file.size,
+    },
   });
   const { error: uploadError } = await supabase.storage
     .from(ticket.bucket)
     .uploadToSignedUrl(ticket.path, ticket.token, file);
   if (uploadError) throw new Error("Your document could not be uploaded. Please try again.");
+
+  // The bytes only exist once the upload finishes, so the real file type is
+  // confirmed here. A disguised file is removed again and never recorded.
+  await verifyUploadedFile({
+    data: { bucket: ticket.bucket as "kaivra-docs", path: ticket.path, category },
+  });
+
 
   const { data, error } = await supabase
     .from("application_documents")
