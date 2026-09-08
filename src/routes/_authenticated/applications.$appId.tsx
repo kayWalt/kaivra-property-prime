@@ -20,12 +20,14 @@ import {
 } from "@/lib/partner-pricing";
 import { ReferenceChip } from "@/components/kaivra/ReferenceChip";
 import { RequestCorrectionDialog } from "@/components/kaivra/RequestCorrectionDialog";
+import { Progress } from "@/components/ui/progress";
 import {
   fetchApplication,
   fetchDocuments,
   fetchEvents,
   fetchPayments,
   logEvent,
+  paymentLedger,
   totals,
 } from "@/lib/applications";
 
