@@ -158,7 +158,7 @@ export function ContactForm() {
           onChange={(e) => set("company")(e.target.value)}
         />
       </div>
-      <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
+      <div className="flex flex-col flex-wrap gap-3 sm:col-span-2 sm:flex-row sm:items-center">
         <Button type="submit" disabled={sending}>
           {sending ? (
             <Loader2 className="size-4 animate-spin" aria-hidden />
@@ -166,6 +166,9 @@ export function ContactForm() {
             <Send className="size-4" aria-hidden />
           )}
           Send enquiry
+        </Button>
+        <Button asChild variant="outline">
+          <Link to="/">Return Home</Link>
         </Button>
         {reference ? (
           <p className="text-sm text-muted-foreground">
