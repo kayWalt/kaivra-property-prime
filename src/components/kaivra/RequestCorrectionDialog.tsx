@@ -28,6 +28,7 @@ import {
   createCorrectionUploadTicket,
   submitCorrectionRequest,
 } from "@/lib/corrections.functions";
+import { verifyUploadedFile } from "@/lib/upload-verify.functions";
 
 type Blobs = {
   personal?: Record<string, unknown>;
