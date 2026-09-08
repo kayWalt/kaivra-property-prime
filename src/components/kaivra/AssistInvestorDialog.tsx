@@ -13,6 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AsyncButton } from "@/components/kaivra/AsyncButton";
+import { AddPaymentDialog } from "@/components/kaivra/AddPaymentDialog";
 import { StatusBadge } from "@/components/kaivra/StatusBadge";
 import {
   createAssistedApplication,
