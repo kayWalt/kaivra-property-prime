@@ -5,6 +5,8 @@ import { toast } from "sonner";
 import { Camera, Loader2, Trash2, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { createAvatarUploadTicket, removeAvatarFile } from "@/lib/avatar.functions";
+import { verifyUploadedFile } from "@/lib/upload-verify.functions";
+import { assertUploadAllowed } from "@/lib/upload-rules";
 import { Button } from "@/components/ui/button";
 import { AsyncButton } from "@/components/kaivra/AsyncButton";
 import { compressImage } from "@/components/kaivra/FileUpload";
@@ -65,13 +67,29 @@ function ProfilePage() {
       // Phone cameras produce multi-megabyte photos: downscale before the
       // upload so it completes quickly on 3G/4G.
       const optimised = await compressImage(file, 640, 0.8);
+      // Checked outside the fallback below so a disallowed picture is rejected
+      // outright instead of slipping through the direct-upload path.
+      assertUploadAllowed("avatar", {
+        fileName: optimised.name,
+        contentType: optimised.type,
+        size: optimised.size,
+      });
       let publicPath: string | null = null;
       try {
-        const ticket = await createAvatarUploadTicket({ data: { fileName: optimised.name } });
+        const ticket = await createAvatarUploadTicket({
+          data: {
+            fileName: optimised.name,
+            contentType: optimised.type || undefined,
+            size: optimised.size,
+          },
+        });
         const { error } = await supabase.storage
           .from(ticket.bucket)
           .uploadToSignedUrl(ticket.path, ticket.token, optimised);
         if (error) throw error;
+        await verifyUploadedFile({
+          data: { bucket: "avatars", path: ticket.path, category: "avatar" },
+        });
         publicPath = ticket.url;
       } catch {
         // Fallback: upload straight from the browser under the user's own

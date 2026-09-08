@@ -4,6 +4,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { DOCS_BUCKET, buildDocPath } from "./storage.server";
 import { LOVABLE_ORIGIN, isLovableOrigin } from "./origin-fallback";
+import { assertUploadAllowed, categoryForDocumentKind } from "./upload-rules";
 
 export const createUploadTicket = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -13,10 +14,18 @@ export const createUploadTicket = createServerFn({ method: "POST" })
         applicationId: z.string().uuid(),
         kind: z.string().min(1).max(40),
         fileName: z.string().min(1).max(200),
+        contentType: z.string().max(120).optional(),
+        size: z.number().int().nonnegative().optional(),
       })
       .parse(data),
   )
   .handler(async ({ data, context }) => {
+    // Category-specific allow-list (passport/signature/proof of payment/other).
+    assertUploadAllowed(categoryForDocumentKind(data.kind), {
+      fileName: data.fileName,
+      contentType: data.contentType ?? null,
+      size: data.size ?? null,
+    });
     // RLS on `applications` decides visibility: if the caller can select the
     // row, they are allowed to attach documents to it.
     const { data: allowed, error: accessError } = await context.supabase

@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { assertAdminCan } from "@/lib/admin-permissions.server";
+import { assertUploadAllowed } from "@/lib/upload-rules";
 
 export const PROJECT_IMAGES_BUCKET = "project-images";
 
@@ -16,11 +17,18 @@ export const createProjectImageUploadTicket = createServerFn({ method: "POST" })
       .object({
         scope: z.enum(["project", "property"]).default("project"),
         fileName: z.string().min(1).max(200),
+        contentType: z.string().max(120).optional(),
+        size: z.number().int().nonnegative().optional(),
       })
       .parse(data),
   )
   .handler(async ({ data, context }) => {
     await assertAdminCan(context.supabase as never, context.userId, "projects", "manage");
+    assertUploadAllowed("project_image", {
+      fileName: data.fileName,
+      contentType: data.contentType ?? null,
+      size: data.size ?? null,
+    });
 
     const path = `${data.scope}/${crypto.randomUUID()}-${safeName(data.fileName)}`;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

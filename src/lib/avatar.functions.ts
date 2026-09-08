@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { assertUploadAllowed } from "@/lib/upload-rules";
 
 export const AVATARS_BUCKET = "avatars";
 
@@ -10,8 +11,21 @@ function safeName(name: string) {
 
 export const createAvatarUploadTicket = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data) => z.object({ fileName: z.string().min(1).max(200) }).parse(data))
+  .inputValidator((data) =>
+    z
+      .object({
+        fileName: z.string().min(1).max(200),
+        contentType: z.string().max(120).optional(),
+        size: z.number().int().nonnegative().optional(),
+      })
+      .parse(data),
+  )
   .handler(async ({ data, context }) => {
+    assertUploadAllowed("avatar", {
+      fileName: data.fileName,
+      contentType: data.contentType ?? null,
+      size: data.size ?? null,
+    });
     const path = `${context.userId}/${crypto.randomUUID()}-${safeName(data.fileName)}`;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: ticket, error } = await supabaseAdmin.storage
