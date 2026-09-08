@@ -200,7 +200,7 @@ function MyApplications() {
                 </div>
                 <StatusBadge status={app.status as ApplicationStatus} />
                 <Button asChild size="sm">
-                  <Link to="/applications/$appId" params={{ appId: app.id }} hash="payments">
+                  <Link to="/applications/$appId" params={{ appId: app.id }}>
                     View
                   </Link>
                 </Button>
