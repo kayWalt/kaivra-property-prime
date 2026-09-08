@@ -26,9 +26,10 @@ import {
 import { CORRECTION_SECTIONS, sectionOf } from "@/lib/corrections";
 import {
   createCorrectionUploadTicket,
+  finalizeCorrectionDocumentUpload,
   submitCorrectionRequest,
 } from "@/lib/corrections.functions";
-import { verifyUploadedFile } from "@/lib/upload-verify.functions";
+
 
 type Blobs = {
   personal?: Record<string, unknown>;
@@ -116,21 +117,17 @@ export function RequestCorrectionDialog({
           .from(ticket.bucket)
           .uploadToSignedUrl(ticket.path, ticket.token, file);
         if (error) throw error;
-        await verifyUploadedFile({
+        // Server-side: confirms access, checks the stored bytes and records the
+        // attachment. The browser cannot record an unverified file itself.
+        await finalizeCorrectionDocumentUpload({
           data: {
-            bucket: "kaivra-docs",
+            correctionRequestId: created.id,
             path: ticket.path,
-            category: "correction_document",
+            fileName: file.name,
+            size: file.size,
           },
         });
-        await supabase.from("correction_request_documents").insert({
-          correction_request_id: created.id,
-          file_path: ticket.path,
-          file_name: file.name,
-          mime_type: file.type || null,
-          size_bytes: file.size,
-          uploaded_by: (await supabase.auth.getUser()).data.user?.id ?? null,
-        });
+
       } catch {
         toast.error(`${file.name} could not be attached.`);
       }

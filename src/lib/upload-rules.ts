@@ -5,7 +5,7 @@
  *  - the browser components (fast, friendly rejection before any network work),
  *  - the server upload-ticket functions (authoritative: a signed upload URL is
  *    only ever issued for an allowed category/type/size combination),
- *  - the post-upload byte check (`upload-verify.functions.ts`), which is the
+ *  - the post-upload byte check (`upload-verify.server.ts`), which is the
  *    only point where the real file content exists and can be inspected.
  *
  * Client-safe: pure data and pure functions, no server imports.
@@ -143,6 +143,27 @@ export function assertUploadAllowed(category: UploadCategory, file: UploadCandid
   const reason = uploadRejectionReason(category, file);
   if (reason) throw new Error(reason);
 }
+
+const SAFE_SEGMENT = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
+
+/**
+ * A stored object may only ever be addressed as `<server-derived prefix>/<one
+ * safe file segment>`. The prefix is always built on the server from the
+ * authenticated identity (or an authorised application/correction/scope), so a
+ * client cannot point an operation at somebody else's object. Percent signs,
+ * backslashes, `..` and extra path segments are all refused, which closes
+ * traversal and alternate-encoding tricks.
+ */
+export function isSafeStoragePath(path: string, expectedPrefix: string): boolean {
+  if (!path || path.length > 400) return false;
+  if (path.includes("..") || /[%\\]/.test(path)) return false;
+  if (!expectedPrefix.endsWith("/")) return false;
+  if (!path.startsWith(expectedPrefix)) return false;
+  const rest = path.slice(expectedPrefix.length);
+  if (rest.includes("/")) return false;
+  return SAFE_SEGMENT.test(rest);
+}
+
 
 /**
  * Identifies a file from its leading bytes (magic numbers). Returns null when
