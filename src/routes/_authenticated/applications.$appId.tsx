@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge, PaymentBadge } from "@/components/kaivra/StatusBadge";
 import { openDocument } from "@/components/kaivra/FileUpload";
 import { PassportAvatar } from "@/components/kaivra/PassportAvatar";
-import { useProfile } from "@/hooks/useAuth";
+import { useProfile, useSession } from "@/hooks/useAuth";
 import { usePassportAvatars } from "@/hooks/usePassportAvatars";
 import { supabase } from "@/integrations/supabase/client";
 import { AddPaymentDialog } from "@/components/kaivra/AddPaymentDialog";
@@ -79,6 +79,7 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
     enabled: !!manage,
   });
   const investorId = app.data?.investor_id as string | undefined;
+  const { user } = useSession();
   const { data: profile } = useProfile(investorId);
   const { avatars, isLoading: avatarsLoading } = usePassportAvatars(investorId ? [investorId] : []);
 
@@ -127,6 +128,10 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
   const { paid, outstanding } = totals(payments.data ?? [], totalValue);
   const ledger = paymentLedger(payments.data ?? [], totalValue);
   const docs = documents.data ?? [];
+  // Ownership, not role: the payment button belongs to the person the
+  // investment belongs to — including staff who invest personally — and never
+  // appears on somebody else's investment.
+  const canPay = !manage && !!user && record.investor_id === user.id && record.status !== "draft";
 
   // A form with no project/property selection and no investment value is
   // "empty" — block PDF download and guide the investor back to the wizard.
@@ -302,7 +307,7 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
               </span>
             </p>
           </div>
-          {manage ? null : (
+          {canPay ? (
             <AddPaymentDialog
               applicationId={appId}
               projectId={record.project_id}
@@ -316,7 +321,7 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
                 void documents.refetch();
               }}
             />
-          )}
+          ) : null}
         </div>
         <Progress value={ledger.progress} className="mt-4 h-2" />
         <dl className="mt-5 grid gap-4 sm:grid-cols-4">
@@ -375,7 +380,7 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
       <section id="payments" className="rounded-lg border border-border bg-card p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="font-display text-2xl">Payments</h2>
-          {manage ? null : (
+          {canPay ? (
             <AddPaymentDialog
               applicationId={appId}
               projectId={record.project_id}
@@ -386,7 +391,7 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
                 void documents.refetch();
               }}
             />
-          )}
+          ) : null}
         </div>
         {payments.data?.length === 0 ? (
           <p className="mt-3 text-sm text-muted-foreground">No payment records yet.</p>
