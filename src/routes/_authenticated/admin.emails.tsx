@@ -88,7 +88,11 @@ function AdminEmailsPage() {
     body: "",
     cta_label: "",
     cta_url: "",
-    audience: "investors" as "investors" | "applicants" | "outstanding_balance",
+    audience: "investors" as
+      | "investors"
+      | "registered_users"
+      | "applicants"
+      | "outstanding_balance",
     category: "marketing" as "marketing" | "transactional",
   });
 
@@ -255,6 +259,7 @@ function AdminEmailsPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="investors">All investors</SelectItem>
+                    <SelectItem value="registered_users">All registered users</SelectItem>
                     <SelectItem value="applicants">Investors with an active application</SelectItem>
                     <SelectItem value="outstanding_balance">
                       Investors with an outstanding balance

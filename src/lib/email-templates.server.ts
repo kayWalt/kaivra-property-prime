@@ -36,6 +36,28 @@ function paragraphs(body: string) {
     .join("");
 }
 
+/**
+ * Same as `paragraphs`, plus the single safe inline mark used by Super Admin
+ * announcements: `~~text~~` becomes <del>text</del>. The body is HTML-escaped
+ * FIRST, so no arbitrary HTML can be injected — only the <del> tags this
+ * function emits itself ever reach the email.
+ */
+function paragraphsWithMarks(body: string) {
+  return body
+    .split(/\n{2,}/)
+    .map((p) => {
+      const safe = escapeHtml(p)
+        .replace(/\n/g, "<br/>")
+        .replace(
+          /~~(.+?)~~/g,
+          '<del style="color:#6B7472;text-decoration:line-through;">$1</del>',
+        );
+      return `<p style="margin:0 0 16px;font-size:15px;line-height:24px;color:#2A2E2C;">${safe}</p>`;
+    })
+    .join("");
+}
+
+
 export function money(amount: number | null | undefined, currency = "NGN") {
   const value = Number(amount ?? 0);
   try {
@@ -307,7 +329,7 @@ export function renderTemplate(
     case "announcement": {
       const html = layout({
         heading: String(payload["heading"] ?? "A message from KAIVRA"),
-        bodyHtml: paragraphs(String(payload["body"] ?? "")),
+        bodyHtml: paragraphsWithMarks(String(payload["body"] ?? "")),
         ctaLabel: (payload["cta_label"] as string) || null,
         ctaUrl: (payload["cta_url"] as string) || null,
         footerNote:

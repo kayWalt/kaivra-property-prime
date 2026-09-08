@@ -14,7 +14,7 @@ export type AnnouncementInput = {
   body: string;
   cta_label?: string | null | undefined;
   cta_url?: string | null | undefined;
-  audience: "investors" | "applicants" | "outstanding_balance";
+  audience: "investors" | "registered_users" | "applicants" | "outstanding_balance";
   category: "marketing" | "transactional";
 };
 
@@ -38,16 +38,25 @@ export async function queueAnnouncementCore(
   const staffIds = new Set(((staff ?? []) as any[]).map((s) => s.user_id));
 
   let targets: { id: string | null; email: string; full_name: string }[] = [];
-  if (data.audience === "investors") {
+  if (data.audience === "investors" || data.audience === "registered_users") {
+    // "registered_users" = every legitimate registered account (invested,
+    // applied-only, or never applied), staff excluded, one email per person.
     const { data: rows } = await db.from("profiles").select("id, email, full_name");
+    const seenEmails = new Set<string>();
     targets = ((rows ?? []) as any[])
       .filter((p) => p.email && !staffIds.has(p.id))
       .map((p) => ({
         id: p.id,
-        email: String(p.email).toLowerCase(),
+        email: String(p.email).trim().toLowerCase(),
         full_name: p.full_name ?? "",
-      }));
+      }))
+      .filter((t) => {
+        if (!t.email || seenEmails.has(t.email)) return false;
+        seenEmails.add(t.email);
+        return true;
+      });
   } else {
+
     const statuses = ["submitted", "under_review", "payment_verification", "approved"];
     const { data: apps } = await db
       .from("applications")

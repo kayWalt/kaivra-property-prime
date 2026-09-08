@@ -353,7 +353,12 @@ export const queueAnnouncement = createServerFn({ method: "POST" })
         body: z.string().trim().min(10).max(5000),
         cta_label: z.string().trim().max(60).optional().nullable(),
         cta_url: z.string().trim().url().max(300).optional().nullable(),
-        audience: z.enum(["investors", "applicants", "outstanding_balance"]),
+        audience: z.enum([
+          "investors",
+          "registered_users",
+          "applicants",
+          "outstanding_balance",
+        ]),
         category: z.enum(["marketing", "transactional"]).default("marketing"),
       })
       .parse(d),
