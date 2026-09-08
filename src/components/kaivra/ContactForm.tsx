@@ -168,7 +168,17 @@ export function ContactForm() {
           Send enquiry
         </Button>
         <Button asChild variant="outline">
-          <Link to="/">Return Home</Link>
+          <Link
+            to="/"
+            hash=""
+            onClick={() => {
+              if (typeof window !== "undefined") {
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }
+            }}
+          >
+            Return Home
+          </Link>
         </Button>
         {reference ? (
           <p className="text-sm text-muted-foreground">
