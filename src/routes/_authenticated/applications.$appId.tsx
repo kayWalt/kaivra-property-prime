@@ -79,6 +79,7 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
     enabled: !!manage,
   });
   const investorId = app.data?.investor_id as string | undefined;
+  const { user } = useSession();
   const { data: profile } = useProfile(investorId);
   const { avatars, isLoading: avatarsLoading } = usePassportAvatars(investorId ? [investorId] : []);
 
