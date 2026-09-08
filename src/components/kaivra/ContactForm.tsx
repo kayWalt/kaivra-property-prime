@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { Loader2, Send } from "lucide-react";
 import { toast } from "sonner";
 import { submitContactEnquiry } from "@/lib/contact.functions";
