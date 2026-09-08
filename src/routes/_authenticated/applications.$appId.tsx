@@ -321,7 +321,7 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
                 void documents.refetch();
               }}
             />
-          )}
+          ) : null}
         </div>
         <Progress value={ledger.progress} className="mt-4 h-2" />
         <dl className="mt-5 grid gap-4 sm:grid-cols-4">
@@ -391,7 +391,7 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
                 void documents.refetch();
               }}
             />
-          )}
+          ) : null}
         </div>
         {payments.data?.length === 0 ? (
           <p className="mt-3 text-sm text-muted-foreground">No payment records yet.</p>
