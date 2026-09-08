@@ -486,6 +486,12 @@ export const createCorrectionUploadTicket = createServerFn({ method: "POST" })
       .parse(data),
   )
   .handler(async ({ data, context }) => {
+    const { relayUploadOp } = await import("./upload-relay.server");
+    const relayed = await relayUploadOp<{ path: string; token: string; bucket: string }>(
+      "correctionTicket",
+      data,
+    );
+    if (relayed) return relayed;
     const { assertUploadAllowed } = await import("./upload-rules");
     assertUploadAllowed("correction_document", {
       fileName: data.fileName,
@@ -528,6 +534,9 @@ export const finalizeCorrectionDocumentUpload = createServerFn({ method: "POST" 
       .parse(data),
   )
   .handler(async ({ data, context }) => {
+    const { relayUploadOp } = await import("./upload-relay.server");
+    const relayed = await relayUploadOp<{ ok: true }>("correctionFinalize", data);
+    if (relayed) return { ok: true as const };
     const ctx = context as unknown as Ctx;
     const { assertUploadAllowed, isSafeStoragePath } = await import("./upload-rules");
     assertUploadAllowed("correction_document", {
