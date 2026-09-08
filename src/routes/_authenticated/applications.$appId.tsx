@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge, PaymentBadge } from "@/components/kaivra/StatusBadge";
 import { openDocument } from "@/components/kaivra/FileUpload";
 import { PassportAvatar } from "@/components/kaivra/PassportAvatar";
-import { useProfile } from "@/hooks/useAuth";
+import { useProfile, useSession } from "@/hooks/useAuth";
 import { usePassportAvatars } from "@/hooks/usePassportAvatars";
 import { supabase } from "@/integrations/supabase/client";
 import { AddPaymentDialog } from "@/components/kaivra/AddPaymentDialog";
