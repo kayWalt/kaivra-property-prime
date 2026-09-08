@@ -313,12 +313,19 @@ export async function processQueue(limit = 40): Promise<ProcessResult> {
     // affects zero rows and must not deliver. The claim also stamps
     // scheduled_for with the claim time so an interrupted worker's row can be
     // recovered below (stale "processing" rows are released back to "pending").
-    const { data: claimed } = await db
+    const { data: claimed, error: claimError } = await db
       .from("email_outbox")
       .update({ status: "processing", scheduled_for: new Date().toISOString() })
       .eq("id", row.id)
       .eq("status", "pending")
       .select("id");
+    if (claimError) {
+      // A database error is NOT "another worker claimed it". Surface it, do
+      // not deliver, and leave the row pending for the next run.
+      console.error("email_outbox claim failed", { id: row.id, error: claimError.message });
+      result.failed += 1;
+      continue;
+    }
     if (!claimed || claimed.length === 0) {
       // Already claimed/processed by another worker — do not deliver.
       continue;
