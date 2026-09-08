@@ -3,6 +3,8 @@ import { toast } from "sonner";
 import { ArrowLeft, ArrowRight, ImagePlus, Loader2, Trash2, UploadCloud } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { createProjectImageUploadTicket } from "@/lib/project-media.functions";
+import { verifyUploadedFile } from "@/lib/upload-verify.functions";
+import { assertUploadAllowed } from "@/lib/upload-rules";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -71,11 +73,26 @@ async function compress(file: File): Promise<File> {
 async function uploadImage(file: File, scope: "project" | "property") {
   validate(file);
   const prepared = await compress(file);
-  const ticket = await createProjectImageUploadTicket({ data: { scope, fileName: prepared.name } });
+  assertUploadAllowed("project_image", {
+    fileName: prepared.name,
+    contentType: prepared.type,
+    size: prepared.size,
+  });
+  const ticket = await createProjectImageUploadTicket({
+    data: {
+      scope,
+      fileName: prepared.name,
+      contentType: prepared.type || undefined,
+      size: prepared.size,
+    },
+  });
   const { error } = await supabase.storage
     .from(ticket.bucket)
     .uploadToSignedUrl(ticket.path, ticket.token, prepared);
   if (error) throw error;
+  await verifyUploadedFile({
+    data: { bucket: "project-images", path: ticket.path, category: "project_image" },
+  });
   return ticket.url;
 }
 
