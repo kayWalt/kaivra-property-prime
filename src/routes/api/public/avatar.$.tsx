@@ -6,7 +6,25 @@ const BUCKET = "avatars";
 
 const IMAGE_HEADERS = {
   "Cache-Control": "public, max-age=31536000, immutable",
+  // Stored objects are user-supplied: never let the browser sniff or execute
+  // them in this origin (a stored SVG/HTML avatar would otherwise run script).
+  "X-Content-Type-Options": "nosniff",
+  "Content-Security-Policy": "default-src 'none'; sandbox",
 };
+
+const SAFE_IMAGE_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+  "image/avif",
+]);
+
+/** Serves only inert raster image types; anything else is downgraded. */
+function safeImageType(value: string | null | undefined) {
+  const type = (value ?? "").split(";")[0]?.trim().toLowerCase() ?? "";
+  return SAFE_IMAGE_TYPES.has(type) ? type : "application/octet-stream";
+}
 
 /**
  * Self-hosted deployments (custom domain on Cloudflare) do not carry the
@@ -20,7 +38,7 @@ async function relay(request: Request, path: string) {
   return new Response(res.body, {
     headers: {
       ...IMAGE_HEADERS,
-      "Content-Type": res.headers.get("content-type") || "image/jpeg",
+      "Content-Type": safeImageType(res.headers.get("content-type")),
     },
   });
 }
@@ -36,7 +54,7 @@ export const Route = createFileRoute("/api/public/avatar/$")({
           const file = await downloadStorageObject(BUCKET, path);
           if (file) {
             return new Response(file.body, {
-              headers: { ...IMAGE_HEADERS, "Content-Type": file.contentType },
+              headers: { ...IMAGE_HEADERS, "Content-Type": safeImageType(file.contentType) },
             });
           }
         } catch (err) {
