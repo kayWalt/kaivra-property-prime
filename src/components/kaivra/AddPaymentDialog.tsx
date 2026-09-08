@@ -2,7 +2,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
-import { submitInvestmentPayment } from "@/lib/payments.functions";
+import { recordAssistedPayment, submitInvestmentPayment } from "@/lib/payments.functions";
 import { AsyncButton } from "@/components/kaivra/AsyncButton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,6 +41,7 @@ export function AddPaymentDialog({
   triggerSize = "sm",
   triggerVariant = "outline",
   outstanding,
+  assistedInvestorId = null,
 }: {
   applicationId: string;
   projectId?: string | null;
@@ -50,8 +51,16 @@ export function AddPaymentDialog({
   triggerSize?: "sm" | "default" | "lg";
   triggerVariant?: "outline" | "default";
   outstanding?: number;
+  /**
+   * Staff mode. When set, the payment is recorded on behalf of this investor
+   * through the separately authorised admin operation; the investor
+   * self-service endpoint is never used and never relaxed.
+   */
+  assistedInvestorId?: string | null;
 }) {
+  const assisted = !!assistedInvestorId;
   const submitPayment = useServerFn(submitInvestmentPayment);
+  const submitAssisted = useServerFn(recordAssistedPayment);
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [amount, setAmount] = useState("");
@@ -99,7 +108,22 @@ export function AddPaymentDialog({
       // The server re-checks that this investment belongs to the signed-in
       // investor, forces the status to pending and blocks duplicates. The
       // browser never writes the payment row itself.
-      const payment = await submitPayment({
+      const payment = assisted
+        ? await submitAssisted({
+            data: {
+              investorId: assistedInvestorId!,
+              applicationId,
+              amount: value,
+              paidOn: paidOn || null,
+              bank: bank || null,
+              sender: sender || null,
+              reference: payRef || null,
+              method,
+              note: note || null,
+              paymentAccountId: accountId || null,
+            },
+          })
+        : await submitPayment({
         data: {
           applicationId,
           amount: value,
@@ -133,7 +157,11 @@ export function AddPaymentDialog({
         `/admin/applications/${applicationId}`,
       );
 
-      toast.success("Payment submitted. Our team will verify it shortly.");
+      toast.success(
+        assisted
+          ? "Payment recorded for the investor. It is now awaiting verification."
+          : "Payment submitted. Our team will verify it shortly.",
+      );
       reset();
       setOpen(false);
       onDone();
@@ -170,10 +198,11 @@ export function AddPaymentDialog({
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Make a payment</DialogTitle>
+          <DialogTitle>{assisted ? "Record payment for investor" : "Make a payment"}</DialogTitle>
           <DialogDescription>
-            Record what you paid on this existing investment and attach the bank receipt. Your
-            investment details stay exactly as they are.
+            {assisted
+              ? "You are recording this payment on the investor's behalf. The investment, investor and property stay exactly as they are, and the payment waits for the normal verification step."
+              : "Record what you paid on this existing investment and attach the bank receipt. Your investment details stay exactly as they are."}
             {typeof outstanding === "number" && outstanding > 0
               ? ` Outstanding balance: ${formatNaira(outstanding)}.`
               : ""}

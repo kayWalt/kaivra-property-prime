@@ -13,6 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AsyncButton } from "@/components/kaivra/AsyncButton";
+import { AddPaymentDialog } from "@/components/kaivra/AddPaymentDialog";
 import { StatusBadge } from "@/components/kaivra/StatusBadge";
 import {
   createAssistedApplication,
@@ -170,8 +171,8 @@ export function AssistInvestorDialog({
                 </li>
               ) : (
                 result.applications.map((app) => (
-                  <li key={app.id} className="flex min-w-0 items-center justify-between gap-3">
-                    <span className="min-w-0 truncate">
+                  <li key={app.id} className="flex min-w-0 flex-wrap items-center gap-2">
+                    <span className="min-w-0 flex-1 truncate">
                       {app.reference ?? "Draft"} · {app.project_name ?? "—"}
                       {app.property_name ? ` · ${app.property_name}` : ""}
                     </span>
@@ -181,6 +182,17 @@ export function AssistInvestorDialog({
                         {formatDate(app.submitted_at ?? app.created_at)}
                       </span>
                     </span>
+                    {app.status !== "draft" ? (
+                      <AddPaymentDialog
+                        applicationId={app.id}
+                        reference={app.reference}
+                        assistedInvestorId={result.investor.id}
+                        triggerLabel="Add payment for investor"
+                        triggerSize="sm"
+                        triggerVariant="outline"
+                        onDone={() => void search()}
+                      />
+                    ) : null}
                   </li>
                 ))
               )}
