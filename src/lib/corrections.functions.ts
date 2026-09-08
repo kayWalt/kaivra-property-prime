@@ -477,10 +477,21 @@ export const createCorrectionUploadTicket = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) =>
     z
-      .object({ correctionRequestId: z.string().uuid(), fileName: z.string().min(1).max(200) })
+      .object({
+        correctionRequestId: z.string().uuid(),
+        fileName: z.string().min(1).max(200),
+        contentType: z.string().max(120).optional(),
+        size: z.number().int().nonnegative().optional(),
+      })
       .parse(data),
   )
   .handler(async ({ data, context }) => {
+    const { assertUploadAllowed } = await import("./upload-rules");
+    assertUploadAllowed("correction_document", {
+      fileName: data.fileName,
+      contentType: data.contentType ?? null,
+      size: data.size ?? null,
+    });
     const ctx = context as unknown as Ctx;
     const { data: allowed, error } = await ctx.supabase
       .from("correction_requests")
