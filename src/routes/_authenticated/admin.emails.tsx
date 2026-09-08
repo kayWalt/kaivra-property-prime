@@ -88,7 +88,11 @@ function AdminEmailsPage() {
     body: "",
     cta_label: "",
     cta_url: "",
-    audience: "investors" as "investors" | "applicants" | "outstanding_balance",
+    audience: "investors" as
+      | "investors"
+      | "registered_users"
+      | "applicants"
+      | "outstanding_balance",
     category: "marketing" as "marketing" | "transactional",
   });
 
