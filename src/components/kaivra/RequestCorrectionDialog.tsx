@@ -104,12 +104,24 @@ export function RequestCorrectionDialog({
     for (const file of files) {
       try {
         const ticket = await createCorrectionUploadTicket({
-          data: { correctionRequestId: created.id, fileName: file.name },
+          data: {
+            correctionRequestId: created.id,
+            fileName: file.name,
+            contentType: file.type || undefined,
+            size: file.size,
+          },
         });
         const { error } = await supabase.storage
           .from(ticket.bucket)
           .uploadToSignedUrl(ticket.path, ticket.token, file);
         if (error) throw error;
+        await verifyUploadedFile({
+          data: {
+            bucket: "kaivra-docs",
+            path: ticket.path,
+            category: "correction_document",
+          },
+        });
         await supabase.from("correction_request_documents").insert({
           correction_request_id: created.id,
           file_path: ticket.path,
