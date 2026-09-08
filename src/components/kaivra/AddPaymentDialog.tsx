@@ -37,12 +37,21 @@ export function AddPaymentDialog({
   projectId,
   reference,
   onDone,
+  triggerLabel = "Make payment",
+  triggerSize = "sm",
+  triggerVariant = "outline",
+  outstanding,
 }: {
   applicationId: string;
   projectId?: string | null;
   reference?: string | null;
   onDone: () => void;
+  triggerLabel?: string;
+  triggerSize?: "sm" | "default" | "lg";
+  triggerVariant?: "outline" | "default";
+  outstanding?: number;
 }) {
+  const submitPayment = useServerFn(submitInvestmentPayment);
   const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState("");
   const [paidOn, setPaidOn] = useState("");
