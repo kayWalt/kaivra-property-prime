@@ -635,10 +635,10 @@ function Landing() {
                   Email support
                 </p>
                 <a
-                  href="mailto:support@kaivra.com"
+                  href="mailto:support@kaivraa.com"
                   className="mt-1 block text-sm text-onyx-foreground hover:text-gold"
                 >
-                  support@kaivra.com
+                  support@kaivraa.com
                 </a>
               </div>
             </div>
