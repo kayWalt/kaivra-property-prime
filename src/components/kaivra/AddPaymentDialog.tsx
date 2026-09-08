@@ -25,7 +25,7 @@ import {
   notifyStaffForProject,
 } from "@/lib/applications";
 import { accountLabel, useActivePaymentAccounts } from "@/lib/payment-accounts";
-import { PAYMENT_METHODS, type PaymentMethod } from "@/lib/kaivra";
+import { PAYMENT_METHODS, formatNaira, type PaymentMethod } from "@/lib/kaivra";
 
 
 /**
@@ -53,6 +53,7 @@ export function AddPaymentDialog({
 }) {
   const submitPayment = useServerFn(submitInvestmentPayment);
   const [open, setOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [amount, setAmount] = useState("");
   const [paidOn, setPaidOn] = useState("");
   const [bank, setBank] = useState("");
@@ -146,7 +147,11 @@ export function AddPaymentDialog({
         );
         return;
       }
-      toast.error("Your payment could not be recorded. Please try again.");
+      toast.error(
+        err instanceof Error ? err.message : "Your payment could not be recorded. Please try again.",
+      );
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -159,16 +164,19 @@ export function AddPaymentDialog({
       }}
     >
       <DialogTrigger asChild>
-        <Button size="sm" variant="outline">
-          <Plus className="mr-2 size-4" /> Upload payment proof
+        <Button size={triggerSize} variant={triggerVariant}>
+          <Plus className="mr-2 size-4" /> {triggerLabel}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Upload proof of payment</DialogTitle>
+          <DialogTitle>Make a payment</DialogTitle>
           <DialogDescription>
-            Record what you paid and attach the bank receipt. Our team will verify it and update
-            your balance.
+            Record what you paid on this existing investment and attach the bank receipt. Your
+            investment details stay exactly as they are.
+            {typeof outstanding === "number" && outstanding > 0
+              ? ` Outstanding balance: ${formatNaira(outstanding)}.`
+              : ""}
           </DialogDescription>
         </DialogHeader>
 
@@ -281,7 +289,7 @@ export function AddPaymentDialog({
           <Button variant="ghost" onClick={() => setOpen(false)}>
             Cancel
           </Button>
-          <AsyncButton onClick={() => submit()} pendingLabel="Submitting…">
+          <AsyncButton onClick={() => submit()} disabled={submitting} pendingLabel="Submitting…">
             Submit payment
           </AsyncButton>
         </DialogFooter>
