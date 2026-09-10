@@ -237,26 +237,31 @@ function Landing() {
         </div>
       </header>
 
-      <section className="relative min-h-[92svh] w-full">
+      <section className="relative min-h-[85svh] w-full sm:min-h-[92svh]">
         <HeroCarousel />
 
-        <div className="relative mx-auto flex min-h-[92svh] w-full max-w-7xl flex-col justify-center px-5 pb-14 pt-28 sm:justify-end sm:pb-24 sm:pt-32 sm:px-8">
+        <div className="relative mx-auto flex min-h-[85svh] w-full max-w-7xl flex-col justify-center px-5 pb-10 pt-24 sm:min-h-[92svh] sm:justify-end sm:pb-24 sm:pt-32 sm:px-8">
           <div className="max-w-2xl kv-rise">
-            <div className="rule-gold mb-6 sm:mb-8" />
-            <p className="eyebrow inline-block rounded-sm bg-info px-3 py-1.5 text-info-foreground">
+            <div className="rule-gold mb-4 sm:mb-8" />
+            <p className="eyebrow inline-block rounded-sm bg-info px-2 py-1 text-[10px] tracking-[0.14em] text-info-foreground sm:px-3 sm:py-1.5 sm:text-[11px] sm:tracking-[0.18em]">
               Smart Real Estate Investment Management
             </p>
-            <h1 className="mt-4 font-display text-4xl leading-[1.05] text-onyx-foreground sm:text-7xl">
+            <h1 className="mt-3 font-display text-[1.75rem] leading-[1.1] text-onyx-foreground sm:mt-4 sm:text-7xl sm:leading-[1.05]">
               Invest in the future you can own.
             </h1>
-            <div className="mt-5 inline-block max-w-xl rounded-lg bg-onyx/60 px-4 py-3 backdrop-blur-md sm:mt-6">
-              <p className="text-base text-onyx-foreground sm:text-lg">
-                KAIVRA is a real-estate investment platform: browse projects, apply online, make
-                and track your payments, and keep every document in one secure account.
+            <div className="mt-3 inline-block max-w-md rounded-lg bg-onyx/60 px-3 py-2 backdrop-blur-md sm:mt-6 sm:max-w-xl sm:px-4 sm:py-3">
+              <p className="text-sm text-onyx-foreground sm:text-lg">
+                <span className="sm:hidden">
+                  Browse projects, invest online, and manage your investment securely.
+                </span>
+                <span className="hidden sm:inline">
+                  KAIVRA is a real-estate investment platform: browse projects, apply online, make
+                  and track your payments, and keep every document in one secure account.
+                </span>
               </p>
             </div>
-            <div className="mt-8 flex flex-col gap-3 sm:mt-10 sm:flex-row">
-              <Button asChild size="lg" className="h-13 px-8 text-sm tracking-[0.14em] uppercase">
+            <div className="mt-5 flex flex-col gap-2 sm:mt-10 sm:flex-row sm:gap-3">
+              <Button asChild size="lg" className="h-12 px-6 text-xs tracking-[0.12em] uppercase sm:h-13 sm:px-8 sm:text-sm sm:tracking-[0.14em]">
                 {hasDraft ? (
                   <Link to="/application">Continue application</Link>
                 ) : signedIn ? (
@@ -269,7 +274,7 @@ function Landing() {
                 asChild
                 size="lg"
                 variant="outline"
-                className="h-13 border-onyx-foreground/40 bg-transparent px-8 text-sm uppercase tracking-[0.14em] text-onyx-foreground hover:bg-onyx-foreground/10 hover:text-onyx-foreground"
+                className="h-12 border-onyx-foreground/40 bg-transparent px-6 text-xs uppercase tracking-[0.12em] text-onyx-foreground hover:bg-onyx-foreground/10 hover:text-onyx-foreground sm:h-13 sm:px-8 sm:text-sm sm:tracking-[0.14em]"
               >
                 {signedIn ? (
                   <Link to="/dashboard">Access my investments</Link>
