@@ -186,14 +186,24 @@ function Landing() {
                 </SheetHeader>
                 <nav aria-label="Mobile" className="mt-6 flex flex-col gap-1 px-4">
                   {NAV_LINKS.map((item) => (
-                    <SheetClose asChild key={item.href}>
-                      <a
-                        href={item.href}
-                        className="rounded-md px-2 py-3 text-sm uppercase tracking-[0.14em] text-foreground hover:bg-muted"
-                      >
-                        {item.label}
-                      </a>
-                    </SheetClose>
+                    <a
+                      key={item.href}
+                      href={item.href}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        setMenuOpen(false);
+                        // Scroll after the drawer has closed so focus restoration
+                        // does not pull the page back to the trigger.
+                        window.setTimeout(() => {
+                          document
+                            .querySelector(item.href)
+                            ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                        }, 260);
+                      }}
+                      className="rounded-md px-2 py-3 text-sm uppercase tracking-[0.14em] text-foreground hover:bg-muted"
+                    >
+                      {item.label}
+                    </a>
                   ))}
                 </nav>
                 <div className="mt-6 px-4">
