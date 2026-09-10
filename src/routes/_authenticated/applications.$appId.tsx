@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Download, Eye, Printer } from "lucide-react";
+import { Download, Eye, History, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AsyncButton } from "@/components/kaivra/AsyncButton";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -21,6 +21,15 @@ import {
 import { ReferenceChip } from "@/components/kaivra/ReferenceChip";
 import { RequestCorrectionDialog } from "@/components/kaivra/RequestCorrectionDialog";
 import { Progress } from "@/components/ui/progress";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import {
   fetchApplication,
   fetchDocuments,
@@ -63,6 +72,7 @@ export const Route = createFileRoute("/_authenticated/applications/$appId")({
 
 export function ApplicationDetailView({ appId, manage }: { appId: string; manage?: boolean }) {
   const [downloading, setDownloading] = useState(false);
+  const [auditOpen, setAuditOpen] = useState(false);
 
   const app = useQuery({
     queryKey: ["application", appId],
@@ -460,27 +470,55 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
       </section>
 
       {manage ? (
-        <section className="rounded-lg border border-border bg-card p-5 print:hidden">
-          <h2 className="font-display text-2xl">Audit history</h2>
-          {events.data?.length === 0 ? (
-            <p className="mt-3 text-sm text-muted-foreground">No recorded activity.</p>
-          ) : (
-            <ul className="mt-4 space-y-3">
-              {events.data?.map((event) => (
-                <li key={event.id} className="text-sm">
-                  <span className="font-medium capitalize">{event.action.replace(/_/g, " ")}</span>
-                  <span className="text-muted-foreground">
-                    {" "}
-                    · {event.actor_name ?? "system"} · {formatDate(event.created_at)}
-                  </span>
-                  {event.detail ? (
-                    <p className="text-xs text-muted-foreground">{event.detail}</p>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
+        <Sheet open={auditOpen} onOpenChange={setAuditOpen}>
+          <SheetTrigger asChild>
+            <button
+              type="button"
+              className="fixed right-0 top-1/2 z-40 -translate-y-1/2 rounded-l-lg border border-r-0 border-border bg-card px-2 py-4 text-sm font-medium shadow-lg print:hidden hover:bg-muted/50 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+              aria-label="Open audit history"
+            >
+              <History className="mx-auto mb-2 size-4" />
+              <span className="inline-block rotate-180 [writing-mode:vertical-rl]">Audit history</span>
+            </button>
+          </SheetTrigger>
+          <SheetContent
+            side="right"
+            className="flex w-full flex-col gap-0 p-0 sm:w-[420px] sm:max-w-none"
+          >
+            <SheetHeader className="border-b p-6 pb-4">
+              <SheetTitle>Audit history</SheetTitle>
+            </SheetHeader>
+            <div className="flex-1 overflow-y-auto p-6 pt-4">
+              {events.data?.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No recorded activity.</p>
+              ) : (
+                <ul className="space-y-3">
+                  {events.data?.map((event) => (
+                    <li key={event.id} className="text-sm">
+                      <span className="font-medium capitalize">
+                        {event.action.replace(/_/g, " ")}
+                      </span>
+                      <span className="text-muted-foreground">
+                        {" "}
+                        · {event.actor_name ?? "system"} · {formatDate(event.created_at)}
+                      </span>
+                      {event.detail ? (
+                        <p className="text-xs text-muted-foreground">{event.detail}</p>
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            <SheetFooter className="border-t p-4">
+              <SheetClose asChild>
+                <Button variant="outline" className="w-full sm:w-auto">
+                  Close audit history
+                </Button>
+              </SheetClose>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
       ) : null}
     </div>
   );
