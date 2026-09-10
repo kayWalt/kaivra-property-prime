@@ -12,6 +12,34 @@ import { DOCS_BUCKET } from "./storage.server";
  * Payments, documents and events cascade with the application row; the stored
  * files are removed separately so nothing is orphaned in private storage.
  */
+/**
+ * Read-only lookup: resolve an Investment ID / KAIVRA reference to its
+ * application id. Never creates or modifies anything. The caller's own
+ * RLS-scoped client is used, so investors can only ever resolve investments
+ * they own and staff only the applications they are authorised to review —
+ * a foreign id returns the same generic "not found" as a nonexistent one.
+ */
+const LOOKUP_SAFE = /^[A-Za-z0-9/_-]{2,80}$/;
+
+export const findInvestmentByReference = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) => z.object({ reference: z.string().trim() }).parse(data))
+  .handler(async ({ data, context }) => {
+    const term = data.reference.trim();
+    if (!LOOKUP_SAFE.test(term)) throw new Error("Investment not found.");
+
+    const filters = [`reference.ilike."${term}"`, `legacy_reference.ilike."${term}"`];
+    if (z.string().uuid().safeParse(term).success) filters.push(`id.eq.${term}`);
+
+    const { data: rows, error } = await context.supabase
+      .from("applications")
+      .select("id, reference")
+      .or(filters.join(","))
+      .limit(1);
+    if (error || !rows || rows.length === 0) throw new Error("Investment not found.");
+    return { applicationId: rows[0].id, reference: rows[0].reference ?? null };
+  });
+
 export const deleteApplication = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) => z.object({ applicationId: z.string().uuid() }).parse(data))
