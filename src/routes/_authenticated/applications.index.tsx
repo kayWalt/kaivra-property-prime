@@ -121,6 +121,40 @@ function MyApplications() {
         Every application you have started, submitted or completed.
       </p>
 
+      <section
+        aria-labelledby="find-investment-heading"
+        className="mt-6 rounded-lg border border-border bg-card px-5 py-4"
+      >
+        <h2 id="find-investment-heading" className="font-display text-lg">
+          Find an existing investment
+        </h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Enter the Investment ID or KAIVRA Investment Reference shown on your investment to open
+          it directly — for example to record another payment against it.
+        </p>
+        <form
+          className="mt-3 flex flex-col gap-2 sm:flex-row"
+          onSubmit={(event) => {
+            event.preventDefault();
+            void handleLookup();
+          }}
+        >
+          <Input
+            value={lookupRef}
+            onChange={(event) => setLookupRef(event.target.value)}
+            placeholder="e.g. KV-2026-0001"
+            aria-label="Investment ID or KAIVRA Investment Reference"
+            className="sm:max-w-xs"
+            autoComplete="off"
+          />
+          <Button type="submit" disabled={lookingUp}>
+            <Search className="mr-2 size-4" aria-hidden />
+            {lookingUp ? "Finding…" : "Find Investment"}
+          </Button>
+        </form>
+      </section>
+
+
       <div className="mt-8 space-y-3">
         {apps.isLoading
           ? [0, 1, 2].map((i) => <Skeleton key={i} className="h-24 rounded-lg" />)
