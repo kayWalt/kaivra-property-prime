@@ -105,21 +105,23 @@ function LegacyReveal({ children }: { children: React.ReactNode }) {
 
 /**
  * Display-only repair for descriptions saved with letter-spaced text
- * (e.g. "S u s t a i n a b l e  S m a r t"). Only runs of 4+ consecutive
- * single characters are joined, so ordinary prose is left untouched.
- * The stored project record is never modified.
+ * (e.g. "S u s t a i n a b l e S m a r t"). Only runs of 4+ consecutive
+ * single characters are joined; word breaks are restored from double
+ * spaces where present, otherwise from Title Case boundaries inside the
+ * damaged run. Ordinary prose is untouched and the stored record is
+ * never modified.
  */
 function tidySpacedText(text: string | null | undefined) {
   if (!text) return text ?? "";
   return text.replace(/(?:(?<=^|\s)\S(?=\s|$)\s*){4,}/g, (run) => {
-    const letters = run.trim().split(/\s+/);
-    // Double spaces in the source mark real word breaks.
-    return run.replace(/\s{2,}/g, "\u0000").split("\u0000").length > 1
-      ? run
-          .split(/\s{2,}/)
-          .map((w) => w.trim().split(/\s+/).join(""))
-          .join(" ") + (/\s$/.test(run) ? " " : "")
-      : letters.join("") + (/\s$/.test(run) ? " " : "");
+    const trailing = /\s$/.test(run) ? " " : "";
+    const chunks = run.trim().split(/\s{2,}/);
+    const joined =
+      chunks.length > 1
+        ? chunks.map((w) => w.split(/\s+/).join("")).join(" ")
+        : run.trim().split(/\s+/).join("");
+    // Restore word gaps lost to single-space letter spacing.
+    return joined.replace(/(?<=[a-z0-9])(?=[A-Z])/g, " ") + trailing;
   });
 }
 
