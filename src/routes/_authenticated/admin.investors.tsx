@@ -3,7 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { UserPlus, PlusCircle, UserSearch } from "lucide-react";
+import { UserPlus, PlusCircle, UserSearch, Search } from "lucide-react";
+import { findInvestmentByReference } from "@/lib/applications.functions";
 import { AssistInvestorDialog } from "@/components/kaivra/AssistInvestorDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
@@ -94,6 +95,27 @@ function InvestorsPage() {
 
   const startAssisted = useServerFn(createAssistedApplication);
   const register = useServerFn(registerInvestor);
+  const findInvestment = useServerFn(findInvestmentByReference);
+  const [lookupRef, setLookupRef] = useState("");
+  const [lookingUp, setLookingUp] = useState(false);
+
+  async function handleFindInvestment() {
+    const term = lookupRef.trim();
+    if (!term) {
+      toast.error("Enter the Investment ID or KAIVRA Investment Reference.");
+      return;
+    }
+    setLookingUp(true);
+    try {
+      const { applicationId } = await findInvestment({ data: { reference: term } });
+      void navigate({ to: "/admin/applications/$appId", params: { appId: applicationId } });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Investment not found.");
+    } finally {
+      setLookingUp(false);
+    }
+  }
+
 
   const [assistOpen, setAssistOpen] = useState(false);
   const [existingOpen, setExistingOpen] = useState(false);
