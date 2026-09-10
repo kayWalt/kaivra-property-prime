@@ -360,7 +360,7 @@ function InvestorsPage() {
             className="sm:max-w-xs"
             autoComplete="off"
           />
-          <AsyncButton type="submit" pending={lookingUp} pendingLabel="Finding…">
+          <AsyncButton type="button" pendingLabel="Finding…" onClick={() => handleFindInvestment()}>
             <Search className="mr-2 size-4" aria-hidden />
             Find Investment
           </AsyncButton>
