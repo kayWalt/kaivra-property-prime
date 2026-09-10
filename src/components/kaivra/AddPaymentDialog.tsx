@@ -284,12 +284,13 @@ export function AddPaymentDialog({
             <div>
               <Label htmlFor="pay-amount">Amount paid (₦)</Label>
               <Input
+                ref={amountInputRef}
                 id="pay-amount"
-                type="number"
-                inputMode="numeric"
-                min={1}
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                type="text"
+                inputMode="decimal"
+                placeholder="0"
+                value={amountDisplay}
+                onChange={handleAmountChange}
               />
             </div>
             <div>
