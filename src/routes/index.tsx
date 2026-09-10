@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, Mail, MapPin, Menu, Phone, ShieldCheck, Sparkles } from "lucide-react";
 import {
   Sheet,
-  SheetClose,
+  
   SheetContent,
   SheetHeader,
   SheetTitle,
@@ -103,6 +103,28 @@ function LegacyReveal({ children }: { children: React.ReactNode }) {
   );
 }
 
+/**
+ * Display-only repair for descriptions saved with letter-spaced text
+ * (e.g. "S u s t a i n a b l e S m a r t"). Only runs of 4+ consecutive
+ * single characters are joined; word breaks are restored from double
+ * spaces where present, otherwise from Title Case boundaries inside the
+ * damaged run. Ordinary prose is untouched and the stored record is
+ * never modified.
+ */
+function tidySpacedText(text: string | null | undefined) {
+  if (!text) return text ?? "";
+  return text.replace(/(?:(?<=^|\s)\S(?=\s|$)\s*){4,}/g, (run) => {
+    const trailing = /\s$/.test(run) ? " " : "";
+    const chunks = run.trim().split(/\s{2,}/);
+    const joined =
+      chunks.length > 1
+        ? chunks.map((w) => w.split(/\s+/).join("")).join(" ")
+        : run.trim().split(/\s+/).join("");
+    // Restore word gaps lost to single-space letter spacing.
+    return joined.replace(/(?<=[a-z0-9])(?=[A-Z])/g, " ") + trailing;
+  });
+}
+
 const NAV_LINKS = [
   { href: "#projects", label: "Projects" },
   { href: "#how-it-works", label: "How it works" },
@@ -186,14 +208,24 @@ function Landing() {
                 </SheetHeader>
                 <nav aria-label="Mobile" className="mt-6 flex flex-col gap-1 px-4">
                   {NAV_LINKS.map((item) => (
-                    <SheetClose asChild key={item.href}>
-                      <a
-                        href={item.href}
-                        className="rounded-md px-2 py-3 text-sm uppercase tracking-[0.14em] text-foreground hover:bg-muted"
-                      >
-                        {item.label}
-                      </a>
-                    </SheetClose>
+                    <a
+                      key={item.href}
+                      href={item.href}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        setMenuOpen(false);
+                        // Scroll after the drawer has closed so focus restoration
+                        // does not pull the page back to the trigger.
+                        window.setTimeout(() => {
+                          document
+                            .querySelector(item.href)
+                            ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                        }, 260);
+                      }}
+                      className="rounded-md px-2 py-3 text-sm uppercase tracking-[0.14em] text-foreground hover:bg-muted"
+                    >
+                      {item.label}
+                    </a>
                   ))}
                 </nav>
                 <div className="mt-6 px-4">
@@ -341,7 +373,7 @@ function Landing() {
                     </p>
                     <h3 className="mt-3 font-display text-2xl leading-tight">{project.name}</h3>
                     <p className="mt-3 line-clamp-2 text-sm text-muted-foreground">
-                      {project.description}
+                      {tidySpacedText(project.description)}
                     </p>
                     <div className="mt-5 flex flex-wrap gap-2">
                       {types.map((t) => (
