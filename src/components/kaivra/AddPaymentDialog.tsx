@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
@@ -27,6 +27,32 @@ import {
 import { accountLabel, useActivePaymentAccounts } from "@/lib/payment-accounts";
 import { PAYMENT_METHODS, formatNaira, type PaymentMethod } from "@/lib/kaivra";
 
+function sanitizeAmount(value: string): string {
+  const digitsAndDot = value.replace(/[^\d.]/g, "");
+  const parts = digitsAndDot.split(".");
+  if (parts.length <= 2) return digitsAndDot;
+  return parts[0] + "." + parts.slice(1).join("");
+}
+
+function formatAmountDisplay(raw: string): string {
+  if (!raw) return "";
+  const [intPart, ...rest] = raw.split(".");
+  const integer = BigInt((intPart ?? "") || "0").toLocaleString("en-US");
+  if (rest.length === 0) return integer;
+  return `${integer}.${rest.join("")}`;
+}
+
+function positionAfterDigits(formatted: string, targetDigits: number): number {
+  if (targetDigits <= 0) return 0;
+  let digits = 0;
+  for (let i = 0; i < formatted.length; i++) {
+    if (/\d/.test(formatted.charAt(i))) {
+      digits++;
+      if (digits === targetDigits) return i + 1;
+    }
+  }
+  return formatted.length;
+}
 
 /**
  * Lets an investor record a payment and attach the bank receipt / proof of
@@ -64,6 +90,8 @@ export function AddPaymentDialog({
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [amount, setAmount] = useState("");
+  const [amountDisplay, setAmountDisplay] = useState("");
+  const amountInputRef = useRef<HTMLInputElement>(null);
   const [paidOn, setPaidOn] = useState("");
   const [bank, setBank] = useState("");
   const [sender, setSender] = useState("");
@@ -74,8 +102,24 @@ export function AddPaymentDialog({
   const [accountId, setAccountId] = useState("");
   const accounts = useActivePaymentAccounts();
 
+  function handleAmountChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const input = e.target;
+    const oldValue = input.value;
+    const start = input.selectionStart ?? oldValue.length;
+    const raw = sanitizeAmount(oldValue);
+    const formatted = formatAmountDisplay(raw);
+    setAmount(raw);
+    setAmountDisplay(formatted);
+    const beforeCursorDigits = oldValue.slice(0, start).replace(/[^\d]/g, "").length;
+    const newPos = positionAfterDigits(formatted, beforeCursorDigits);
+    requestAnimationFrame(() => {
+      amountInputRef.current?.setSelectionRange(newPos, newPos);
+    });
+  }
+
   function reset() {
     setAmount("");
+    setAmountDisplay("");
     setPaidOn("");
     setBank("");
     setSender("");
@@ -240,12 +284,13 @@ export function AddPaymentDialog({
             <div>
               <Label htmlFor="pay-amount">Amount paid (₦)</Label>
               <Input
+                ref={amountInputRef}
                 id="pay-amount"
-                type="number"
-                inputMode="numeric"
-                min={1}
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                type="text"
+                inputMode="decimal"
+                placeholder="0"
+                value={amountDisplay}
+                onChange={handleAmountChange}
               />
             </div>
             <div>
