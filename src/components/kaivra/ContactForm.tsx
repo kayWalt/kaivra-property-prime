@@ -33,6 +33,22 @@ export function ContactForm() {
   const set = (key: keyof typeof form) => (value: string) =>
     setForm((prev) => ({ ...prev, [key]: value }));
 
+  // Return to the top of the homepage. Goes through the router so the
+  // #contact fragment is cleared from the URL, then explicitly scrolls to
+  // the top once the navigation has committed — reliable on mobile touch
+  // where an anchor-only click can be swallowed.
+  function returnHome() {
+    const scrollTop = () => window.scrollTo({ top: 0, left: 0 });
+    const nav = navigate({ to: "/" });
+    if (nav && typeof (nav as Promise<unknown>).then === "function") {
+      void (nav as Promise<unknown>).then(() =>
+        requestAnimationFrame(scrollTop),
+      );
+    } else {
+      requestAnimationFrame(scrollTop);
+    }
+  }
+
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     if (sending) return;
