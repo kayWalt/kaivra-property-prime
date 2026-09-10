@@ -46,7 +46,7 @@ function positionAfterDigits(formatted: string, targetDigits: number): number {
   if (targetDigits <= 0) return 0;
   let digits = 0;
   for (let i = 0; i < formatted.length; i++) {
-    if (/\d/.test(formatted[i])) {
+    if (/\d/.test(formatted.charAt(i))) {
       digits++;
       if (digits === targetDigits) return i + 1;
     }
