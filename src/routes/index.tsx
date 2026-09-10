@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, Mail, MapPin, Menu, Phone, ShieldCheck, Sparkles } from "lucide-react";
 import {
   Sheet,
-  SheetClose,
+  
   SheetContent,
   SheetHeader,
   SheetTitle,
