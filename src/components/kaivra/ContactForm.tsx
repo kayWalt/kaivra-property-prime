@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { Loader2, Send } from "lucide-react";
 import { toast } from "sonner";
 import { submitContactEnquiry } from "@/lib/contact.functions";
@@ -167,18 +167,8 @@ export function ContactForm() {
           )}
           Send enquiry
         </Button>
-        <Button asChild variant="outline">
-          <Link
-            to="/"
-            hash=""
-            onClick={() => {
-              if (typeof window !== "undefined") {
-                window.scrollTo({ top: 0, behavior: "smooth" });
-              }
-            }}
-          >
-            Return Home
-          </Link>
+        <Button type="button" variant="outline" onClick={returnHome}>
+          Return Home
         </Button>
         {reference ? (
           <p className="text-sm text-muted-foreground">
