@@ -37,7 +37,7 @@ function sanitizeAmount(value: string): string {
 function formatAmountDisplay(raw: string): string {
   if (!raw) return "";
   const [intPart, ...rest] = raw.split(".");
-  const integer = BigInt(intPart || "0").toLocaleString("en-US");
+  const integer = BigInt((intPart ?? "") || "0").toLocaleString("en-US");
   if (rest.length === 0) return integer;
   return `${integer}.${rest.join("")}`;
 }
