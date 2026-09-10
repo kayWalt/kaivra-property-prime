@@ -371,7 +371,7 @@ function Landing() {
                     </p>
                     <h3 className="mt-3 font-display text-2xl leading-tight">{project.name}</h3>
                     <p className="mt-3 line-clamp-2 text-sm text-muted-foreground">
-                      {project.description}
+                      {tidySpacedText(project.description)}
                     </p>
                     <div className="mt-5 flex flex-wrap gap-2">
                       {types.map((t) => (
