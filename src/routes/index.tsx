@@ -372,6 +372,56 @@ function Landing() {
         </LegacyReveal>
       </section>
 
+      <section id="how-it-works" className="border-y border-border bg-card">
+        <div className="mx-auto w-full max-w-7xl px-5 py-20 sm:px-8">
+          <LegacyReveal>
+            <p className="eyebrow text-primary">The process</p>
+            <h2 className="mt-3 max-w-2xl font-display text-4xl sm:text-5xl">How it works</h2>
+            <p className="mt-4 max-w-2xl text-sm text-muted-foreground sm:text-base">
+              Five straightforward steps, from choosing a project to managing your investment.
+            </p>
+            <ol className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
+              {[
+                {
+                  n: "01",
+                  title: "Choose a project",
+                  body: "Explore the available KAIVRA investment projects and property types.",
+                },
+                {
+                  n: "02",
+                  title: "Apply",
+                  body: "Submit your investment application with the required information.",
+                },
+                {
+                  n: "03",
+                  title: "Make payments",
+                  body: "Pay according to the payment arrangement that applies to your investment.",
+                },
+                {
+                  n: "04",
+                  title: "Verification & documentation",
+                  body: "KAIVRA reviews your application, payments and supporting documents.",
+                },
+                {
+                  n: "05",
+                  title: "Manage your investment",
+                  body: "Track payments, documents and status in your KAIVRA account.",
+                },
+              ].map((step) => (
+                <li
+                  key={step.n}
+                  className="rounded-lg border border-border bg-background p-6 shadow-card"
+                >
+                  <p className="font-display text-3xl text-primary">{step.n}</p>
+                  <h3 className="mt-4 text-base font-semibold leading-tight">{step.title}</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">{step.body}</p>
+                </li>
+              ))}
+            </ol>
+          </LegacyReveal>
+        </div>
+      </section>
+
       <section className="border-t border-border bg-card">
         <div className="mx-auto grid w-full max-w-7xl items-center gap-10 px-5 py-20 sm:px-8 md:grid-cols-2">
           <div className="relative overflow-hidden rounded-lg border border-border bg-onyx">
