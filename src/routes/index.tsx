@@ -440,18 +440,19 @@ function Landing() {
               An adviser beside you, from first enquiry to allocation.
             </h2>
             <p className="mt-5 text-sm text-muted-foreground sm:text-base">
-              Every KAIVRA subscription is reviewed by a dedicated adviser who verifies your
+              Every KAIVRA application is reviewed by a dedicated adviser who verifies your
               payments, confirms your documents and keeps your application moving — while your
               records stay private and fully in your name.
             </p>
-            <div className="mt-8">
+            <div className="mt-8 flex flex-wrap gap-3">
               <Button asChild size="lg" className="uppercase tracking-[0.12em]">
-                {signedIn ? (
-                  <Link to="/application">Begin your application</Link>
-                ) : (
-                  <Link to="/auth">Speak to an adviser</Link>
-                )}
+                <a href="#contact">Speak to an adviser</a>
               </Button>
+              {signedIn ? (
+                <Button asChild size="lg" variant="outline" className="uppercase tracking-[0.12em]">
+                  <Link to="/dashboard">Access my investments</Link>
+                </Button>
+              ) : null}
             </div>
           </div>
         </div>
