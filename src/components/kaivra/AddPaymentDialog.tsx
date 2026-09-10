@@ -90,6 +90,8 @@ export function AddPaymentDialog({
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [amount, setAmount] = useState("");
+  const [amountDisplay, setAmountDisplay] = useState("");
+  const amountInputRef = useRef<HTMLInputElement>(null);
   const [paidOn, setPaidOn] = useState("");
   const [bank, setBank] = useState("");
   const [sender, setSender] = useState("");
@@ -99,6 +101,21 @@ export function AddPaymentDialog({
   const [file, setFile] = useState<File | null>(null);
   const [accountId, setAccountId] = useState("");
   const accounts = useActivePaymentAccounts();
+
+  function handleAmountChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const input = e.target;
+    const oldValue = input.value;
+    const start = input.selectionStart ?? oldValue.length;
+    const raw = sanitizeAmount(oldValue);
+    const formatted = formatAmountDisplay(raw);
+    setAmount(raw);
+    setAmountDisplay(formatted);
+    const beforeCursorDigits = oldValue.slice(0, start).replace(/[^\d]/g, "").length;
+    const newPos = positionAfterDigits(formatted, beforeCursorDigits);
+    requestAnimationFrame(() => {
+      amountInputRef.current?.setSelectionRange(newPos, newPos);
+    });
+  }
 
   function reset() {
     setAmount("");
