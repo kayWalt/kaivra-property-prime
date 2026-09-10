@@ -123,7 +123,7 @@ function MyApplications() {
 
       <section
         aria-labelledby="find-investment-heading"
-        className="mt-6 rounded-lg border border-border bg-card px-5 py-4"
+        className="mt-6 rounded-lg border border-primary/30 bg-card px-5 py-4"
       >
         <h2 id="find-investment-heading" className="font-display text-lg">
           Find an existing investment
@@ -142,11 +142,12 @@ function MyApplications() {
           <Input
             value={lookupRef}
             onChange={(event) => setLookupRef(event.target.value)}
-            placeholder="e.g. KV-2026-0001"
+            placeholder="Enter Investment ID or reference"
             aria-label="Investment ID or KAIVRA Investment Reference"
             className="sm:max-w-xs"
             autoComplete="off"
           />
+
           <Button type="submit" disabled={lookingUp}>
             <Search className="mr-2 size-4" aria-hidden />
             {lookingUp ? "Finding…" : "Find Investment"}
