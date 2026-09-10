@@ -130,8 +130,14 @@ export function ApplicationDetailView({ appId, manage }: { appId: string; manage
   const docs = documents.data ?? [];
   // Ownership, not role: the payment button belongs to the person the
   // investment belongs to — including staff who invest personally — and never
-  // appears on somebody else's investment.
-  const canPay = !manage && !!user && record.investor_id === user.id && record.status !== "draft";
+  // appears on somebody else's investment. It only shows while money is still
+  // outstanding; a fully paid investment needs no further payment entry.
+  const canPay =
+    !manage &&
+    !!user &&
+    record.investor_id === user.id &&
+    record.status !== "draft" &&
+    ledger.outstanding > 0;
 
   // A form with no project/property selection and no investment value is
   // "empty" — block PDF download and guide the investor back to the wizard.

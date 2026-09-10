@@ -36,7 +36,8 @@ import { InvestorPicker } from "@/components/kaivra/InvestorPicker";
 import { linkApplicationToInvestor, type InvestorSummary } from "@/lib/investors.functions";
 import { ApplicationDetailView } from "./applications.$appId";
 import { useRoles, useSession, primaryRole, isStaffRole } from "@/hooks/useAuth";
-import { fetchPayments, logEvent, notify } from "@/lib/applications";
+import { fetchPayments, logEvent, notify, paymentLedger } from "@/lib/applications";
+import { AddPaymentDialog } from "@/components/kaivra/AddPaymentDialog";
 import { InstallmentSchedule } from "@/components/kaivra/InstallmentSchedule";
 import {
   APPLICATION_STATUSES,
@@ -91,7 +92,9 @@ function ManageApplication() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("applications")
-        .select("id, reference, status, investor_id")
+        .select(
+          "id, reference, status, investor_id, project_id, investment, application_type, negotiated_price",
+        )
         .eq("id", appId)
         .maybeSingle();
       if (error) throw error;
@@ -106,6 +109,27 @@ function ManageApplication() {
   });
 
   const ownerId = application.data?.investor_id ?? null;
+  // Same ledger math as the investor view: only acknowledged payments reduce
+  // the balance. The assisted action is offered only while money is
+  // outstanding and the investment is no longer a draft. The server function
+  // (recordAssistedPayment) still enforces transactions.create permission,
+  // investor/application pairing, pending status and duplicate protection.
+  const appRecord = application.data;
+  const adminTotalValue =
+    appRecord?.application_type === "partner"
+      ? Number(
+          appRecord.negotiated_price ??
+            (appRecord.investment as { total_value?: number } | null)?.total_value ??
+            0,
+        )
+      : Number((appRecord?.investment as { total_value?: number } | null)?.total_value ?? 0);
+  const adminLedger = paymentLedger(payments.data ?? [], adminTotalValue);
+  const canRecordPayment =
+    staff &&
+    !!ownerId &&
+    appRecord?.status !== "draft" &&
+    adminTotalValue > 0 &&
+    adminLedger.outstanding > 0;
   const owner = useQuery({
     queryKey: ["application-owner", ownerId],
     enabled: !!ownerId && staff,
@@ -284,7 +308,24 @@ function ManageApplication() {
       <ApplicationDetailView appId={appId} manage />
 
       <section className="mt-8 rounded-lg border border-border bg-card p-5 print:hidden">
-        <h2 className="font-display text-2xl">Payment verification</h2>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="font-display text-2xl">Payment verification</h2>
+          {canRecordPayment ? (
+            <AddPaymentDialog
+              applicationId={appId}
+              projectId={application.data?.project_id ?? null}
+              reference={application.data?.reference ?? null}
+              outstanding={adminLedger.outstanding}
+              assistedInvestorId={ownerId}
+              triggerLabel="Add payment for investor"
+              triggerSize="sm"
+              triggerVariant="default"
+              onDone={() => {
+                void payments.refetch();
+              }}
+            />
+          ) : null}
+        </div>
         {payments.data?.length === 0 ? (
           <p className="mt-3 text-sm text-muted-foreground">No payment records to verify.</p>
         ) : null}
