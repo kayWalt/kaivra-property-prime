@@ -44,7 +44,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Discover premium real-estate projects and manage your investments, subscriptions, payments and documents in one secure platform.",
+          "Discover premium real-estate projects and manage your applications, investments, payments and documents in one secure platform.",
       },
       { property: "og:title", content: "KAIVRA | Smart Real Estate Investment Management" },
       {
