@@ -36,8 +36,9 @@ export const findInvestmentByReference = createServerFn({ method: "GET" })
       .select("id, reference")
       .or(filters.join(","))
       .limit(1);
-    if (error || !rows || rows.length === 0) throw new Error("Investment not found.");
-    return { applicationId: rows[0].id, reference: rows[0].reference ?? null };
+    const found = rows?.[0];
+    if (error || !found) throw new Error("Investment not found.");
+    return { applicationId: found.id, reference: found.reference ?? null };
   });
 
 export const deleteApplication = createServerFn({ method: "POST" })
