@@ -31,15 +31,38 @@ export const findInvestmentByReference = createServerFn({ method: "GET" })
     const filters = [`reference.ilike."${term}"`, `legacy_reference.ilike."${term}"`];
     if (z.string().uuid().safeParse(term).success) filters.push(`id.eq.${term}`);
 
-    const { data: rows, error } = await context.supabase
+    const { data: rows } = await context.supabase
       .from("applications")
       .select("id, reference")
       .or(filters.join(","))
       .limit(1);
     const found = rows?.[0];
-    if (error || !found) throw new Error("Investment not found.");
-    return { applicationId: found.id, reference: found.reference ?? null };
+    if (found) return { applicationId: found.id, reference: found.reference ?? null };
+
+    // Investor IDs (KVR-I-…) are also accepted: open that investor's most
+    // recent investment, still scoped by the caller's own RLS permissions.
+    const { data: profile } = await context.supabase
+      .from("profiles")
+      .select("id")
+      .or(`investor_code.ilike."${term}",legacy_investor_code.ilike."${term}"`)
+      .limit(1)
+      .maybeSingle();
+
+    if (profile) {
+      const { data: owned } = await context.supabase
+        .from("applications")
+        .select("id, reference")
+        .eq("investor_id", profile.id)
+        .neq("status", "draft")
+        .order("created_at", { ascending: false })
+        .limit(1);
+      const latest = owned?.[0];
+      if (latest) return { applicationId: latest.id, reference: latest.reference ?? null };
+    }
+
+    throw new Error("Investment not found.");
   });
+
 
 export const deleteApplication = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
