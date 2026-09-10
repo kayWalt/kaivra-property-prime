@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Search, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertDialog,
@@ -21,6 +22,7 @@ import { StatusBadge } from "@/components/kaivra/StatusBadge";
 import { EmptyState } from "@/components/kaivra/EmptyState";
 import { useSession } from "@/hooks/useAuth";
 import { APPLICATION_SELECT, totals } from "@/lib/applications";
+import { findInvestmentByReference } from "@/lib/applications.functions";
 import { formatDate, formatNaira, type ApplicationStatus } from "@/lib/kaivra";
 
 export const Route = createFileRoute("/_authenticated/applications/")({
@@ -47,8 +49,30 @@ function localDraftKey(id: string) {
 function MyApplications() {
   const { user } = useSession();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const findInvestment = useServerFn(findInvestmentByReference);
+  const [lookupRef, setLookupRef] = useState("");
+  const [lookingUp, setLookingUp] = useState(false);
   const [discardTarget, setDiscardTarget] = useState<{ id: string; name: string } | null>(null);
   const [discarding, setDiscarding] = useState(false);
+
+  async function handleLookup() {
+    const term = lookupRef.trim();
+    if (!term) {
+      toast.error("Enter the Investment ID or KAIVRA Investment Reference.");
+      return;
+    }
+    setLookingUp(true);
+    try {
+      const { applicationId } = await findInvestment({ data: { reference: term } });
+      void navigate({ to: "/applications/$appId", params: { appId: applicationId } });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Investment not found.");
+    } finally {
+      setLookingUp(false);
+    }
+  }
+
 
   const apps = useQuery({
     queryKey: ["my-applications", user?.id],
