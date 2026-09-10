@@ -3,7 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { UserPlus, PlusCircle, UserSearch } from "lucide-react";
+import { UserPlus, PlusCircle, UserSearch, Search } from "lucide-react";
+import { findInvestmentByReference } from "@/lib/applications.functions";
 import { AssistInvestorDialog } from "@/components/kaivra/AssistInvestorDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
@@ -94,6 +95,27 @@ function InvestorsPage() {
 
   const startAssisted = useServerFn(createAssistedApplication);
   const register = useServerFn(registerInvestor);
+  const findInvestment = useServerFn(findInvestmentByReference);
+  const [lookupRef, setLookupRef] = useState("");
+  const [lookingUp, setLookingUp] = useState(false);
+
+  async function handleFindInvestment() {
+    const term = lookupRef.trim();
+    if (!term) {
+      toast.error("Enter the Investment ID or KAIVRA Investment Reference.");
+      return;
+    }
+    setLookingUp(true);
+    try {
+      const { applicationId } = await findInvestment({ data: { reference: term } });
+      void navigate({ to: "/admin/applications/$appId", params: { appId: applicationId } });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Investment not found.");
+    } finally {
+      setLookingUp(false);
+    }
+  }
+
 
   const [assistOpen, setAssistOpen] = useState(false);
   const [existingOpen, setExistingOpen] = useState(false);
@@ -311,6 +333,39 @@ function InvestorsPage() {
           ) : null}
         </div>
       </div>
+
+      <section
+        aria-labelledby="find-investment-id-heading"
+        className="rounded-lg border border-border bg-card px-5 py-4"
+      >
+        <h2 id="find-investment-id-heading" className="font-display text-lg">
+          Find investment by ID
+        </h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Enter an Investment ID or KAIVRA Investment Reference to open the existing investment —
+          for example to record an assisted payment against it.
+        </p>
+        <form
+          className="mt-3 flex flex-col gap-2 sm:flex-row"
+          onSubmit={(event) => {
+            event.preventDefault();
+            void handleFindInvestment();
+          }}
+        >
+          <Input
+            value={lookupRef}
+            onChange={(event) => setLookupRef(event.target.value)}
+            placeholder="e.g. KV-2026-0001"
+            aria-label="Investment ID or KAIVRA Investment Reference"
+            className="sm:max-w-xs"
+            autoComplete="off"
+          />
+          <AsyncButton type="button" pendingLabel="Finding…" onClick={() => handleFindInvestment()}>
+            <Search className="mr-2 size-4" aria-hidden />
+            Find Investment
+          </AsyncButton>
+        </form>
+      </section>
 
       {query.isLoading ? (
         <div className="space-y-3">

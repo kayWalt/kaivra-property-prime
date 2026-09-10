@@ -1,10 +1,12 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Trash2 } from "lucide-react";
+import { Search, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertDialog,
@@ -20,6 +22,7 @@ import { StatusBadge } from "@/components/kaivra/StatusBadge";
 import { EmptyState } from "@/components/kaivra/EmptyState";
 import { useSession } from "@/hooks/useAuth";
 import { APPLICATION_SELECT, totals } from "@/lib/applications";
+import { findInvestmentByReference } from "@/lib/applications.functions";
 import { formatDate, formatNaira, type ApplicationStatus } from "@/lib/kaivra";
 
 export const Route = createFileRoute("/_authenticated/applications/")({
@@ -46,8 +49,30 @@ function localDraftKey(id: string) {
 function MyApplications() {
   const { user } = useSession();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const findInvestment = useServerFn(findInvestmentByReference);
+  const [lookupRef, setLookupRef] = useState("");
+  const [lookingUp, setLookingUp] = useState(false);
   const [discardTarget, setDiscardTarget] = useState<{ id: string; name: string } | null>(null);
   const [discarding, setDiscarding] = useState(false);
+
+  async function handleLookup() {
+    const term = lookupRef.trim();
+    if (!term) {
+      toast.error("Enter the Investment ID or KAIVRA Investment Reference.");
+      return;
+    }
+    setLookingUp(true);
+    try {
+      const { applicationId } = await findInvestment({ data: { reference: term } });
+      void navigate({ to: "/applications/$appId", params: { appId: applicationId } });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Investment not found.");
+    } finally {
+      setLookingUp(false);
+    }
+  }
+
 
   const apps = useQuery({
     queryKey: ["my-applications", user?.id],
@@ -95,6 +120,40 @@ function MyApplications() {
       <p className="mt-2 text-sm text-muted-foreground">
         Every application you have started, submitted or completed.
       </p>
+
+      <section
+        aria-labelledby="find-investment-heading"
+        className="mt-6 rounded-lg border border-border bg-card px-5 py-4"
+      >
+        <h2 id="find-investment-heading" className="font-display text-lg">
+          Find an existing investment
+        </h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Enter the Investment ID or KAIVRA Investment Reference shown on your investment to open
+          it directly — for example to record another payment against it.
+        </p>
+        <form
+          className="mt-3 flex flex-col gap-2 sm:flex-row"
+          onSubmit={(event) => {
+            event.preventDefault();
+            void handleLookup();
+          }}
+        >
+          <Input
+            value={lookupRef}
+            onChange={(event) => setLookupRef(event.target.value)}
+            placeholder="e.g. KV-2026-0001"
+            aria-label="Investment ID or KAIVRA Investment Reference"
+            className="sm:max-w-xs"
+            autoComplete="off"
+          />
+          <Button type="submit" disabled={lookingUp}>
+            <Search className="mr-2 size-4" aria-hidden />
+            {lookingUp ? "Finding…" : "Find Investment"}
+          </Button>
+        </form>
+      </section>
+
 
       <div className="mt-8 space-y-3">
         {apps.isLoading
