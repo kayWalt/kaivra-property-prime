@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { Loader2, Send } from "lucide-react";
 import { toast } from "sonner";
 import { submitContactEnquiry } from "@/lib/contact.functions";
@@ -18,6 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
  * mailbox. The visitor only sees success once the enquiry is safely stored.
  */
 export function ContactForm() {
+  const navigate = useNavigate();
   const [sending, setSending] = useState(false);
   const [reference, setReference] = useState<string | null>(null);
   const [form, setForm] = useState({
@@ -31,6 +32,22 @@ export function ContactForm() {
 
   const set = (key: keyof typeof form) => (value: string) =>
     setForm((prev) => ({ ...prev, [key]: value }));
+
+  // Return to the top of the homepage. Goes through the router so the
+  // #contact fragment is cleared from the URL, then explicitly scrolls to
+  // the top once the navigation has committed — reliable on mobile touch
+  // where an anchor-only click can be swallowed.
+  function returnHome() {
+    const scrollTop = () => window.scrollTo({ top: 0, left: 0 });
+    const nav = navigate({ to: "/" });
+    if (nav && typeof (nav as Promise<unknown>).then === "function") {
+      void (nav as Promise<unknown>).then(() =>
+        requestAnimationFrame(scrollTop),
+      );
+    } else {
+      requestAnimationFrame(scrollTop);
+    }
+  }
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -167,18 +184,8 @@ export function ContactForm() {
           )}
           Send enquiry
         </Button>
-        <Button asChild variant="outline">
-          <Link
-            to="/"
-            hash=""
-            onClick={() => {
-              if (typeof window !== "undefined") {
-                window.scrollTo({ top: 0, behavior: "smooth" });
-              }
-            }}
-          >
-            Return Home
-          </Link>
+        <Button type="button" variant="outline" onClick={returnHome}>
+          Return Home
         </Button>
         {reference ? (
           <p className="text-sm text-muted-foreground">
