@@ -328,7 +328,7 @@ function Landing() {
                   <div className="relative aspect-[16/10] overflow-hidden">
                     <img
                       src={mediaSrc(project.hero_image)}
-                      alt={project.name}
+                      alt={`${project.name} — investment project in ${project.location}`}
                       loading="lazy"
                       width={1920}
                       height={1088}
