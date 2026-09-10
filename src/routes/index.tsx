@@ -102,16 +102,58 @@ function LegacyReveal({ children }: { children: React.ReactNode }) {
   );
 }
 
+const NAV_LINKS = [
+  { href: "#projects", label: "Projects" },
+  { href: "#how-it-works", label: "How it works" },
+  { href: "#about", label: "About" },
+  { href: "#contact", label: "Contact" },
+] as const;
+
+/** Read-only check for an application the signed-in investor can still continue. */
+function useDraftApplication(userId?: string) {
+  return useQuery({
+    queryKey: ["home-draft-application", userId],
+    enabled: !!userId,
+    staleTime: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("applications")
+        .select("id")
+        .eq("investor_id", userId!)
+        .in("status", EDITABLE_STATUSES)
+        .limit(1);
+      if (error) throw error;
+      return (data ?? []).length > 0;
+    },
+  });
+}
+
 function Landing() {
   const projects = useProjects();
   const { session } = useSession();
   const signedIn = !!session;
+  const draft = useDraftApplication(session?.user?.id);
+  const hasDraft = signedIn && draft.data === true;
+  const [menuOpen, setMenuOpen] = React.useState(false);
 
   return (
     <div className="min-h-screen bg-background">
       <header className="absolute inset-x-0 top-0 z-20">
         <div className="mx-auto flex h-20 w-full max-w-7xl items-center px-5 sm:px-8">
           <Brand tone="inverted" />
+
+          <nav aria-label="Primary" className="ml-10 hidden items-center gap-7 lg:flex">
+            {NAV_LINKS.map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                className="text-xs uppercase tracking-[0.16em] text-onyx-foreground/80 transition-colors hover:text-gold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold"
+              >
+                {item.label}
+              </a>
+            ))}
+          </nav>
+
           <div className="ml-auto flex items-center gap-2">
             <ThemeToggle className="hidden w-auto border-onyx-foreground/25 bg-onyx-foreground/10 sm:inline-flex" showLabels={false} />
             <Button
@@ -125,6 +167,39 @@ function Landing() {
                 <Link to="/auth">Sign in</Link>
               )}
             </Button>
+
+            <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+              <SheetTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Open menu"
+                  className="min-h-11 min-w-11 text-onyx-foreground hover:bg-onyx-foreground/10 lg:hidden"
+                >
+                  <Menu className="size-5" aria-hidden />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[82vw] max-w-xs">
+                <SheetHeader>
+                  <SheetTitle className="font-display tracking-[0.18em]">KAIVRA</SheetTitle>
+                </SheetHeader>
+                <nav aria-label="Mobile" className="mt-6 flex flex-col gap-1 px-4">
+                  {NAV_LINKS.map((item) => (
+                    <SheetClose asChild key={item.href}>
+                      <a
+                        href={item.href}
+                        className="rounded-md px-2 py-3 text-sm uppercase tracking-[0.14em] text-foreground hover:bg-muted"
+                      >
+                        {item.label}
+                      </a>
+                    </SheetClose>
+                  ))}
+                </nav>
+                <div className="mt-6 px-4">
+                  <ThemeToggle />
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </header>
@@ -132,23 +207,27 @@ function Landing() {
       <section className="relative min-h-[92svh] w-full">
         <HeroCarousel />
 
-        <div className="relative mx-auto flex min-h-[92svh] w-full max-w-7xl flex-col justify-end px-5 pb-16 pt-32 sm:px-8 sm:pb-24">
+        <div className="relative mx-auto flex min-h-[92svh] w-full max-w-7xl flex-col justify-center px-5 pb-14 pt-28 sm:justify-end sm:pb-24 sm:pt-32 sm:px-8">
           <div className="max-w-2xl kv-rise">
-            <div className="rule-gold mb-8" />
+            <div className="rule-gold mb-6 sm:mb-8" />
             <p className="eyebrow inline-block rounded-sm bg-info px-3 py-1.5 text-info-foreground">
               Smart Real Estate Investment Management
             </p>
-            <RotatingHeadline />
-            <div className="mt-6 inline-block max-w-xl rounded-lg bg-onyx/60 px-4 py-3 backdrop-blur-md">
+            <h1 className="mt-4 font-display text-4xl leading-[1.05] text-onyx-foreground sm:text-7xl">
+              Invest in the future you can own.
+            </h1>
+            <div className="mt-5 inline-block max-w-xl rounded-lg bg-onyx/60 px-4 py-3 backdrop-blur-md sm:mt-6">
               <p className="text-base text-onyx-foreground sm:text-lg">
-                Securely manage your real-estate investments, subscriptions and payments in one
-                simple platform.
+                KAIVRA is a real-estate investment platform: browse projects, apply online, make
+                and track your payments, and keep every document in one secure account.
               </p>
             </div>
-            <div className="mt-10 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-8 flex flex-col gap-3 sm:mt-10 sm:flex-row">
               <Button asChild size="lg" className="h-13 px-8 text-sm tracking-[0.14em] uppercase">
-                {signedIn ? (
+                {hasDraft ? (
                   <Link to="/application">Continue application</Link>
+                ) : signedIn ? (
+                  <Link to="/application">Start investing</Link>
                 ) : (
                   <Link to="/auth">Start investing</Link>
                 )}
@@ -160,15 +239,16 @@ function Landing() {
                 className="h-13 border-onyx-foreground/40 bg-transparent px-8 text-sm uppercase tracking-[0.14em] text-onyx-foreground hover:bg-onyx-foreground/10 hover:text-onyx-foreground"
               >
                 {signedIn ? (
-                  <Link to="/dashboard">Access my investment</Link>
+                  <Link to="/dashboard">Access my investments</Link>
                 ) : (
-                  <Link to="/auth">Access my investment</Link>
+                  <Link to="/auth">Sign in</Link>
                 )}
               </Button>
             </div>
           </div>
         </div>
       </section>
+
 
       <section className="border-b border-border bg-card">
         <div className="mx-auto grid w-full max-w-7xl gap-8 px-5 py-14 sm:grid-cols-3 sm:px-8">
