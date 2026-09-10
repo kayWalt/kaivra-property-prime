@@ -27,6 +27,32 @@ import {
 import { accountLabel, useActivePaymentAccounts } from "@/lib/payment-accounts";
 import { PAYMENT_METHODS, formatNaira, type PaymentMethod } from "@/lib/kaivra";
 
+function sanitizeAmount(value: string): string {
+  const digitsAndDot = value.replace(/[^\d.]/g, "");
+  const parts = digitsAndDot.split(".");
+  if (parts.length <= 2) return digitsAndDot;
+  return parts[0] + "." + parts.slice(1).join("");
+}
+
+function formatAmountDisplay(raw: string): string {
+  if (!raw) return "";
+  const [intPart, ...rest] = raw.split(".");
+  const integer = BigInt(intPart || "0").toLocaleString("en-US");
+  if (rest.length === 0) return integer;
+  return `${integer}.${rest.join("")}`;
+}
+
+function positionAfterDigits(formatted: string, targetDigits: number): number {
+  if (targetDigits <= 0) return 0;
+  let digits = 0;
+  for (let i = 0; i < formatted.length; i++) {
+    if (/\d/.test(formatted[i])) {
+      digits++;
+      if (digits === targetDigits) return i + 1;
+    }
+  }
+  return formatted.length;
+}
 
 /**
  * Lets an investor record a payment and attach the bank receipt / proof of
