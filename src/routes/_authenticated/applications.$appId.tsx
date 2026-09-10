@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Download, Eye, Printer } from "lucide-react";
+import { Download, Eye, History, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AsyncButton } from "@/components/kaivra/AsyncButton";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -21,6 +21,15 @@ import {
 import { ReferenceChip } from "@/components/kaivra/ReferenceChip";
 import { RequestCorrectionDialog } from "@/components/kaivra/RequestCorrectionDialog";
 import { Progress } from "@/components/ui/progress";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import {
   fetchApplication,
   fetchDocuments,
