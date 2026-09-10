@@ -137,10 +137,6 @@ export function AddPaymentDialog({
       toast.error("Enter the amount you paid.");
       return;
     }
-    if (!file) {
-      toast.error("Attach your receipt or proof of payment.");
-      return;
-    }
     // Bank and depositor are names, not amounts. A figures-only value is not
     // a valid name; names containing numbers/symbols remain accepted.
     if (bank.trim() && !/\D/.test(bank.trim())) {
@@ -149,6 +145,10 @@ export function AddPaymentDialog({
     }
     if (sender.trim() && !/\D/.test(sender.trim())) {
       toast.error("Enter a valid depositor name.");
+      return;
+    }
+    if (!file) {
+      toast.error("Attach your receipt or proof of payment.");
       return;
     }
     const hasAccounts = (accounts.data ?? []).length > 0;
