@@ -17,6 +17,7 @@ import { ThemeToggle } from "@/components/kaivra/ThemeToggle";
 import { Brand } from "@/components/kaivra/Brand";
 import { useSession } from "@/hooks/useAuth";
 import { formatCompact } from "@/lib/kaivra";
+import { EDITABLE_STATUSES } from "@/lib/applications";
 import { HeroCarousel } from "@/components/kaivra/HeroCarousel";
 
 import adviserAsset from "@/assets/kaivra-22-00-16.jpg.asset.json";
