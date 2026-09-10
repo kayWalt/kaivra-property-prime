@@ -18,6 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
  * mailbox. The visitor only sees success once the enquiry is safely stored.
  */
 export function ContactForm() {
+  const navigate = useNavigate();
   const [sending, setSending] = useState(false);
   const [reference, setReference] = useState<string | null>(null);
   const [form, setForm] = useState({
