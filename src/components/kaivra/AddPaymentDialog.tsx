@@ -141,6 +141,16 @@ export function AddPaymentDialog({
       toast.error("Attach your receipt or proof of payment.");
       return;
     }
+    // Bank and depositor are names, not amounts. A figures-only value is not
+    // a valid name; names containing numbers/symbols remain accepted.
+    if (bank.trim() && !/\D/.test(bank.trim())) {
+      toast.error("Enter a valid bank name.");
+      return;
+    }
+    if (sender.trim() && !/\D/.test(sender.trim())) {
+      toast.error("Enter a valid depositor name.");
+      return;
+    }
     const hasAccounts = (accounts.data ?? []).length > 0;
     if (hasAccounts && !accountId) {
       toast.error("Select the account you paid into.");
@@ -328,7 +338,7 @@ export function AddPaymentDialog({
 
           <div className="grid gap-2 sm:grid-cols-2">
             <div>
-              <Label htmlFor="pay-sender">Sender / depositor</Label>
+              <Label htmlFor="pay-sender">Depositor</Label>
               <Input id="pay-sender" value={sender} onChange={(e) => setSender(e.target.value)} />
             </div>
             <div>
