@@ -334,6 +334,39 @@ function InvestorsPage() {
         </div>
       </div>
 
+      <section
+        aria-labelledby="find-investment-id-heading"
+        className="rounded-lg border border-border bg-card px-5 py-4"
+      >
+        <h2 id="find-investment-id-heading" className="font-display text-lg">
+          Find investment by ID
+        </h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Enter an Investment ID or KAIVRA Investment Reference to open the existing investment —
+          for example to record an assisted payment against it.
+        </p>
+        <form
+          className="mt-3 flex flex-col gap-2 sm:flex-row"
+          onSubmit={(event) => {
+            event.preventDefault();
+            void handleFindInvestment();
+          }}
+        >
+          <Input
+            value={lookupRef}
+            onChange={(event) => setLookupRef(event.target.value)}
+            placeholder="e.g. KV-2026-0001"
+            aria-label="Investment ID or KAIVRA Investment Reference"
+            className="sm:max-w-xs"
+            autoComplete="off"
+          />
+          <AsyncButton type="submit" pending={lookingUp} pendingLabel="Finding…">
+            <Search className="mr-2 size-4" aria-hidden />
+            Find Investment
+          </AsyncButton>
+        </form>
+      </section>
+
       {query.isLoading ? (
         <div className="space-y-3">
           <Skeleton className="h-24 w-full" />
