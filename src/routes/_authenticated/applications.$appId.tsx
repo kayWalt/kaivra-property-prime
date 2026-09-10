@@ -72,6 +72,7 @@ export const Route = createFileRoute("/_authenticated/applications/$appId")({
 
 export function ApplicationDetailView({ appId, manage }: { appId: string; manage?: boolean }) {
   const [downloading, setDownloading] = useState(false);
+  const [auditOpen, setAuditOpen] = useState(false);
 
   const app = useQuery({
     queryKey: ["application", appId],
