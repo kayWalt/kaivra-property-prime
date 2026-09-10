@@ -1,7 +1,15 @@
 import * as React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, Mail, MapPin, Phone, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, Mail, MapPin, Menu, Phone, ShieldCheck, Sparkles } from "lucide-react";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -9,8 +17,9 @@ import { ThemeToggle } from "@/components/kaivra/ThemeToggle";
 import { Brand } from "@/components/kaivra/Brand";
 import { useSession } from "@/hooks/useAuth";
 import { formatCompact } from "@/lib/kaivra";
+import { EDITABLE_STATUSES } from "@/lib/applications";
 import { HeroCarousel } from "@/components/kaivra/HeroCarousel";
-import { RotatingHeadline } from "@/components/kaivra/RotatingHeadline";
+
 import adviserAsset from "@/assets/kaivra-22-00-16.jpg.asset.json";
 import residenceAsset from "@/assets/kaivra-22-00-51.jpg.asset.json";
 import partnerHutuAsset from "@/assets/partner-hutu-prestige.jpg.asset.json";
@@ -35,7 +44,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Discover premium real-estate projects and manage your investments, subscriptions, payments and documents in one secure platform.",
+          "Discover premium real-estate projects and manage your applications, investments, payments and documents in one secure platform.",
       },
       { property: "og:title", content: "KAIVRA | Smart Real Estate Investment Management" },
       {
@@ -94,16 +103,58 @@ function LegacyReveal({ children }: { children: React.ReactNode }) {
   );
 }
 
+const NAV_LINKS = [
+  { href: "#projects", label: "Projects" },
+  { href: "#how-it-works", label: "How it works" },
+  { href: "#about", label: "About" },
+  { href: "#contact", label: "Contact" },
+] as const;
+
+/** Read-only check for an application the signed-in investor can still continue. */
+function useDraftApplication(userId?: string) {
+  return useQuery({
+    queryKey: ["home-draft-application", userId],
+    enabled: !!userId,
+    staleTime: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("applications")
+        .select("id")
+        .eq("investor_id", userId!)
+        .in("status", EDITABLE_STATUSES)
+        .limit(1);
+      if (error) throw error;
+      return (data ?? []).length > 0;
+    },
+  });
+}
+
 function Landing() {
   const projects = useProjects();
   const { session } = useSession();
   const signedIn = !!session;
+  const draft = useDraftApplication(session?.user?.id);
+  const hasDraft = signedIn && draft.data === true;
+  const [menuOpen, setMenuOpen] = React.useState(false);
 
   return (
     <div className="min-h-screen bg-background">
       <header className="absolute inset-x-0 top-0 z-20">
         <div className="mx-auto flex h-20 w-full max-w-7xl items-center px-5 sm:px-8">
           <Brand tone="inverted" />
+
+          <nav aria-label="Primary" className="ml-10 hidden items-center gap-7 lg:flex">
+            {NAV_LINKS.map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                className="text-xs uppercase tracking-[0.16em] text-onyx-foreground/80 transition-colors hover:text-gold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold"
+              >
+                {item.label}
+              </a>
+            ))}
+          </nav>
+
           <div className="ml-auto flex items-center gap-2">
             <ThemeToggle className="hidden w-auto border-onyx-foreground/25 bg-onyx-foreground/10 sm:inline-flex" showLabels={false} />
             <Button
@@ -117,6 +168,39 @@ function Landing() {
                 <Link to="/auth">Sign in</Link>
               )}
             </Button>
+
+            <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+              <SheetTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Open menu"
+                  className="min-h-11 min-w-11 text-onyx-foreground hover:bg-onyx-foreground/10 lg:hidden"
+                >
+                  <Menu className="size-5" aria-hidden />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[82vw] max-w-xs">
+                <SheetHeader>
+                  <SheetTitle className="font-display tracking-[0.18em]">KAIVRA</SheetTitle>
+                </SheetHeader>
+                <nav aria-label="Mobile" className="mt-6 flex flex-col gap-1 px-4">
+                  {NAV_LINKS.map((item) => (
+                    <SheetClose asChild key={item.href}>
+                      <a
+                        href={item.href}
+                        className="rounded-md px-2 py-3 text-sm uppercase tracking-[0.14em] text-foreground hover:bg-muted"
+                      >
+                        {item.label}
+                      </a>
+                    </SheetClose>
+                  ))}
+                </nav>
+                <div className="mt-6 px-4">
+                  <ThemeToggle />
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </header>
@@ -124,23 +208,27 @@ function Landing() {
       <section className="relative min-h-[92svh] w-full">
         <HeroCarousel />
 
-        <div className="relative mx-auto flex min-h-[92svh] w-full max-w-7xl flex-col justify-end px-5 pb-16 pt-32 sm:px-8 sm:pb-24">
+        <div className="relative mx-auto flex min-h-[92svh] w-full max-w-7xl flex-col justify-center px-5 pb-14 pt-28 sm:justify-end sm:pb-24 sm:pt-32 sm:px-8">
           <div className="max-w-2xl kv-rise">
-            <div className="rule-gold mb-8" />
+            <div className="rule-gold mb-6 sm:mb-8" />
             <p className="eyebrow inline-block rounded-sm bg-info px-3 py-1.5 text-info-foreground">
               Smart Real Estate Investment Management
             </p>
-            <RotatingHeadline />
-            <div className="mt-6 inline-block max-w-xl rounded-lg bg-onyx/60 px-4 py-3 backdrop-blur-md">
+            <h1 className="mt-4 font-display text-4xl leading-[1.05] text-onyx-foreground sm:text-7xl">
+              Invest in the future you can own.
+            </h1>
+            <div className="mt-5 inline-block max-w-xl rounded-lg bg-onyx/60 px-4 py-3 backdrop-blur-md sm:mt-6">
               <p className="text-base text-onyx-foreground sm:text-lg">
-                Securely manage your real-estate investments, subscriptions and payments in one
-                simple platform.
+                KAIVRA is a real-estate investment platform: browse projects, apply online, make
+                and track your payments, and keep every document in one secure account.
               </p>
             </div>
-            <div className="mt-10 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-8 flex flex-col gap-3 sm:mt-10 sm:flex-row">
               <Button asChild size="lg" className="h-13 px-8 text-sm tracking-[0.14em] uppercase">
-                {signedIn ? (
+                {hasDraft ? (
                   <Link to="/application">Continue application</Link>
+                ) : signedIn ? (
+                  <Link to="/application">Start investing</Link>
                 ) : (
                   <Link to="/auth">Start investing</Link>
                 )}
@@ -152,15 +240,16 @@ function Landing() {
                 className="h-13 border-onyx-foreground/40 bg-transparent px-8 text-sm uppercase tracking-[0.14em] text-onyx-foreground hover:bg-onyx-foreground/10 hover:text-onyx-foreground"
               >
                 {signedIn ? (
-                  <Link to="/dashboard">Access my investment</Link>
+                  <Link to="/dashboard">Access my investments</Link>
                 ) : (
-                  <Link to="/auth">Access my investment</Link>
+                  <Link to="/auth">Sign in</Link>
                 )}
               </Button>
             </div>
           </div>
         </div>
       </section>
+
 
       <section className="border-b border-border bg-card">
         <div className="mx-auto grid w-full max-w-7xl gap-8 px-5 py-14 sm:grid-cols-3 sm:px-8">
@@ -239,7 +328,7 @@ function Landing() {
                   <div className="relative aspect-[16/10] overflow-hidden">
                     <img
                       src={mediaSrc(project.hero_image)}
-                      alt={project.name}
+                      alt={`${project.name} — investment project in ${project.location}`}
                       loading="lazy"
                       width={1920}
                       height={1088}
@@ -283,6 +372,56 @@ function Landing() {
         </LegacyReveal>
       </section>
 
+      <section id="how-it-works" className="border-y border-border bg-card">
+        <div className="mx-auto w-full max-w-7xl px-5 py-20 sm:px-8">
+          <LegacyReveal>
+            <p className="eyebrow text-primary">The process</p>
+            <h2 className="mt-3 max-w-2xl font-display text-4xl sm:text-5xl">How it works</h2>
+            <p className="mt-4 max-w-2xl text-sm text-muted-foreground sm:text-base">
+              Five straightforward steps, from choosing a project to managing your investment.
+            </p>
+            <ol className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
+              {[
+                {
+                  n: "01",
+                  title: "Choose a project",
+                  body: "Explore the available KAIVRA investment projects and property types.",
+                },
+                {
+                  n: "02",
+                  title: "Apply",
+                  body: "Submit your investment application with the required information.",
+                },
+                {
+                  n: "03",
+                  title: "Make payments",
+                  body: "Pay according to the payment arrangement that applies to your investment.",
+                },
+                {
+                  n: "04",
+                  title: "Verification & documentation",
+                  body: "KAIVRA reviews your application, payments and supporting documents.",
+                },
+                {
+                  n: "05",
+                  title: "Manage your investment",
+                  body: "Track payments, documents and status in your KAIVRA account.",
+                },
+              ].map((step) => (
+                <li
+                  key={step.n}
+                  className="rounded-lg border border-border bg-background p-6 shadow-card"
+                >
+                  <p className="font-display text-3xl text-primary">{step.n}</p>
+                  <h3 className="mt-4 text-base font-semibold leading-tight">{step.title}</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">{step.body}</p>
+                </li>
+              ))}
+            </ol>
+          </LegacyReveal>
+        </div>
+      </section>
+
       <section className="border-t border-border bg-card">
         <div className="mx-auto grid w-full max-w-7xl items-center gap-10 px-5 py-20 sm:px-8 md:grid-cols-2">
           <div className="relative overflow-hidden rounded-lg border border-border bg-onyx">
@@ -301,83 +440,25 @@ function Landing() {
               An adviser beside you, from first enquiry to allocation.
             </h2>
             <p className="mt-5 text-sm text-muted-foreground sm:text-base">
-              Every KAIVRA subscription is reviewed by a dedicated adviser who verifies your
+              Every KAIVRA application is reviewed by a dedicated adviser who verifies your
               payments, confirms your documents and keeps your application moving — while your
               records stay private and fully in your name.
             </p>
-            <div className="mt-8">
+            <div className="mt-8 flex flex-wrap gap-3">
               <Button asChild size="lg" className="uppercase tracking-[0.12em]">
-                {signedIn ? (
-                  <Link to="/application">Begin your application</Link>
-                ) : (
-                  <Link to="/auth">Speak to an adviser</Link>
-                )}
+                <a href="#contact">Speak to an adviser</a>
               </Button>
+              {signedIn ? (
+                <Button asChild size="lg" variant="outline" className="uppercase tracking-[0.12em]">
+                  <Link to="/dashboard">Access my investments</Link>
+                </Button>
+              ) : null}
             </div>
           </div>
         </div>
       </section>
 
-      <section className="relative">
-        <img
-          src={assetUrl(residenceAsset.url)}
-          alt="Signature KAIVRA residence exterior"
-          loading="lazy"
-          width={952}
-          height={1280}
-          className="h-[46svh] w-full object-cover"
-        />
-      </section>
-
-      <section className="surface-onyx relative overflow-hidden">
-        <div className="mx-auto w-full max-w-7xl px-5 py-24 text-center sm:px-8 sm:py-32">
-          <LegacyReveal>
-            <p
-              className="font-display text-2xl tracking-[0.35em] text-gold sm:text-3xl kv-legacy"
-              style={{ animationDelay: "0ms" }}
-            >
-              HUTU PRESTIGE
-            </p>
-            <div
-              className="mx-auto mt-5 flex items-center justify-center gap-4 kv-legacy"
-              style={{ animationDelay: "150ms" }}
-            >
-              <span className="h-px w-10 bg-gold/70 sm:w-16" />
-              <span className="eyebrow text-gold">Abuja</span>
-              <span className="h-px w-10 bg-gold/70 sm:w-16" />
-            </div>
-            <h2
-              className="mx-auto mt-10 max-w-3xl font-display text-5xl leading-[1.05] text-onyx-foreground sm:text-7xl kv-legacy"
-              style={{ animationDelay: "300ms" }}
-            >
-              Own more than <span className="text-gold">a property.</span>
-            </h2>
-            <div
-              className="mx-auto mt-8 max-w-md rounded-sm border border-gold/40 bg-gold/10 px-6 py-3 kv-legacy"
-              style={{ animationDelay: "450ms" }}
-            >
-              <p className="font-display text-xl tracking-[0.3em] text-gold sm:text-2xl">
-                OWN A LEGACY
-              </p>
-            </div>
-            <p
-              className="mx-auto mt-10 max-w-xl text-sm text-onyx-foreground/70 sm:text-base kv-legacy"
-              style={{ animationDelay: "600ms" }}
-            >
-              We deliver premium, affordable and secure properties for a better tomorrow.
-            </p>
-            <div className="mt-10 kv-legacy" style={{ animationDelay: "750ms" }}>
-              <Button asChild size="lg" className="uppercase tracking-[0.14em]">
-                <a href="#projects">
-                  Explore projects <ArrowRight className="ml-2 size-4" />
-                </a>
-              </Button>
-            </div>
-          </LegacyReveal>
-        </div>
-      </section>
-
-      <section className="border-t border-border bg-card">
+      <section id="about" className="border-t border-border bg-card">
         <div className="mx-auto grid w-full max-w-7xl items-start gap-10 px-5 py-20 sm:px-8 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
           <LegacyReveal>
             <div
@@ -584,6 +665,66 @@ function Landing() {
                   </div>
                 </article>
               ))}
+            </div>
+          </LegacyReveal>
+        </div>
+      </section>
+
+      <section className="relative">
+        <img
+          src={assetUrl(residenceAsset.url)}
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          width={952}
+          height={1280}
+          className="h-[26svh] w-full object-cover sm:h-[32svh]"
+        />
+      </section>
+
+      <section className="surface-onyx relative overflow-hidden">
+        <div className="mx-auto w-full max-w-7xl px-5 py-24 text-center sm:px-8 sm:py-32">
+          <LegacyReveal>
+            <p
+              className="font-display text-2xl tracking-[0.35em] text-gold sm:text-3xl kv-legacy"
+              style={{ animationDelay: "0ms" }}
+            >
+              HUTU PRESTIGE
+            </p>
+            <div
+              className="mx-auto mt-5 flex items-center justify-center gap-4 kv-legacy"
+              style={{ animationDelay: "150ms" }}
+            >
+              <span className="h-px w-10 bg-gold/70 sm:w-16" />
+              <span className="eyebrow text-gold">Abuja</span>
+              <span className="h-px w-10 bg-gold/70 sm:w-16" />
+            </div>
+            <h2
+              className="mx-auto mt-10 max-w-3xl font-display text-5xl leading-[1.05] text-onyx-foreground sm:text-7xl kv-legacy"
+              style={{ animationDelay: "300ms" }}
+            >
+              Own more than <span className="text-gold">a property.</span>
+            </h2>
+            <div
+              className="mx-auto mt-8 max-w-md rounded-sm border border-gold/40 bg-gold/10 px-6 py-3 kv-legacy"
+              style={{ animationDelay: "450ms" }}
+            >
+              <p className="font-display text-xl tracking-[0.3em] text-gold sm:text-2xl">
+                OWN A LEGACY
+              </p>
+            </div>
+            <p
+              className="mx-auto mt-10 max-w-xl text-sm text-onyx-foreground/70 sm:text-base kv-legacy"
+              style={{ animationDelay: "600ms" }}
+            >
+              We deliver premium, affordable and secure properties for a better tomorrow.
+            </p>
+            <div className="mt-10 kv-legacy" style={{ animationDelay: "750ms" }}>
+              <Button asChild size="lg" className="uppercase tracking-[0.14em]">
+                <a href="#projects">
+                  Explore projects <ArrowRight className="ml-2 size-4" />
+                </a>
+              </Button>
             </div>
           </LegacyReveal>
         </div>
