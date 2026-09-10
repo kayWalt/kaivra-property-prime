@@ -458,65 +458,6 @@ function Landing() {
         </div>
       </section>
 
-      <section className="relative">
-        <img
-          src={assetUrl(residenceAsset.url)}
-          alt="Signature KAIVRA residence exterior"
-          loading="lazy"
-          width={952}
-          height={1280}
-          className="h-[46svh] w-full object-cover"
-        />
-      </section>
-
-      <section className="surface-onyx relative overflow-hidden">
-        <div className="mx-auto w-full max-w-7xl px-5 py-24 text-center sm:px-8 sm:py-32">
-          <LegacyReveal>
-            <p
-              className="font-display text-2xl tracking-[0.35em] text-gold sm:text-3xl kv-legacy"
-              style={{ animationDelay: "0ms" }}
-            >
-              HUTU PRESTIGE
-            </p>
-            <div
-              className="mx-auto mt-5 flex items-center justify-center gap-4 kv-legacy"
-              style={{ animationDelay: "150ms" }}
-            >
-              <span className="h-px w-10 bg-gold/70 sm:w-16" />
-              <span className="eyebrow text-gold">Abuja</span>
-              <span className="h-px w-10 bg-gold/70 sm:w-16" />
-            </div>
-            <h2
-              className="mx-auto mt-10 max-w-3xl font-display text-5xl leading-[1.05] text-onyx-foreground sm:text-7xl kv-legacy"
-              style={{ animationDelay: "300ms" }}
-            >
-              Own more than <span className="text-gold">a property.</span>
-            </h2>
-            <div
-              className="mx-auto mt-8 max-w-md rounded-sm border border-gold/40 bg-gold/10 px-6 py-3 kv-legacy"
-              style={{ animationDelay: "450ms" }}
-            >
-              <p className="font-display text-xl tracking-[0.3em] text-gold sm:text-2xl">
-                OWN A LEGACY
-              </p>
-            </div>
-            <p
-              className="mx-auto mt-10 max-w-xl text-sm text-onyx-foreground/70 sm:text-base kv-legacy"
-              style={{ animationDelay: "600ms" }}
-            >
-              We deliver premium, affordable and secure properties for a better tomorrow.
-            </p>
-            <div className="mt-10 kv-legacy" style={{ animationDelay: "750ms" }}>
-              <Button asChild size="lg" className="uppercase tracking-[0.14em]">
-                <a href="#projects">
-                  Explore projects <ArrowRight className="ml-2 size-4" />
-                </a>
-              </Button>
-            </div>
-          </LegacyReveal>
-        </div>
-      </section>
-
       <section className="border-t border-border bg-card">
         <div className="mx-auto grid w-full max-w-7xl items-start gap-10 px-5 py-20 sm:px-8 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
           <LegacyReveal>
