@@ -302,6 +302,39 @@ function InvestorsPage() {
         </p>
       </header>
 
+      <section
+        aria-labelledby="find-investment-id-heading"
+        className="rounded-lg border border-primary/30 bg-card px-5 py-4"
+      >
+        <h2 id="find-investment-id-heading" className="font-display text-lg">
+          Find investment by ID
+        </h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Enter an Investment ID or KAIVRA Investment Reference to open the existing investment —
+          for example to record an assisted payment against it.
+        </p>
+        <form
+          className="mt-3 flex flex-col gap-2 sm:flex-row"
+          onSubmit={(event) => {
+            event.preventDefault();
+            void handleFindInvestment();
+          }}
+        >
+          <Input
+            value={lookupRef}
+            onChange={(event) => setLookupRef(event.target.value)}
+            placeholder="Enter Investment ID or reference"
+            aria-label="Investment ID or KAIVRA Investment Reference"
+            className="sm:max-w-xs"
+            autoComplete="off"
+          />
+          <AsyncButton type="button" pendingLabel="Finding…" onClick={() => handleFindInvestment()}>
+            <Search className="mr-2 size-4" aria-hidden />
+            Find Investment
+          </AsyncButton>
+        </form>
+      </section>
+
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Input
           value={term}
@@ -334,38 +367,6 @@ function InvestorsPage() {
         </div>
       </div>
 
-      <section
-        aria-labelledby="find-investment-id-heading"
-        className="rounded-lg border border-border bg-card px-5 py-4"
-      >
-        <h2 id="find-investment-id-heading" className="font-display text-lg">
-          Find investment by ID
-        </h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Enter an Investment ID or KAIVRA Investment Reference to open the existing investment —
-          for example to record an assisted payment against it.
-        </p>
-        <form
-          className="mt-3 flex flex-col gap-2 sm:flex-row"
-          onSubmit={(event) => {
-            event.preventDefault();
-            void handleFindInvestment();
-          }}
-        >
-          <Input
-            value={lookupRef}
-            onChange={(event) => setLookupRef(event.target.value)}
-            placeholder="e.g. KV-2026-0001"
-            aria-label="Investment ID or KAIVRA Investment Reference"
-            className="sm:max-w-xs"
-            autoComplete="off"
-          />
-          <AsyncButton type="button" pendingLabel="Finding…" onClick={() => handleFindInvestment()}>
-            <Search className="mr-2 size-4" aria-hidden />
-            Find Investment
-          </AsyncButton>
-        </form>
-      </section>
 
       {query.isLoading ? (
         <div className="space-y-3">
