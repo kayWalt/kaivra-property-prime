@@ -91,7 +91,9 @@ function ManageApplication() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("applications")
-        .select("id, reference, status, investor_id")
+        .select(
+          "id, reference, status, investor_id, project_id, investment, application_type, negotiated_price",
+        )
         .eq("id", appId)
         .maybeSingle();
       if (error) throw error;
