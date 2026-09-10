@@ -491,10 +491,10 @@ function Landing() {
       </section>
 
       <section id="about" className="border-t border-border bg-card">
-        <div className="mx-auto grid w-full max-w-7xl items-start gap-10 px-5 py-20 sm:px-8 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+        <div className="mx-auto grid w-full max-w-7xl items-start gap-10 px-5 py-20 sm:px-8 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] md:gap-12">
           <LegacyReveal>
             <div
-              className="kv-legacy mx-auto max-w-sm overflow-hidden rounded-lg border border-border"
+              className="kv-legacy overflow-hidden rounded-lg border border-border"
               style={{ animationDelay: "0ms" }}
             >
               <img
@@ -510,38 +510,46 @@ function Landing() {
             </div>
           </LegacyReveal>
           <LegacyReveal>
-            <p className="eyebrow text-primary kv-legacy" style={{ animationDelay: "100ms" }}>
-              Chairman's message
-            </p>
-            <h2
-              className="mt-3 font-display text-4xl leading-tight sm:text-5xl kv-legacy"
-              style={{ animationDelay: "200ms" }}
-            >
-              Welcome to the future. Welcome to <span className="text-primary">Hutu Prestige.</span>
-            </h2>
-            <div className="mt-6 space-y-4 text-sm leading-relaxed text-muted-foreground sm:text-base">
-              <p className="kv-legacy" style={{ animationDelay: "300ms" }}>
-                It is with immense pride and vision that I present to you Hutu Prestige — featured
-                within one of Africa's most innovative mega city projects, HUTU Abuja City.
+            <div className="flex flex-col">
+              <p className="eyebrow text-primary kv-legacy" style={{ animationDelay: "100ms" }}>
+                Chairman's message
               </p>
-              <p className="kv-legacy" style={{ animationDelay: "400ms" }}>
-                At AIBEN Properties Ltd, we have spent over a decade building more than houses; we
-                construct communities, foster connections, and curate lasting memories. Hutu
-                Prestige is the culmination of this philosophy: a next-generation African urban
-                model that is self-sustaining, secure, future-ready, and culturally expressive.
+              <p
+                className="kv-legacy mt-3 font-display text-2xl leading-snug text-foreground/70 sm:text-3xl"
+                style={{ animationDelay: "180ms" }}
+              >
+                Welcome to the future.
               </p>
-              <p className="kv-legacy" style={{ animationDelay: "500ms" }}>
-                This is not just a residential estate — it is Africa's first Polo &amp; Golf Resort
-                Estate, connected by integrated power and sustainable living. A 1,300-hectare land
-                space where natural beauty merges with architectural excellence, lakefront living,
-                and world-class security that ensures absolute peace of mind.
-              </p>
-              <p className="kv-legacy" style={{ animationDelay: "600ms" }}>
-                Hutu Prestige embodies our commitment to building a stronger Nigeria and Africa.
-                Through innovation, sustainable practices and a dedication to excellence, we are
-                creating a city where every resident can truly say:{" "}
-                <span className="font-semibold text-primary">this is home</span>.
-              </p>
+              <h2
+                className="kv-legacy mt-1 font-display text-4xl leading-[1.1] sm:text-5xl"
+                style={{ animationDelay: "260ms" }}
+              >
+                Welcome to <span className="text-primary">Hutu Prestige.</span>
+              </h2>
+              <div className="mt-8 space-y-4 text-sm leading-relaxed text-muted-foreground sm:text-base">
+                <p className="kv-legacy" style={{ animationDelay: "360ms" }}>
+                  It is with immense pride and vision that I present to you Hutu Prestige — featured
+                  within one of Africa's most innovative mega city projects, HUTU Abuja City.
+                </p>
+                <p className="kv-legacy" style={{ animationDelay: "440ms" }}>
+                  At AIBEN Properties Ltd, we have spent over a decade building more than houses; we
+                  construct communities, foster connections, and curate lasting memories. Hutu
+                  Prestige is the culmination of this philosophy: a next-generation African urban
+                  model that is self-sustaining, secure, future-ready, and culturally expressive.
+                </p>
+                <p className="kv-legacy" style={{ animationDelay: "520ms" }}>
+                  This is not just a residential estate — it is Africa's first Polo &amp; Golf Resort
+                  Estate, connected by integrated power and sustainable living. A 1,300-hectare land
+                  space where natural beauty merges with architectural excellence, lakefront living,
+                  and world-class security that ensures absolute peace of mind.
+                </p>
+                <p className="kv-legacy" style={{ animationDelay: "600ms" }}>
+                  Hutu Prestige embodies our commitment to building a stronger Nigeria and Africa.
+                  Through innovation, sustainable practices and a dedication to excellence, we are
+                  creating a city where every resident can truly say:{" "}
+                  <span className="font-semibold text-primary">this is home</span>.
+                </p>
+              </div>
             </div>
           </LegacyReveal>
         </div>
