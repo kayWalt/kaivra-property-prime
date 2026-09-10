@@ -36,7 +36,8 @@ import { InvestorPicker } from "@/components/kaivra/InvestorPicker";
 import { linkApplicationToInvestor, type InvestorSummary } from "@/lib/investors.functions";
 import { ApplicationDetailView } from "./applications.$appId";
 import { useRoles, useSession, primaryRole, isStaffRole } from "@/hooks/useAuth";
-import { fetchPayments, logEvent, notify } from "@/lib/applications";
+import { fetchPayments, logEvent, notify, paymentLedger } from "@/lib/applications";
+import { AddPaymentDialog } from "@/components/kaivra/AddPaymentDialog";
 import { InstallmentSchedule } from "@/components/kaivra/InstallmentSchedule";
 import {
   APPLICATION_STATUSES,
