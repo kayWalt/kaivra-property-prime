@@ -119,6 +119,7 @@ export function AddPaymentDialog({
 
   function reset() {
     setAmount("");
+    setAmountDisplay("");
     setPaidOn("");
     setBank("");
     setSender("");
