@@ -458,7 +458,7 @@ function Landing() {
         </div>
       </section>
 
-      <section className="border-t border-border bg-card">
+      <section id="about" className="border-t border-border bg-card">
         <div className="mx-auto grid w-full max-w-7xl items-start gap-10 px-5 py-20 sm:px-8 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
           <LegacyReveal>
             <div
