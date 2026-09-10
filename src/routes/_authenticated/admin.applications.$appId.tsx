@@ -286,7 +286,24 @@ function ManageApplication() {
       <ApplicationDetailView appId={appId} manage />
 
       <section className="mt-8 rounded-lg border border-border bg-card p-5 print:hidden">
-        <h2 className="font-display text-2xl">Payment verification</h2>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="font-display text-2xl">Payment verification</h2>
+          {canRecordPayment ? (
+            <AddPaymentDialog
+              applicationId={appId}
+              projectId={application.data?.project_id ?? null}
+              reference={application.data?.reference ?? null}
+              outstanding={adminLedger.outstanding}
+              assistedInvestorId={ownerId}
+              triggerLabel="Add payment for investor"
+              triggerSize="sm"
+              triggerVariant="default"
+              onDone={() => {
+                void payments.refetch();
+              }}
+            />
+          ) : null}
+        </div>
         {payments.data?.length === 0 ? (
           <p className="mt-3 text-sm text-muted-foreground">No payment records to verify.</p>
         ) : null}
