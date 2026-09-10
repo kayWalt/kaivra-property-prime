@@ -109,6 +109,27 @@ function ManageApplication() {
   });
 
   const ownerId = application.data?.investor_id ?? null;
+  // Same ledger math as the investor view: only acknowledged payments reduce
+  // the balance. The assisted action is offered only while money is
+  // outstanding and the investment is no longer a draft. The server function
+  // (recordAssistedPayment) still enforces transactions.create permission,
+  // investor/application pairing, pending status and duplicate protection.
+  const appRecord = application.data;
+  const adminTotalValue =
+    appRecord?.application_type === "partner"
+      ? Number(
+          appRecord.negotiated_price ??
+            (appRecord.investment as { total_value?: number } | null)?.total_value ??
+            0,
+        )
+      : Number((appRecord?.investment as { total_value?: number } | null)?.total_value ?? 0);
+  const adminLedger = paymentLedger(payments.data ?? [], adminTotalValue);
+  const canRecordPayment =
+    staff &&
+    !!ownerId &&
+    appRecord?.status !== "draft" &&
+    adminTotalValue > 0 &&
+    adminLedger.outstanding > 0;
   const owner = useQuery({
     queryKey: ["application-owner", ownerId],
     enabled: !!ownerId && staff,
