@@ -43,9 +43,7 @@ const schema = z.object({
   fullName: z.string().trim().max(120).optional(),
 });
 
-const googleAuth = createLovableAuth({
-  oauthBrokerUrl: "https://kaivraa-com.lovable.app/~oauth/initiate",
-});
+const googleAuth = createLovableAuth();
 
 function AuthPage() {
   const navigate = useNavigate();
