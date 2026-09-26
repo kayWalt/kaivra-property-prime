@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1790457826843,
+      "tag": "0000_add_property_promotional_pricing",
+      "breakpoints": true
+    }
+  ]
+}

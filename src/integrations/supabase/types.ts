@@ -1389,6 +1389,9 @@ export type Database = {
           name: string
           payment_plan: string
           project_id: string
+          promo_ends_at: string | null
+          promo_price: number | null
+          promo_starts_at: string | null
           property_code: string
           property_type: string
           size_label: string
@@ -1404,6 +1407,9 @@ export type Database = {
           name: string
           payment_plan?: string
           project_id: string
+          promo_ends_at?: string | null
+          promo_price?: number | null
+          promo_starts_at?: string | null
           property_code?: string
           property_type?: string
           size_label?: string
@@ -1419,6 +1425,9 @@ export type Database = {
           name?: string
           payment_plan?: string
           project_id?: string
+          promo_ends_at?: string | null
+          promo_price?: number | null
+          promo_starts_at?: string | null
           property_code?: string
           property_type?: string
           size_label?: string
