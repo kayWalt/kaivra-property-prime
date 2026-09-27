@@ -76,6 +76,7 @@ import {
 import { openAiAssist } from "@/lib/ai-assist";
 import { cn } from "@/lib/utils";
 import { mediaSrc, FALLBACK_PROPERTY_IMAGE } from "@/lib/media";
+import { propertyPricing } from "@/lib/property-pricing";
 
 export const Route = createFileRoute("/_authenticated/application")({
   validateSearch: (search: Record<string, unknown>) => {
@@ -505,7 +506,10 @@ function ApplicationWizard() {
   // ---------- derived ----------
   const selectedProject = projects.data?.find((p) => p.id === draft.project_id) ?? null;
   const selectedProperty = properties.data?.find((p) => p.id === draft.property_id) ?? null;
-  const unitPrice = Number(draft.investment.unit_price ?? selectedProperty?.unit_price ?? 0);
+  const selectedPricing = selectedProperty ? propertyPricing(selectedProperty) : null;
+  const unitPrice = Number(
+    draft.investment.unit_price ?? selectedPricing?.effectivePrice ?? selectedProperty?.unit_price ?? 0,
+  );
   const units = Math.max(1, Number(draft.investment.units ?? 1));
   const partnerDerived = derivePricing({
     method: draft.partner.pricing_method,
@@ -860,7 +864,7 @@ function ApplicationWizard() {
                 property_id: property.id,
                 investment: {
                   ...p.investment,
-                  unit_price: Number(property.unit_price),
+                  unit_price: propertyPricing(property).effectivePrice,
                   property_type: property.property_type ?? "",
                   property_size: property.size_label ?? "",
                   units: p.investment.units ?? 1,
@@ -1126,6 +1130,9 @@ function StepProject({
     property_type: string | null;
     size_label: string | null;
     unit_price: number;
+    promo_price: number | null;
+    promo_starts_at: string | null;
+    promo_ends_at: string | null;
     units_available: number | null;
     image_urls: unknown;
   }[];
@@ -1140,6 +1147,9 @@ function StepProject({
     property_type: string | null;
     size_label: string | null;
     unit_price: number;
+    promo_price: number | null;
+    promo_starts_at: string | null;
+    promo_ends_at: string | null;
   }) => void;
 }) {
   const selectedProject = projects.find((p) => p.id === draft.project_id);
@@ -1242,6 +1252,9 @@ function PropertyCard({
     property_type: string | null;
     size_label: string | null;
     unit_price: number;
+    promo_price: number | null;
+    promo_starts_at: string | null;
+    promo_ends_at: string | null;
     units_available: number | null;
     image_urls: unknown;
   };
@@ -1250,6 +1263,7 @@ function PropertyCard({
   disabled: boolean;
   onSelect: () => void;
 }) {
+  const pricing = propertyPricing(property);
   const ownImages = Array.isArray(property.image_urls)
     ? (property.image_urls as unknown[]).filter(
         (u): u is string => typeof u === "string" && u.length > 0,
@@ -1269,7 +1283,13 @@ function PropertyCard({
       )}
     >
       <div className="relative">
-        <PlotPriceTag sizeLabel={property.size_label} price={property.unit_price} />
+        <PlotPriceTag
+          sizeLabel={property.size_label}
+          price={property.unit_price}
+          promoPrice={property.promo_price}
+          promoStartsAt={property.promo_starts_at}
+          promoEndsAt={property.promo_ends_at}
+        />
         <img
 
           src={current}
@@ -1331,7 +1351,19 @@ function PropertyCard({
         {property.size_label ? (
           <span className="mt-0.5 block text-xs text-muted-foreground">{property.size_label}</span>
         ) : null}
-        <span className="mt-2 block font-display text-xl">{formatNaira(property.unit_price)}</span>
+        <span className="mt-2 block">
+          {pricing.isPromoActive ? (
+            <span className="mr-2 text-xs text-muted-foreground line-through">
+              {formatNaira(pricing.standardPrice)}
+            </span>
+          ) : null}
+          <span className="font-display text-xl">{formatNaira(pricing.effectivePrice)}</span>
+        </span>
+        {pricing.isPromoActive ? (
+          <span className="mt-1 block text-xs font-semibold uppercase text-primary">
+            Independence offer · ends 9 Oct 2026
+          </span>
+        ) : null}
       </button>
     </div>
   );
