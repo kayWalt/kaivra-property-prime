@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useRoles, useSession, primaryRole } from "@/hooks/useAuth";
 import { formatNaira } from "@/lib/kaivra";
+import { propertyPricing } from "@/lib/property-pricing";
 import { RequireModule } from "@/components/kaivra/RequireModule";
 
 export const Route = createFileRoute("/_authenticated/admin/projects")({
@@ -365,6 +366,9 @@ function PropertyManager({
     property_type: string | null;
     size_label: string | null;
     unit_price: number;
+    promo_price: number | null;
+    promo_starts_at: string | null;
+    promo_ends_at: string | null;
     units_available: number | null;
     is_active: boolean;
   }[];
@@ -375,6 +379,9 @@ function PropertyManager({
     property_type: "",
     size_label: "",
     unit_price: 0,
+    promo_price: 0,
+    promo_starts_at: "",
+    promo_ends_at: "",
     units_available: 0,
   });
   const [saving, setSaving] = useState(false);
@@ -383,6 +390,9 @@ function PropertyManager({
     name: "",
     property_type: "",
     unit_price: 0,
+    promo_price: 0,
+    promo_starts_at: "",
+    promo_ends_at: "",
     units_available: 0,
     size_label: "",
   });
@@ -393,6 +403,9 @@ function PropertyManager({
     name: string;
     property_type: string | null;
     unit_price: number;
+    promo_price: number | null;
+    promo_starts_at: string | null;
+    promo_ends_at: string | null;
     units_available: number | null;
     size_label: string | null;
   }) {
@@ -401,6 +414,9 @@ function PropertyManager({
       name: property.name,
       property_type: property.property_type ?? "",
       unit_price: property.unit_price,
+      promo_price: property.promo_price ?? 0,
+      promo_starts_at: property.promo_starts_at?.slice(0, 16) ?? "",
+      promo_ends_at: property.promo_ends_at?.slice(0, 16) ?? "",
       units_available: property.units_available ?? 0,
       size_label: property.size_label ?? "",
     });
@@ -415,6 +431,10 @@ function PropertyManager({
       toast.error("Enter a valid unit price (full naira amount, e.g. 22500000 for ₦22.5m).");
       return;
     }
+    if (editForm.promo_price > editForm.unit_price) {
+      toast.error("The promotional price cannot be higher than the standard price.");
+      return;
+    }
     setEditSaving(true);
     const { error } = await supabase
       .from("properties")
@@ -422,6 +442,13 @@ function PropertyManager({
         name: editForm.name.trim(),
         property_type: editForm.property_type.trim(),
         unit_price: editForm.unit_price,
+        promo_price: editForm.promo_price || null,
+        promo_starts_at: editForm.promo_price && editForm.promo_starts_at
+          ? new Date(editForm.promo_starts_at).toISOString()
+          : null,
+        promo_ends_at: editForm.promo_price && editForm.promo_ends_at
+          ? new Date(editForm.promo_ends_at).toISOString()
+          : null,
         units_available: editForm.units_available,
         size_label: editForm.size_label.trim(),
       })
@@ -477,6 +504,13 @@ function PropertyManager({
       property_type: form.property_type.trim(),
       size_label: form.size_label.trim(),
       unit_price: form.unit_price,
+      promo_price: form.promo_price || null,
+      promo_starts_at: form.promo_price && form.promo_starts_at
+        ? new Date(form.promo_starts_at).toISOString()
+        : null,
+      promo_ends_at: form.promo_price && form.promo_ends_at
+        ? new Date(form.promo_ends_at).toISOString()
+        : null,
       units_available: form.units_available,
     });
     setSaving(false);
@@ -485,7 +519,16 @@ function PropertyManager({
       return;
     }
     toast.success("Property added.");
-    setForm({ name: "", property_type: "", size_label: "", unit_price: 0, units_available: 0 });
+    setForm({
+      name: "",
+      property_type: "",
+      size_label: "",
+      unit_price: 0,
+      promo_price: 0,
+      promo_starts_at: "",
+      promo_ends_at: "",
+      units_available: 0,
+    });
     onChanged();
   }
 
@@ -495,7 +538,9 @@ function PropertyManager({
         {properties.length === 0 ? (
           <li className="text-sm text-muted-foreground">No properties yet for this project.</li>
         ) : null}
-        {properties.map((property) => (
+        {properties.map((property) => {
+          const pricing = propertyPricing(property);
+          return (
           <li
             key={property.id}
             className="rounded-md border border-border px-3 py-3 text-sm sm:px-4"
@@ -505,7 +550,9 @@ function PropertyManager({
                 <strong className="break-words">{property.name}</strong>
                 <span className="text-muted-foreground"> · {property.size_label || "—"}</span>
                 <p className="text-muted-foreground">
-                  {formatNaira(property.unit_price)} · {property.units_available ?? 0} units
+                  {pricing.isPromoActive ? (
+                    <><span className="line-through">{formatNaira(pricing.standardPrice)}</span>{" · "}{formatNaira(pricing.effectivePrice)} promo</>
+                  ) : formatNaira(property.unit_price)} · {property.units_available ?? 0} units
                   {property.is_active ? "" : " · hidden"}
                 </p>
               </div>
@@ -603,6 +650,24 @@ function PropertyManager({
                     }
                   />
                 </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor={`e-promo-${property.id}`}>Promotional price (₦)</Label>
+                  <Input
+                    id={`e-promo-${property.id}`}
+                    type="number"
+                    min={0}
+                    value={editForm.promo_price || ""}
+                    onChange={(e) => setEditForm({ ...editForm, promo_price: Number(e.target.value) || 0 })}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor={`e-promo-start-${property.id}`}>Promotion starts</Label>
+                  <Input id={`e-promo-start-${property.id}`} type="datetime-local" value={editForm.promo_starts_at} onChange={(e) => setEditForm({ ...editForm, promo_starts_at: e.target.value })} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor={`e-promo-end-${property.id}`}>Promotion ends</Label>
+                  <Input id={`e-promo-end-${property.id}`} type="datetime-local" value={editForm.promo_ends_at} onChange={(e) => setEditForm({ ...editForm, promo_ends_at: e.target.value })} />
+                </div>
                 <div className="sm:col-span-2 lg:col-span-3">
                   <AsyncButton
                     size="sm"
@@ -617,7 +682,8 @@ function PropertyManager({
               </div>
             ) : null}
           </li>
-        ))}
+          );
+        })}
       </ul>
 
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
@@ -665,6 +731,18 @@ function PropertyManager({
             value={form.units_available || ""}
             onChange={(e) => setForm({ ...form, units_available: Number(e.target.value) || 0 })}
           />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor={`p-promo-${projectId}`}>Promotional price (₦)</Label>
+          <Input id={`p-promo-${projectId}`} type="number" min={0} value={form.promo_price || ""} onChange={(e) => setForm({ ...form, promo_price: Number(e.target.value) || 0 })} />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor={`p-promo-start-${projectId}`}>Promotion starts</Label>
+          <Input id={`p-promo-start-${projectId}`} type="datetime-local" value={form.promo_starts_at} onChange={(e) => setForm({ ...form, promo_starts_at: e.target.value })} />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor={`p-promo-end-${projectId}`}>Promotion ends</Label>
+          <Input id={`p-promo-end-${projectId}`} type="datetime-local" value={form.promo_ends_at} onChange={(e) => setForm({ ...form, promo_ends_at: e.target.value })} />
         </div>
       </div>
       <AsyncButton
