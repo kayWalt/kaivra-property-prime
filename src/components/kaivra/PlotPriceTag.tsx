@@ -27,9 +27,9 @@ export function PlotPriceTag({
   if (!sizeLabel && !price) return null;
   const pricing = propertyPricing({
     unit_price: price ?? 0,
-    promo_price: promoPrice,
-    promo_starts_at: promoStartsAt,
-    promo_ends_at: promoEndsAt,
+    promo_price: promoPrice ?? null,
+    promo_starts_at: promoStartsAt ?? null,
+    promo_ends_at: promoEndsAt ?? null,
   });
   return (
     <div
