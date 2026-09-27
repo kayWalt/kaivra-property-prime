@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Brand } from "@/components/kaivra/Brand";
 import { mediaSrc, FALLBACK_PROPERTY_IMAGE } from "@/lib/media";
 import { formatNaira } from "@/lib/kaivra";
+import { propertyPricing } from "@/lib/property-pricing";
 
 const SITE_URL = "https://kaivraa.com";
 const PAGE_URL = `${SITE_URL}/real-estate-investment-abuja`;
@@ -57,7 +58,13 @@ interface ProjectRow {
   description: string | null;
   hero_image: string | null;
   currency: string | null;
-  properties: { unit_price: number; is_active: boolean }[] | null;
+  properties: {
+    unit_price: number;
+    promo_price: number | null;
+    promo_starts_at: string | null;
+    promo_ends_at: string | null;
+    is_active: boolean;
+  }[] | null;
 }
 
 function AbujaInvestmentPage() {
@@ -67,7 +74,7 @@ function AbujaInvestmentPage() {
       const { data } = await supabase
         .from("projects")
         .select(
-          "id, name, location, description, hero_image, currency, properties(unit_price, is_active)",
+          "id, name, location, description, hero_image, currency, properties(unit_price, promo_price, promo_starts_at, promo_ends_at, is_active)",
         )
         .eq("is_active", true)
         .order("name");
@@ -168,10 +175,11 @@ function AbujaInvestmentPage() {
                   {(() => {
                     const active = (project.properties ?? []).filter((p) => p.is_active);
                     if (!active.length) return null;
-                    const from = Math.min(...active.map((p) => Number(p.unit_price)));
+                    const from = Math.min(...active.map((p) => propertyPricing(p).effectivePrice));
+                    const hasPromo = active.some((p) => propertyPricing(p).isPromoActive);
                     return (
                       <p className="mt-2 text-sm font-semibold text-primary">
-                        From {formatNaira(from, project.currency ?? undefined)}
+                        {hasPromo ? "Promo from" : "From"} {formatNaira(from, project.currency ?? undefined)}
                       </p>
                     );
                   })()}

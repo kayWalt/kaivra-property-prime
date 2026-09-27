@@ -17,6 +17,7 @@ import { ThemeToggle } from "@/components/kaivra/ThemeToggle";
 import { Brand } from "@/components/kaivra/Brand";
 import { useSession } from "@/hooks/useAuth";
 import { formatCompact } from "@/lib/kaivra";
+import { propertyPricing } from "@/lib/property-pricing";
 import { EDITABLE_STATUSES } from "@/lib/applications";
 import { HeroCarousel } from "@/components/kaivra/HeroCarousel";
 
@@ -68,7 +69,7 @@ function useProjects() {
       const { data, error } = await supabase
         .from("projects")
         .select(
-          "id, name, location, description, hero_image, currency, properties(unit_price, property_type, is_active)",
+          "id, name, location, description, hero_image, currency, properties(unit_price, promo_price, promo_starts_at, promo_ends_at, property_type, is_active)",
         )
         .eq("is_active", true)
         .order("created_at", { ascending: true });
@@ -353,7 +354,10 @@ function Landing() {
 
             {projects.data?.map((project, idx) => {
               const active = (project.properties ?? []).filter((p) => p.is_active);
-              const from = active.length ? Math.min(...active.map((p) => Number(p.unit_price))) : 0;
+              const from = active.length
+                ? Math.min(...active.map((p) => propertyPricing(p).effectivePrice))
+                : 0;
+              const hasPromo = active.some((p) => propertyPricing(p).isPromoActive);
               const types = Array.from(new Set(active.map((p) => p.property_type))).slice(0, 3);
               const delay = 240 + idx * 160;
               return (
@@ -392,7 +396,9 @@ function Landing() {
                     </div>
                     <div className="mt-6 flex items-end justify-between gap-4">
                       <div>
-                        <p className="eyebrow text-muted-foreground">Starting from</p>
+                        <p className="eyebrow text-muted-foreground">
+                          {hasPromo ? "Promo from" : "Starting from"}
+                        </p>
                         <p className="font-display text-2xl text-primary">{formatCompact(from)}</p>
                       </div>
                       <Button asChild variant="outline" className="uppercase tracking-[0.12em]">

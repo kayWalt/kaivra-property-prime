@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { formatNaira } from "@/lib/kaivra";
+import { propertyPricing } from "@/lib/property-pricing";
 
 /**
  * Non-destructive overlay tag showing a property's plot size and full price
@@ -9,15 +10,27 @@ import { formatNaira } from "@/lib/kaivra";
 export function PlotPriceTag({
   sizeLabel,
   price,
+  promoPrice,
+  promoStartsAt,
+  promoEndsAt,
   currency,
   className,
 }: {
   sizeLabel?: string | null;
   price?: number | null;
+  promoPrice?: number | null;
+  promoStartsAt?: string | null;
+  promoEndsAt?: string | null;
   currency?: string;
   className?: string;
 }) {
   if (!sizeLabel && !price) return null;
+  const pricing = propertyPricing({
+    unit_price: price ?? 0,
+    promo_price: promoPrice,
+    promo_starts_at: promoStartsAt,
+    promo_ends_at: promoEndsAt,
+  });
   return (
     <div
       className={cn(
@@ -31,8 +44,15 @@ export function PlotPriceTag({
         </span>
       ) : null}
       {price ? (
-        <span className="block font-display text-sm leading-tight text-onyx-foreground sm:text-base">
-          {formatNaira(price, currency)}
+        <span className="block leading-tight">
+          {pricing.isPromoActive ? (
+            <span className="mr-1.5 text-[0.65rem] text-onyx-foreground/70 line-through">
+              {formatNaira(pricing.standardPrice, currency)}
+            </span>
+          ) : null}
+          <span className="font-display text-sm text-onyx-foreground sm:text-base">
+            {formatNaira(pricing.effectivePrice, currency)}
+          </span>
         </span>
       ) : null}
     </div>

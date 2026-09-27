@@ -12,6 +12,7 @@ import { PlotPriceTag } from "@/components/kaivra/PlotPriceTag";
 
 import { formatNaira } from "@/lib/kaivra";
 import { mediaSrc, FALLBACK_PROPERTY_IMAGE } from "@/lib/media";
+import { propertyPricing } from "@/lib/property-pricing";
 
 const SITE_URL = "https://kaivraa.com";
 
@@ -256,6 +257,7 @@ function ProjectDetail() {
         <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {properties.map((property) => {
             const images = (property.image_urls as string[]) ?? [];
+            const pricing = propertyPricing(property);
             return (
               <article
                 key={property.id}
@@ -273,6 +275,9 @@ function ProjectDetail() {
                   <PlotPriceTag
                     sizeLabel={property.size_label}
                     price={property.unit_price}
+                    promoPrice={property.promo_price}
+                    promoStartsAt={property.promo_starts_at}
+                    promoEndsAt={property.promo_ends_at}
                     currency={project.currency}
                   />
                 </div>
@@ -281,9 +286,21 @@ function ProjectDetail() {
                   <p className="eyebrow text-gold-foreground">{property.size_label}</p>
                   <h3 className="mt-2 text-lg font-semibold leading-snug">{property.name}</h3>
                   <p className="mt-1 text-sm text-muted-foreground">{property.property_type}</p>
-                  <p className="mt-4 font-display text-2xl text-primary">
-                    {formatNaira(property.unit_price, project.currency)}
-                  </p>
+                  <div className="mt-4">
+                    {pricing.isPromoActive ? (
+                      <p className="text-sm text-muted-foreground line-through">
+                        {formatNaira(pricing.standardPrice, project.currency)}
+                      </p>
+                    ) : null}
+                    <p className="font-display text-2xl text-primary">
+                      {formatNaira(pricing.effectivePrice, project.currency)}
+                    </p>
+                    {pricing.isPromoActive ? (
+                      <p className="mt-1 text-xs font-semibold uppercase text-primary">
+                        Independence offer · ends 9 Oct 2026
+                      </p>
+                    ) : null}
+                  </div>
                   <Button
                     className="mt-5 h-11 w-full uppercase tracking-[0.12em]"
                     onClick={() => invest(property.id)}
