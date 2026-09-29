@@ -12,12 +12,11 @@ const LINKS = [{ to: "/", label: "Home" }, { to: "/properties", label: "Property
 export function PublicSiteHeader({ overlay = false }: { overlay?: boolean }) {
   const [open, setOpen] = useState(false);
   const { session } = useSession();
-  const tone = overlay ? "inverted" : undefined;
   const linkClass = overlay ? "text-onyx-foreground/85 hover:text-gold" : "text-muted-foreground hover:text-foreground";
   return (
     <header className={overlay ? "absolute inset-x-0 top-0 z-30" : "sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur"}>
       <div className="mx-auto flex h-20 w-full max-w-7xl items-center px-5 sm:px-8">
-        <Brand tone={tone} />
+        <Brand tone={overlay ? "inverted" : "default"} />
         <nav aria-label="Primary" className="ml-10 hidden items-center gap-7 lg:flex">
           {LINKS.map((item) => <Link key={item.to} to={item.to} className={`text-xs uppercase tracking-[0.16em] transition-colors ${linkClass}`} activeProps={{ className: overlay ? "text-gold" : "text-primary" }}>{item.label}</Link>)}
         </nav>

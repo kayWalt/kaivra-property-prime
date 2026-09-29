@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { assertAdminCan } from "@/lib/admin-permissions.server";
+import type { Database } from "@/integrations/supabase/types";
 import { LISTING_STATUSES, LISTING_TYPES, PROPERTY_STATUSES, PROPERTY_TYPES } from "@/lib/property-listings";
 
 const optionalText = z.string().trim().max(500).nullable().optional();
@@ -27,7 +28,22 @@ export const savePropertyListing = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdminCan(context.supabase as never, context.userId, "property_listings", data.id ? "edit" : "create");
     const { images, id, ...listing } = data;
-    const payload = { ...listing, city: listing.city || null, state: listing.state || null, short_description: listing.short_description || null, price_display_text: listing.price_display_text || null, size_unit: listing.size_unit || null, developer_name: listing.developer_name || null, contact_name: listing.contact_name || null, contact_email: listing.contact_email || null, contact_phone: listing.contact_phone || null, updated_by: context.userId, ...(id ? {} : { created_by: context.userId }) };
+    const payload: Database["public"]["Tables"]["property_listings"]["Insert"] = {
+      title: listing.title, slug: listing.slug, property_type: listing.property_type,
+      listing_type: listing.listing_type, location: listing.location, city: listing.city ?? null,
+      state: listing.state ?? null, country: listing.country, short_description: listing.short_description ?? null,
+      description: listing.description, price: listing.price ?? null,
+      price_display_text: listing.price_display_text ?? null, currency: listing.currency,
+      size_value: listing.size_value ?? null, size_unit: listing.size_unit ?? null,
+      bedrooms: listing.bedrooms ?? null, bathrooms: listing.bathrooms ?? null,
+      parking_spaces: listing.parking_spaces ?? null, property_status: listing.property_status,
+      listing_status: listing.listing_status, featured: listing.featured,
+      developer_name: listing.developer_name ?? null, contact_name: listing.contact_name ?? null,
+      contact_email: listing.contact_email || null, contact_phone: listing.contact_phone ?? null,
+      latitude: listing.latitude ?? null, longitude: listing.longitude ?? null,
+      key_features: listing.key_features, updated_by: context.userId,
+      ...(id ? {} : { created_by: context.userId }),
+    };
     const result = id
       ? await context.supabase.from("property_listings").update(payload).eq("id", id).select("id").single()
       : await context.supabase.from("property_listings").insert(payload).select("id").single();
