@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, ArrowRight, ImagePlus, Loader2, Trash2, UploadCloud } from "lucide-react";
+import { ArrowLeft, ArrowRight, ImagePlus, Loader2, Star, Trash2, UploadCloud } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   createProjectImageUploadTicket,
@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
-export type GalleryImage = { url: string; caption: string };
+export type GalleryImage = { url: string; caption: string; is_cover?: boolean };
 
 const ACCEPTED = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 const MAX_BYTES = 12 * 1024 * 1024; // 12MB before compression
@@ -239,7 +239,7 @@ export function GalleryUploadField({
       for (const file of files) {
         try {
           const url = await uploadImage(file, scope);
-          if (!images.some((image) => image.url === url)) uploaded.push({ url, caption: "" });
+          if (!images.some((image) => image.url === url)) uploaded.push({ url, caption: "", is_cover: images.length === 0 && uploaded.length === 0 });
         } catch (err) {
           failures.push(err instanceof Error ? err.message : `${file.name} could not be uploaded.`);
         } finally {
@@ -336,6 +336,17 @@ export function GalleryUploadField({
                 />
               </div>
               <div className="mt-2 flex flex-wrap items-center gap-1">
+                {scope === "listing" ? (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={image.is_cover ? "secondary" : "ghost"}
+                    onClick={() => onChange(images.map((item, i) => ({ ...item, is_cover: i === index })))}
+                  >
+                    <Star className={cn("mr-2 size-4", image.is_cover && "fill-gold text-gold")} />
+                    {image.is_cover ? "Cover" : "Set cover"}
+                  </Button>
+                ) : null}
                 <Button
                   type="button"
                   size="sm"
