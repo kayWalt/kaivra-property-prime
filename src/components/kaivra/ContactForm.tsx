@@ -17,7 +17,15 @@ import { Textarea } from "@/components/ui/textarea";
  * `public.contact_enquiries` (staff-read only) and emails the KAIVRA support
  * mailbox. The visitor only sees success once the enquiry is safely stored.
  */
-export function ContactForm() {
+export function ContactForm({
+  initialSubject = "",
+  initialMessage = "",
+  hideReturnHome = false,
+}: {
+  initialSubject?: string;
+  initialMessage?: string;
+  hideReturnHome?: boolean;
+} = {}) {
   const navigate = useNavigate();
   const [sending, setSending] = useState(false);
   const [reference, setReference] = useState<string | null>(null);
@@ -25,8 +33,8 @@ export function ContactForm() {
     full_name: "",
     email: "",
     phone: "",
-    subject: "",
-    message: "",
+    subject: initialSubject,
+    message: initialMessage,
     company: "",
   });
 
@@ -91,8 +99,8 @@ export function ContactForm() {
         full_name: "",
         email: "",
         phone: "",
-        subject: "",
-        message: "",
+        subject: initialSubject,
+        message: initialMessage,
         company: "",
       });
       toast.success("Thank you — a KAIVRA adviser will be in touch.");
@@ -184,9 +192,9 @@ export function ContactForm() {
           )}
           Send enquiry
         </Button>
-        <Button type="button" variant="outline" onClick={returnHome}>
-          Return Home
-        </Button>
+      {!hideReturnHome ? <Button type="button" variant="outline" onClick={returnHome}>
+        Return Home
+      </Button> : null}
         {reference ? (
           <p className="text-sm text-muted-foreground">
             Enquiry received — your reference is{" "}

@@ -1,0 +1,47 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { Filter, Search, SlidersHorizontal } from "lucide-react";
+import { useMemo, useState } from "react";
+import { PropertyListingCard } from "@/components/kaivra/PropertyListingCard";
+import { PublicSiteHeader } from "@/components/kaivra/PublicSiteHeader";
+import { Button } from "@/components/ui/button";
+import { Drawer, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { supabase } from "@/integrations/supabase/client";
+import { FALLBACK_PROPERTY_IMAGE } from "@/lib/media";
+import { LISTING_TYPES, PROPERTY_TYPES, titleCase, type PropertyListing } from "@/lib/property-listings";
+
+const SITE_URL = "https://kaivraa.com/properties";
+export const Route = createFileRoute("/properties/")({
+  head: () => ({ meta: [
+    { title: "Property Listings for Sale, Rent & Lease | KAIVRA" },
+    { name: "description", content: "Browse current KAIVRA property listings for sale, rent and lease across Nigeria." },
+    { property: "og:title", content: "Property Listings | KAIVRA" },
+    { property: "og:description", content: "Explore current property listings for sale, rent and lease." },
+    { property: "og:type", content: "website" }, { property: "og:url", content: SITE_URL }, { name: "twitter:card", content: "summary_large_image" },
+  ], links: [{ rel: "canonical", href: SITE_URL }], }),
+  component: PropertyListingsPage,
+});
+
+function Filters({ type, purpose, location, setType, setPurpose, setLocation }: { type: string; purpose: string; location: string; setType: (v:string)=>void; setPurpose:(v:string)=>void; setLocation:(v:string)=>void }) {
+  return <div className="grid gap-3 md:grid-cols-3">
+    <Select value={type} onValueChange={setType}><SelectTrigger className="h-11"><SelectValue placeholder="Property type" /></SelectTrigger><SelectContent><SelectItem value="all">All property types</SelectItem>{PROPERTY_TYPES.map((value) => <SelectItem key={value} value={value}>{titleCase(value)}</SelectItem>)}</SelectContent></Select>
+    <Select value={purpose} onValueChange={setPurpose}><SelectTrigger className="h-11"><SelectValue placeholder="Listing type" /></SelectTrigger><SelectContent><SelectItem value="all">Sale, rent or lease</SelectItem>{LISTING_TYPES.map((value) => <SelectItem key={value} value={value}>For {titleCase(value)}</SelectItem>)}</SelectContent></Select>
+    <Input value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Location" className="h-11" aria-label="Filter by location" />
+  </div>;
+}
+
+function PropertyListingsPage() {
+  const [search, setSearch] = useState(""); const [type, setType] = useState("all"); const [purpose, setPurpose] = useState("all"); const [location, setLocation] = useState(""); const [sort, setSort] = useState("featured");
+  const query = useQuery({ queryKey: ["public-property-listings"], queryFn: async () => { const { data, error } = await supabase.from("property_listings").select("id,title,slug,property_type,listing_type,location,city,state,country,short_description,description,price,price_display_text,currency,size_value,size_unit,bedrooms,bathrooms,parking_spaces,property_status,listing_status,featured,developer_name,contact_name,contact_email,contact_phone,latitude,longitude,key_features,published_at,created_at,updated_at,property_listing_images(id,listing_id,url,caption,sort_order,is_cover,created_at)").eq("listing_status", "published").in("property_status", ["available", "coming_soon"]); if (error) throw error; return (data ?? []) as PropertyListing[]; } });
+  const listings = useMemo(() => { const needle = search.trim().toLowerCase(); const result = (query.data ?? []).filter((item) => (!needle || `${item.title} ${item.location} ${item.city ?? ""} ${item.state ?? ""} ${item.property_type}`.toLowerCase().includes(needle)) && (type === "all" || item.property_type === type) && (purpose === "all" || item.listing_type === purpose) && (!location.trim() || `${item.location} ${item.city ?? ""} ${item.state ?? ""}`.toLowerCase().includes(location.trim().toLowerCase()))); return result.sort((a,b) => sort === "price_low" ? Number(a.price ?? Number.MAX_SAFE_INTEGER)-Number(b.price ?? Number.MAX_SAFE_INTEGER) : sort === "price_high" ? Number(b.price ?? -1)-Number(a.price ?? -1) : Number(b.featured)-Number(a.featured) || Date.parse(b.published_at ?? b.created_at)-Date.parse(a.published_at ?? a.created_at)); }, [query.data, search, type, purpose, location, sort]);
+  const reset = () => { setType("all"); setPurpose("all"); setLocation(""); };
+  return <div className="min-h-screen bg-background"><PublicSiteHeader overlay />
+    <section className="relative flex min-h-[25rem] items-end overflow-hidden"><img src={FALLBACK_PROPERTY_IMAGE} alt="" className="absolute inset-0 size-full object-cover" /><div className="hero-scrim absolute inset-0" /><div className="relative mx-auto w-full max-w-7xl px-5 pb-12 pt-28 sm:px-8"><p className="eyebrow text-gold">KAIVRA catalogue</p><h1 className="mt-3 font-display text-5xl text-onyx-foreground sm:text-6xl">Property Listings</h1><p className="mt-3 max-w-xl text-onyx-foreground/85">Explore our current property listings for sale, rent and lease.</p></div></section>
+    <main className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8 sm:py-12"><div className="rounded-lg border border-border bg-card p-4 shadow-card"><div className="flex gap-2"><div className="relative flex-1"><Search className="absolute left-3 top-3 size-4 text-muted-foreground" /><Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by property, location or keyword…" className="h-11 pl-9" /></div><Drawer><DrawerTrigger asChild><Button variant="outline" className="h-11 md:hidden"><SlidersHorizontal className="mr-2 size-4" /> Filters</Button></DrawerTrigger><DrawerContent><DrawerHeader><DrawerTitle>Filters</DrawerTitle><DrawerDescription>Narrow the current catalogue.</DrawerDescription></DrawerHeader><div className="max-h-[65vh] overflow-y-auto px-4"><Filters {...{type,purpose,location,setType,setPurpose,setLocation}} /></div><DrawerFooter><Button variant="outline" onClick={reset}>Reset filters</Button></DrawerFooter></DrawerContent></Drawer></div><div className="mt-3 hidden md:block"><Filters {...{type,purpose,location,setType,setPurpose,setLocation}} /></div></div>
+    <div className="mt-7 flex items-center justify-between gap-3"><p className="text-sm text-muted-foreground">{query.isLoading ? "Loading listings…" : `${listings.length} ${listings.length === 1 ? "property" : "properties"}`}</p><Select value={sort} onValueChange={setSort}><SelectTrigger className="h-10 w-44"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="featured">Featured first</SelectItem><SelectItem value="newest">Newest</SelectItem><SelectItem value="price_low">Price: low to high</SelectItem><SelectItem value="price_high">Price: high to low</SelectItem></SelectContent></Select></div>
+    {query.isLoading ? <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{[1,2,3,4].map((n)=><Skeleton key={n} className="aspect-[3/4] rounded-lg" />)}</div> : query.isError ? <div className="mt-12 border-y border-border py-16 text-center"><h2 className="font-display text-3xl">Listings are temporarily unavailable</h2><p className="mt-2 text-sm text-muted-foreground">Please try again shortly.</p></div> : listings.length ? <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{listings.map((listing)=><PropertyListingCard key={listing.id} listing={listing} />)}</div> : <div className="mt-12 border-y border-border py-16 text-center"><Filter className="mx-auto size-8 text-muted-foreground" /><h2 className="mt-4 font-display text-3xl">No matching properties</h2><p className="mt-2 text-sm text-muted-foreground">Adjust your search or filters to see other current listings.</p><Button className="mt-5" variant="outline" onClick={() => { setSearch(""); reset(); }}>Clear filters</Button></div>}
+    </main></div>;
+}
