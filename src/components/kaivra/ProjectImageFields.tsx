@@ -73,7 +73,7 @@ async function compress(file: File): Promise<File> {
   }
 }
 
-async function uploadImage(file: File, scope: "project" | "property") {
+async function uploadImage(file: File, scope: "project" | "property" | "listing") {
   validate(file);
   const prepared = await compress(file);
   assertUploadAllowed("project_image", {
@@ -126,7 +126,7 @@ export function ImageUploadField({
   id: string;
   value: string;
   onChange: (url: string) => void;
-  scope?: "project" | "property";
+  scope?: "project" | "property" | "listing";
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
@@ -222,7 +222,7 @@ export function GalleryUploadField({
   idPrefix: string;
   images: GalleryImage[];
   onChange: (images: GalleryImage[]) => void;
-  scope?: "project" | "property";
+  scope?: "project" | "property" | "listing";
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);

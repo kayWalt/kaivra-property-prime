@@ -10,3 +10,4 @@
 <!-- LOVABLE:END -->
 
 - Property `unit_price` remains the standard list price; all time-limited pricing uses the nullable promo fields and the shared date-aware helper, because applications must fall back automatically after expiry.
+- Property Listings use dedicated `property_listings` and `property_listing_images` tables and never join investment applications or payments, preserving the boundary between catalogue inventory and investments.

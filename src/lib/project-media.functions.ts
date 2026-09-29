@@ -16,7 +16,7 @@ export const createProjectImageUploadTicket = createServerFn({ method: "POST" })
   .inputValidator((data) =>
     z
       .object({
-        scope: z.enum(["project", "property"]).default("project"),
+        scope: z.enum(["project", "property", "listing"]).default("project"),
         fileName: z.string().min(1).max(200),
         contentType: z.string().max(120).optional(),
         size: z.number().int().nonnegative().optional(),
@@ -31,7 +31,11 @@ export const createProjectImageUploadTicket = createServerFn({ method: "POST" })
       url: string;
     }>("projectImageTicket", data);
     if (relayed) return relayed;
-    await assertAdminCan(context.supabase as never, context.userId, "projects", "manage");
+    if (data.scope === "listing") {
+      await assertAdminCan(context.supabase as never, context.userId, "property_listings", "edit");
+    } else {
+      await assertAdminCan(context.supabase as never, context.userId, "projects", "manage");
+    }
     assertUploadAllowed("project_image", {
       fileName: data.fileName,
       contentType: data.contentType ?? null,
@@ -61,7 +65,7 @@ export const finalizeProjectImageUpload = createServerFn({ method: "POST" })
   .inputValidator((data) =>
     z
       .object({
-        scope: z.enum(["project", "property"]),
+        scope: z.enum(["project", "property", "listing"]),
         path: z.string().min(1).max(300),
       })
       .parse(data),
@@ -69,7 +73,11 @@ export const finalizeProjectImageUpload = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const relayed = await relayUploadOp<{ url: string }>("projectImageFinalize", data);
     if (relayed) return relayed;
-    await assertAdminCan(context.supabase as never, context.userId, "projects", "manage");
+    if (data.scope === "listing") {
+      await assertAdminCan(context.supabase as never, context.userId, "property_listings", "edit");
+    } else {
+      await assertAdminCan(context.supabase as never, context.userId, "projects", "manage");
+    }
     if (!isSafeStoragePath(data.path, `${data.scope}/`))
       throw new Error("You do not have permission to do that.");
 
