@@ -14,7 +14,7 @@ export function PublicSiteHeader({ overlay = false }: { overlay?: boolean }) {
   const { session } = useSession();
   const linkClass = overlay ? "text-onyx-foreground/90 hover:text-gold" : "text-foreground/80 hover:text-foreground";
   return (
-    <header className={overlay ? "sticky top-0 z-30 border-b border-onyx-foreground/10 bg-onyx/70 backdrop-blur-md" : "sticky top-0 z-30 border-b border-border bg-background/90 shadow-sm backdrop-blur-md"}>
+    <header className={overlay ? "fixed inset-x-0 top-0 z-30 border-b border-onyx-foreground/10 bg-onyx/70 backdrop-blur-md" : "sticky top-0 z-30 border-b border-border bg-background/90 shadow-sm backdrop-blur-md"}>
       <div className="mx-auto flex h-16 w-full max-w-7xl items-center px-5 sm:h-20 sm:px-8">
         <Brand tone={overlay ? "inverted" : "default"} />
         <nav aria-label="Primary" className="ml-12 hidden items-center gap-7 lg:flex">
