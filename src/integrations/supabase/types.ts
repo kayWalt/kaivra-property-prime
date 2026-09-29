@@ -1920,7 +1920,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      save_property_listing: {
+        Args: { _images: Json; _listing: Json }
+        Returns: string
+      }
     }
     Enums: {
       app_role: "super_admin" | "admin" | "adviser" | "investor" | "partner"
