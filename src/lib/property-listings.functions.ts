@@ -27,6 +27,9 @@ export const savePropertyListing = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdminCan(context.supabase as never, context.userId, "property_listings", data.id ? "edit" : "create");
     const { images, id, ...listing } = data;
+    if (images.length > 0 && !images.some((image) => image.is_cover)) {
+      throw new Error("Choose a cover image before saving the listing.");
+    }
     const payload = {
       id,
       title: listing.title, slug: listing.slug, property_type: listing.property_type,
