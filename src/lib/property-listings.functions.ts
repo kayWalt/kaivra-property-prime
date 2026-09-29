@@ -58,6 +58,9 @@ export const savePropertyListing = createServerFn({ method: "POST" })
       _listing: payload,
       _images: images,
     });
+    if (error?.code === "23505" || error?.message?.includes("property_listings_slug_key")) {
+      throw new Error(`The web address "${listing.slug}" is already used by another listing. Please change the slug and try again.`);
+    }
     if (error || !listingId) throw new Error(error?.message || "Listing could not be saved.");
     return { id: listingId };
   });
