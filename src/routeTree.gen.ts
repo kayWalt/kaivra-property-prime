@@ -24,6 +24,8 @@ import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedTransactionsRouteImport } from './routes/_authenticated/transactions'
 import { Route as ProjectsIndexRouteImport } from './routes/projects.index'
 import { Route as ProjectsProjectIdRouteImport } from './routes/projects.$projectId'
+import { Route as PropertiesIndexRouteImport } from './routes/properties.index'
+import { Route as PropertiesSlugRouteImport } from './routes/properties.$slug'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedAdminAccessRouteImport } from './routes/_authenticated/admin.access'
 import { Route as AuthenticatedAdminAdvisersRouteImport } from './routes/_authenticated/admin.advisers'
@@ -35,6 +37,7 @@ import { Route as AuthenticatedAdminInspectionsRouteImport } from './routes/_aut
 import { Route as AuthenticatedAdminInvestorsRouteImport } from './routes/_authenticated/admin.investors'
 import { Route as AuthenticatedAdminPaymentAccountsRouteImport } from './routes/_authenticated/admin.payment-accounts'
 import { Route as AuthenticatedAdminProjectsRouteImport } from './routes/_authenticated/admin.projects'
+import { Route as AuthenticatedAdminPropertyListingsRouteImport } from './routes/_authenticated/admin.property-listings'
 import { Route as AuthenticatedAdminSupportRouteImport } from './routes/_authenticated/admin.support'
 import { Route as AuthenticatedAdminTransactionsRouteImport } from './routes/_authenticated/admin.transactions'
 import { Route as AuthenticatedApplicationsIndexRouteImport } from './routes/_authenticated/applications.index'
@@ -134,6 +137,16 @@ const ProjectsProjectIdRoute = ProjectsProjectIdRouteImport.update({
   path: '/projects/$projectId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PropertiesIndexRoute = PropertiesIndexRouteImport.update({
+  id: '/properties/',
+  path: '/properties/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PropertiesSlugRoute = PropertiesSlugRouteImport.update({
+  id: '/properties/$slug',
+  path: '/properties/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   id: '/admin/',
   path: '/admin/',
@@ -197,6 +210,12 @@ const AuthenticatedAdminProjectsRoute =
   AuthenticatedAdminProjectsRouteImport.update({
     id: '/admin/projects',
     path: '/admin/projects',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminPropertyListingsRoute =
+  AuthenticatedAdminPropertyListingsRouteImport.update({
+    id: '/admin/property-listings',
+    path: '/admin/property-listings',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedAdminSupportRoute =
@@ -326,7 +345,9 @@ export interface FileRoutesByFullPath {
   '/profile': typeof AuthenticatedProfileRoute
   '/transactions': typeof AuthenticatedTransactionsRoute
   '/projects/$projectId': typeof ProjectsProjectIdRoute
+  '/properties/$slug': typeof PropertiesSlugRoute
   '/projects/': typeof ProjectsIndexRoute
+  '/properties/': typeof PropertiesIndexRoute
   '/admin/access': typeof AuthenticatedAdminAccessRoute
   '/admin/advisers': typeof AuthenticatedAdminAdvisersRoute
   '/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
@@ -337,6 +358,7 @@ export interface FileRoutesByFullPath {
   '/admin/investors': typeof AuthenticatedAdminInvestorsRoute
   '/admin/payment-accounts': typeof AuthenticatedAdminPaymentAccountsRoute
   '/admin/projects': typeof AuthenticatedAdminProjectsRoute
+  '/admin/property-listings': typeof AuthenticatedAdminPropertyListingsRoute
   '/admin/support': typeof AuthenticatedAdminSupportRoute
   '/admin/transactions': typeof AuthenticatedAdminTransactionsRoute
   '/applications/$appId': typeof AuthenticatedApplicationsAppIdRoute
@@ -373,7 +395,9 @@ export interface FileRoutesByTo {
   '/profile': typeof AuthenticatedProfileRoute
   '/transactions': typeof AuthenticatedTransactionsRoute
   '/projects/$projectId': typeof ProjectsProjectIdRoute
+  '/properties/$slug': typeof PropertiesSlugRoute
   '/projects': typeof ProjectsIndexRoute
+  '/properties': typeof PropertiesIndexRoute
   '/admin/access': typeof AuthenticatedAdminAccessRoute
   '/admin/advisers': typeof AuthenticatedAdminAdvisersRoute
   '/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
@@ -384,6 +408,7 @@ export interface FileRoutesByTo {
   '/admin/investors': typeof AuthenticatedAdminInvestorsRoute
   '/admin/payment-accounts': typeof AuthenticatedAdminPaymentAccountsRoute
   '/admin/projects': typeof AuthenticatedAdminProjectsRoute
+  '/admin/property-listings': typeof AuthenticatedAdminPropertyListingsRoute
   '/admin/support': typeof AuthenticatedAdminSupportRoute
   '/admin/transactions': typeof AuthenticatedAdminTransactionsRoute
   '/applications/$appId': typeof AuthenticatedApplicationsAppIdRoute
@@ -422,7 +447,9 @@ export interface FileRoutesById {
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/transactions': typeof AuthenticatedTransactionsRoute
   '/projects/$projectId': typeof ProjectsProjectIdRoute
+  '/properties/$slug': typeof PropertiesSlugRoute
   '/projects/': typeof ProjectsIndexRoute
+  '/properties/': typeof PropertiesIndexRoute
   '/_authenticated/admin/access': typeof AuthenticatedAdminAccessRoute
   '/_authenticated/admin/advisers': typeof AuthenticatedAdminAdvisersRoute
   '/_authenticated/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
@@ -433,6 +460,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/investors': typeof AuthenticatedAdminInvestorsRoute
   '/_authenticated/admin/payment-accounts': typeof AuthenticatedAdminPaymentAccountsRoute
   '/_authenticated/admin/projects': typeof AuthenticatedAdminProjectsRoute
+  '/_authenticated/admin/property-listings': typeof AuthenticatedAdminPropertyListingsRoute
   '/_authenticated/admin/support': typeof AuthenticatedAdminSupportRoute
   '/_authenticated/admin/transactions': typeof AuthenticatedAdminTransactionsRoute
   '/_authenticated/applications/$appId': typeof AuthenticatedApplicationsAppIdRoute
@@ -471,7 +499,9 @@ export interface FileRouteTypes {
     | '/profile'
     | '/transactions'
     | '/projects/$projectId'
+    | '/properties/$slug'
     | '/projects/'
+    | '/properties/'
     | '/admin/access'
     | '/admin/advisers'
     | '/admin/analytics'
@@ -482,6 +512,7 @@ export interface FileRouteTypes {
     | '/admin/investors'
     | '/admin/payment-accounts'
     | '/admin/projects'
+    | '/admin/property-listings'
     | '/admin/support'
     | '/admin/transactions'
     | '/applications/$appId'
@@ -518,7 +549,9 @@ export interface FileRouteTypes {
     | '/profile'
     | '/transactions'
     | '/projects/$projectId'
+    | '/properties/$slug'
     | '/projects'
+    | '/properties'
     | '/admin/access'
     | '/admin/advisers'
     | '/admin/analytics'
@@ -529,6 +562,7 @@ export interface FileRouteTypes {
     | '/admin/investors'
     | '/admin/payment-accounts'
     | '/admin/projects'
+    | '/admin/property-listings'
     | '/admin/support'
     | '/admin/transactions'
     | '/applications/$appId'
@@ -566,7 +600,9 @@ export interface FileRouteTypes {
     | '/_authenticated/profile'
     | '/_authenticated/transactions'
     | '/projects/$projectId'
+    | '/properties/$slug'
     | '/projects/'
+    | '/properties/'
     | '/_authenticated/admin/access'
     | '/_authenticated/admin/advisers'
     | '/_authenticated/admin/analytics'
@@ -577,6 +613,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/investors'
     | '/_authenticated/admin/payment-accounts'
     | '/_authenticated/admin/projects'
+    | '/_authenticated/admin/property-listings'
     | '/_authenticated/admin/support'
     | '/_authenticated/admin/transactions'
     | '/_authenticated/applications/$appId'
@@ -609,7 +646,9 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
   ProjectsProjectIdRoute: typeof ProjectsProjectIdRoute
+  PropertiesSlugRoute: typeof PropertiesSlugRoute
   ProjectsIndexRoute: typeof ProjectsIndexRoute
+  PropertiesIndexRoute: typeof PropertiesIndexRoute
   ApiPublicAiChatRoute: typeof ApiPublicAiChatRoute
   ApiPublicAnalyticsAdminRoute: typeof ApiPublicAnalyticsAdminRoute
   ApiPublicContactRoute: typeof ApiPublicContactRoute
@@ -731,6 +770,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectsProjectIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/properties/': {
+      id: '/properties/'
+      path: '/properties'
+      fullPath: '/properties/'
+      preLoaderRoute: typeof PropertiesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/properties/$slug': {
+      id: '/properties/$slug'
+      path: '/properties/$slug'
+      fullPath: '/properties/$slug'
+      preLoaderRoute: typeof PropertiesSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/admin/': {
       id: '/_authenticated/admin/'
       path: '/admin'
@@ -806,6 +859,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/projects'
       fullPath: '/admin/projects'
       preLoaderRoute: typeof AuthenticatedAdminProjectsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/property-listings': {
+      id: '/_authenticated/admin/property-listings'
+      path: '/admin/property-listings'
+      fullPath: '/admin/property-listings'
+      preLoaderRoute: typeof AuthenticatedAdminPropertyListingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin/support': {
@@ -968,6 +1028,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminInvestorsRoute: typeof AuthenticatedAdminInvestorsRoute
   AuthenticatedAdminPaymentAccountsRoute: typeof AuthenticatedAdminPaymentAccountsRoute
   AuthenticatedAdminProjectsRoute: typeof AuthenticatedAdminProjectsRoute
+  AuthenticatedAdminPropertyListingsRoute: typeof AuthenticatedAdminPropertyListingsRoute
   AuthenticatedAdminSupportRoute: typeof AuthenticatedAdminSupportRoute
   AuthenticatedAdminTransactionsRoute: typeof AuthenticatedAdminTransactionsRoute
   AuthenticatedApplicationsAppIdRoute: typeof AuthenticatedApplicationsAppIdRoute
@@ -997,6 +1058,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminPaymentAccountsRoute:
     AuthenticatedAdminPaymentAccountsRoute,
   AuthenticatedAdminProjectsRoute: AuthenticatedAdminProjectsRoute,
+  AuthenticatedAdminPropertyListingsRoute:
+    AuthenticatedAdminPropertyListingsRoute,
   AuthenticatedAdminSupportRoute: AuthenticatedAdminSupportRoute,
   AuthenticatedAdminTransactionsRoute: AuthenticatedAdminTransactionsRoute,
   AuthenticatedApplicationsAppIdRoute: AuthenticatedApplicationsAppIdRoute,
@@ -1022,7 +1085,9 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   UnsubscribeRoute: UnsubscribeRoute,
   ProjectsProjectIdRoute: ProjectsProjectIdRoute,
+  PropertiesSlugRoute: PropertiesSlugRoute,
   ProjectsIndexRoute: ProjectsIndexRoute,
+  PropertiesIndexRoute: PropertiesIndexRoute,
   ApiPublicAiChatRoute: ApiPublicAiChatRoute,
   ApiPublicAnalyticsAdminRoute: ApiPublicAnalyticsAdminRoute,
   ApiPublicContactRoute: ApiPublicContactRoute,
