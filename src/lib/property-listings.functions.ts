@@ -23,7 +23,15 @@ export type PropertyListingInput = z.infer<typeof listingSchema>;
 
 export const savePropertyListing = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data) => listingSchema.parse(data))
+  .inputValidator((data) => {
+    const parsed = listingSchema.safeParse(data);
+    if (!parsed.success) {
+      const issue = parsed.error.issues[0];
+      const field = String(issue?.path[0] ?? "listing").replace(/_/g, " ");
+      throw new Error(`Please check the ${field}: ${issue?.message ?? "invalid value"}.`);
+    }
+    return parsed.data;
+  })
   .handler(async ({ data, context }) => {
     await assertAdminCan(context.supabase as never, context.userId, "property_listings", data.id ? "edit" : "create");
     const { images, id, ...listing } = data;
