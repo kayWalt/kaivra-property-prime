@@ -8,6 +8,27 @@
       "when": 1790457826843,
       "tag": "0000_add_property_promotional_pricing",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790686438703,
+      "tag": "0001_add_property_listings_catalogue",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790686796984,
+      "tag": "0002_harden_property_listing_public_fields_and_audit_actions",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1790686881068,
+      "tag": "0003_atomically_save_property_listing_gallery",
+      "breakpoints": true
     }
   ]
 }

@@ -1444,6 +1444,161 @@ export type Database = {
           },
         ]
       }
+      property_listing_images: {
+        Row: {
+          caption: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          is_cover: boolean
+          listing_id: string
+          sort_order: number
+          url: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_cover?: boolean
+          listing_id: string
+          sort_order?: number
+          url: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_cover?: boolean
+          listing_id?: string
+          sort_order?: number
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_listing_images_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "property_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      property_listings: {
+        Row: {
+          archived_at: string | null
+          bathrooms: number | null
+          bedrooms: number | null
+          city: string | null
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          country: string
+          created_at: string
+          created_by: string | null
+          currency: string
+          description: string
+          developer_name: string | null
+          featured: boolean
+          id: string
+          key_features: Json
+          latitude: number | null
+          listing_status: string
+          listing_type: string
+          location: string
+          longitude: number | null
+          parking_spaces: number | null
+          price: number | null
+          price_display_text: string | null
+          property_status: string
+          property_type: string
+          published_at: string | null
+          short_description: string | null
+          size_unit: string | null
+          size_value: number | null
+          slug: string
+          state: string | null
+          title: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          archived_at?: string | null
+          bathrooms?: number | null
+          bedrooms?: number | null
+          city?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          country?: string
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          description: string
+          developer_name?: string | null
+          featured?: boolean
+          id?: string
+          key_features?: Json
+          latitude?: number | null
+          listing_status?: string
+          listing_type: string
+          location: string
+          longitude?: number | null
+          parking_spaces?: number | null
+          price?: number | null
+          price_display_text?: string | null
+          property_status?: string
+          property_type: string
+          published_at?: string | null
+          short_description?: string | null
+          size_unit?: string | null
+          size_value?: number | null
+          slug: string
+          state?: string | null
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          archived_at?: string | null
+          bathrooms?: number | null
+          bedrooms?: number | null
+          city?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          country?: string
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          description?: string
+          developer_name?: string | null
+          featured?: boolean
+          id?: string
+          key_features?: Json
+          latitude?: number | null
+          listing_status?: string
+          listing_type?: string
+          location?: string
+          longitude?: number | null
+          parking_spaces?: number | null
+          price?: number | null
+          price_display_text?: string | null
+          property_status?: string
+          property_type?: string
+          published_at?: string | null
+          short_description?: string | null
+          size_unit?: string | null
+          size_value?: number | null
+          slug?: string
+          state?: string | null
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       property_price_events: {
         Row: {
           actor: string | null
@@ -1765,7 +1920,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      save_property_listing: {
+        Args: { _images: Json; _listing: Json }
+        Returns: string
+      }
     }
     Enums: {
       app_role: "super_admin" | "admin" | "adviser" | "investor" | "partner"

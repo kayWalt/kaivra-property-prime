@@ -26,6 +26,7 @@ export const Route = createFileRoute("/sitemap.xml")({
       GET: async () => {
         const entries: SitemapEntry[] = [
           { path: "/", changefreq: "weekly", priority: "1.0" },
+          { path: "/properties", changefreq: "daily", priority: "0.9" },
           { path: "/real-estate-investment-abuja", changefreq: "monthly", priority: "0.8" },
           { path: "/auth", changefreq: "yearly", priority: "0.3" },
         ];
@@ -66,6 +67,22 @@ export const Route = createFileRoute("/sitemap.xml")({
                 priority: "0.7",
               })),
             );
+            if (data.length < pageSize) break;
+          }
+          for (let offset = 0; ; offset += pageSize) {
+            const { data, error } = await supabase
+              .from("property_listings")
+              .select("slug")
+              .eq("listing_status", "published")
+              .in("property_status", ["available", "coming_soon"])
+              .order("slug")
+              .range(offset, offset + pageSize - 1);
+            if (error) break;
+            entries.push(...data.map((listing) => ({
+              path: `/properties/${listing.slug}`,
+              changefreq: "weekly" as const,
+              priority: "0.8",
+            })));
             if (data.length < pageSize) break;
           }
         }

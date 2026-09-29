@@ -127,6 +127,7 @@ function tidySpacedText(text: string | null | undefined) {
 }
 
 const NAV_LINKS = [
+  { to: "/properties", label: "Property Listings" },
   { href: "#projects", label: "Projects" },
   { href: "#how-it-works", label: "How it works" },
   { href: "#about", label: "About" },
@@ -167,15 +168,19 @@ function Landing() {
           <Brand tone="inverted" />
 
           <nav aria-label="Primary" className="ml-10 hidden items-center gap-7 lg:flex">
-            {NAV_LINKS.map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
+            {NAV_LINKS.map((item) =>
+              "to" in item ? <Link
+                key={item.to}
+                to={item.to}
                 className="text-xs uppercase tracking-[0.16em] text-onyx-foreground/80 transition-colors hover:text-gold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold"
               >
                 {item.label}
-              </a>
-            ))}
+              </Link> : <a
+                key={item.href}
+                href={item.href}
+                className="text-xs uppercase tracking-[0.16em] text-onyx-foreground/80 transition-colors hover:text-gold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold"
+              >{item.label}</a>
+            )}
           </nav>
 
           <div className="ml-auto flex items-center gap-2">
@@ -208,8 +213,8 @@ function Landing() {
                   <SheetTitle className="font-display tracking-[0.18em]">KAIVRA</SheetTitle>
                 </SheetHeader>
                 <nav aria-label="Mobile" className="mt-6 flex flex-col gap-1 px-4">
-                  {NAV_LINKS.map((item) => (
-                    <a
+                  {NAV_LINKS.map((item) =>
+                    "to" in item ? <Button key={item.to} asChild variant="ghost" className="h-12 justify-start" onClick={() => setMenuOpen(false)}><Link to={item.to}>{item.label}</Link></Button> : <a
                       key={item.href}
                       href={item.href}
                       onClick={(event) => {
@@ -224,10 +229,8 @@ function Landing() {
                         }, 260);
                       }}
                       className="rounded-md px-2 py-3 text-sm uppercase tracking-[0.14em] text-foreground hover:bg-muted"
-                    >
-                      {item.label}
-                    </a>
-                  ))}
+                    >{item.label}</a>
+                  )}
                 </nav>
                 <div className="mt-6 px-4">
                   <ThemeToggle />

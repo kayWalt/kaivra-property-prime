@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { assertAdminCan } from "@/lib/admin-permissions.server";
+import { assertAdminCan, resolveAdminAuthority } from "@/lib/admin-permissions.server";
 import { assertUploadAllowed, isSafeStoragePath } from "@/lib/upload-rules";
 import { relayUploadOp } from "@/lib/upload-relay.server";
 
@@ -16,7 +16,7 @@ export const createProjectImageUploadTicket = createServerFn({ method: "POST" })
   .inputValidator((data) =>
     z
       .object({
-        scope: z.enum(["project", "property"]).default("project"),
+        scope: z.enum(["project", "property", "listing"]).default("project"),
         fileName: z.string().min(1).max(200),
         contentType: z.string().max(120).optional(),
         size: z.number().int().nonnegative().optional(),
@@ -31,7 +31,14 @@ export const createProjectImageUploadTicket = createServerFn({ method: "POST" })
       url: string;
     }>("projectImageTicket", data);
     if (relayed) return relayed;
-    await assertAdminCan(context.supabase as never, context.userId, "projects", "manage");
+    if (data.scope === "listing") {
+      const authority = await resolveAdminAuthority(context.supabase as never, context.userId);
+      if (!authority.can("property_listings", "create") && !authority.can("property_listings", "edit")) {
+        throw new Error("You do not have permission to perform this action.");
+      }
+    } else {
+      await assertAdminCan(context.supabase as never, context.userId, "projects", "manage");
+    }
     assertUploadAllowed("project_image", {
       fileName: data.fileName,
       contentType: data.contentType ?? null,
@@ -61,7 +68,7 @@ export const finalizeProjectImageUpload = createServerFn({ method: "POST" })
   .inputValidator((data) =>
     z
       .object({
-        scope: z.enum(["project", "property"]),
+        scope: z.enum(["project", "property", "listing"]),
         path: z.string().min(1).max(300),
       })
       .parse(data),
@@ -69,7 +76,14 @@ export const finalizeProjectImageUpload = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const relayed = await relayUploadOp<{ url: string }>("projectImageFinalize", data);
     if (relayed) return relayed;
-    await assertAdminCan(context.supabase as never, context.userId, "projects", "manage");
+    if (data.scope === "listing") {
+      const authority = await resolveAdminAuthority(context.supabase as never, context.userId);
+      if (!authority.can("property_listings", "create") && !authority.can("property_listings", "edit")) {
+        throw new Error("You do not have permission to perform this action.");
+      }
+    } else {
+      await assertAdminCan(context.supabase as never, context.userId, "projects", "manage");
+    }
     if (!isSafeStoragePath(data.path, `${data.scope}/`))
       throw new Error("You do not have permission to do that.");
 

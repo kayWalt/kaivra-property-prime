@@ -24,6 +24,32 @@ export const Route = createFileRoute("/api/public/project-image/$")({
         const path = (params as { _splat?: string })._splat ?? "";
         if (!path || path.includes("..")) return new Response("Not found", { status: 404 });
 
+        // A known storage URL must not bypass catalogue publication rules.
+        if (path.startsWith("listing/")) {
+          const imageUrl = `/api/public/project-image/${path}`;
+          const { createClient } = await import("@supabase/supabase-js");
+          const config = (await import("@/lib/supabase-env.server")).resolveStorageConfig();
+          if (!config) return new Response("Not found", { status: 404 });
+          const client = createClient(config.url, config.key, {
+            auth: { persistSession: false, autoRefreshToken: false },
+          });
+          const { data } = await client
+            .from("property_listing_images")
+            .select("property_listings!inner(listing_status,property_status)")
+            .eq("url", imageUrl)
+            .maybeSingle();
+          const owner = data?.property_listings as
+            | { listing_status: string; property_status: string }
+            | null
+            | undefined;
+          if (
+            owner?.listing_status !== "published" ||
+            !["available", "coming_soon"].includes(owner.property_status)
+          ) {
+            return new Response("Not found", { status: 404 });
+          }
+        }
+
         try {
           const file = await downloadStorageObject(BUCKET, path);
           if (!file) return new Response("Not found", { status: 404 });
