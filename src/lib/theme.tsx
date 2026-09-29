@@ -23,7 +23,7 @@ export function isThemePreference(value: unknown): value is ThemePreference {
  * Inlined in <head> so the correct theme class is on <html> before first paint.
  * Keep in sync with THEME_STORAGE_KEY.
  */
-export const themeInitScript = `(function(){try{var s=localStorage.getItem("${THEME_STORAGE_KEY}");var p=(s==="light"||s==="dark"||s==="system")?s:"system";var d=p==="dark"||(p==="system"&&window.matchMedia("(prefers-color-scheme: dark)").matches);var e=document.documentElement;e.classList.toggle("dark",d);e.style.colorScheme=d?"dark":"light";}catch(_){}})();`;
+export const themeInitScript = `(function(){try{var s=localStorage.getItem("${THEME_STORAGE_KEY}");var p=(s==="light"||s==="dark"||s==="system")?s:"light";var d=p==="dark"||(p==="system"&&window.matchMedia("(prefers-color-scheme: dark)").matches);var e=document.documentElement;e.classList.toggle("dark",d);e.style.colorScheme=d?"dark":"light";}catch(_){}})();`;
 
 function systemPrefersDark() {
   if (typeof window === "undefined" || !window.matchMedia) return false;
@@ -53,7 +53,7 @@ type ThemeContextValue = {
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [preference, setPreferenceState] = useState<ThemePreference>("system");
+  const [preference, setPreferenceState] = useState<ThemePreference>("light");
   const [prefersDark, setPrefersDark] = useState(false);
   const hydratedRemote = useRef(false);
 
