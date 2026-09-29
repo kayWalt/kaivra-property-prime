@@ -160,28 +160,58 @@ function Landing() {
   const draft = useDraftApplication(session?.user?.id);
   const hasDraft = signedIn && draft.data === true;
   const [menuOpen, setMenuOpen] = React.useState(false);
+  const [scrolled, setScrolled] = React.useState(false);
+  const [activeHash, setActiveHash] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    const hashes = NAV_LINKS.flatMap((item) => ("href" in item ? [item.href] : []));
+    const onScroll = () => {
+      setScrolled(window.scrollY > 24);
+      let current: string | null = null;
+      for (const hash of hashes) {
+        const el = document.querySelector(hash);
+        if (el && el.getBoundingClientRect().top <= 120) current = hash;
+      }
+      setActiveHash(current);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const navLinkClass =
+    "kv-nav-link text-xs uppercase tracking-[0.16em] text-onyx-foreground/90 hover:text-gold data-[active=true]:text-gold focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold";
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="absolute inset-x-0 top-0 z-20">
-        <div className="mx-auto flex h-20 w-full max-w-7xl items-center px-5 sm:px-8">
+      <header
+        className={`fixed inset-x-0 top-0 z-40 border-b transition-[background-color,box-shadow,border-color,backdrop-filter] duration-200 ${
+          scrolled
+            ? "border-onyx-foreground/15 bg-onyx/85 shadow-lg backdrop-blur-xl"
+            : "border-onyx-foreground/10 bg-onyx/55 backdrop-blur-md"
+        }`}
+      >
+        <div className="mx-auto flex h-16 w-full max-w-7xl items-center px-5 sm:h-20 sm:px-8">
           <Brand tone="inverted" />
 
-          <nav aria-label="Primary" className="ml-10 hidden items-center gap-7 lg:flex">
+          <nav aria-label="Primary" className="ml-12 hidden items-center gap-7 lg:flex">
             {NAV_LINKS.map((item) =>
               "to" in item ? <Link
                 key={item.to}
                 to={item.to}
-                className="text-xs uppercase tracking-[0.16em] text-onyx-foreground/80 transition-colors hover:text-gold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold"
+                className={navLinkClass}
               >
                 {item.label}
               </Link> : <a
                 key={item.href}
                 href={item.href}
-                className="text-xs uppercase tracking-[0.16em] text-onyx-foreground/80 transition-colors hover:text-gold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold"
+                data-active={activeHash === item.href}
+                aria-current={activeHash === item.href ? "location" : undefined}
+                className={navLinkClass}
               >{item.label}</a>
             )}
           </nav>
+
 
           <div className="ml-auto flex items-center gap-2">
             <ThemeToggle className="hidden w-auto border-onyx-foreground/25 bg-onyx-foreground/10 sm:inline-flex" showLabels={false} />
