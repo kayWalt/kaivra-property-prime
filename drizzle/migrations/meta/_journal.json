@@ -15,6 +15,13 @@
       "when": 1790686438703,
       "tag": "0001_add_property_listings_catalogue",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790686796984,
+      "tag": "0002_harden_property_listing_public_fields_and_audit_actions",
+      "breakpoints": true
     }
   ]
 }
