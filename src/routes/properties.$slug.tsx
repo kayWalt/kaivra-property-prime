@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Bath, BedDouble, CarFront, Check, ChevronLeft, ChevronRight, MapPin, Maximize2 } from "lucide-react";
 import { useState } from "react";
@@ -14,10 +14,12 @@ import { listingCover, listingFeatures, listingLocation, listingPrice, titleCase
 const SITE = "https://kaivraa.com";
 const queryFields = "id,title,slug,property_type,listing_type,location,city,state,country,short_description,description,price,price_display_text,currency,size_value,size_unit,bedrooms,bathrooms,parking_spaces,property_status,listing_status,featured,developer_name,latitude,longitude,key_features,published_at,created_at,updated_at,property_listing_images(id,listing_id,url,caption,sort_order,is_cover,created_at)";
 export const Route = createFileRoute("/properties/$slug")({
-  loader: async ({ params }) => { const { data } = await supabase.from("property_listings").select(queryFields).eq("slug", params.slug).eq("listing_status", "published").in("property_status", ["available", "coming_soon"]).maybeSingle(); return { listing: data as PropertyListing | null }; },
+  loader: async ({ params }) => { const { data, error } = await supabase.from("property_listings").select(queryFields).eq("slug", params.slug).eq("listing_status", "published").in("property_status", ["available", "coming_soon"]).maybeSingle(); if(error) throw error; if(!data) throw notFound(); return { listing: data as PropertyListing }; },
   head: ({ params, loaderData }) => { const listing = loaderData?.listing; const title = listing ? `${listing.title} | KAIVRA Property Listings` : "Property unavailable | KAIVRA"; const description = listing?.short_description || listing?.description?.slice(0,155) || "This KAIVRA property listing is unavailable."; const image = listing ? mediaSrc(listingCover(listing)) : null; const absolute = image?.startsWith("https://") ? image : null; return { meta: [{ title }, { name:"description",content:description }, { property:"og:title",content:title }, { property:"og:description",content:description }, { property:"og:type",content:"product" }, { property:"og:url",content:`${SITE}/properties/${params.slug}` }, { name:"twitter:card",content:"summary_large_image" }, ...(absolute ? [{ property:"og:image",content:absolute }, { name:"twitter:image",content:absolute }] : [])], links:[{rel:"canonical",href:`${SITE}/properties/${params.slug}`}], }; },
   component: PropertyDetail,
+  notFoundComponent: PropertyUnavailable,
 });
+function PropertyUnavailable(){return <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-5 text-center"><h1 className="font-display text-4xl">Property unavailable</h1><p className="text-muted-foreground">This listing is not currently available to the public.</p><Button asChild><Link to="/properties">View current listings</Link></Button></div>}
 function PropertyDetail() {
   const { slug } = Route.useParams(); const [photo, setPhoto] = useState(0);
   const query = useQuery({ queryKey:["property-listing",slug], queryFn: async()=>{ const { data,error }=await supabase.from("property_listings").select(queryFields).eq("slug",slug).eq("listing_status","published").in("property_status",["available","coming_soon"]).maybeSingle(); if(error) throw error; return data as PropertyListing|null; }, initialData: Route.useLoaderData().listing });
