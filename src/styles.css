@@ -361,3 +361,28 @@ html.median-app .fixed {
     transform: none;
   }
 }
+
+/* Public navigation link: gold underline indicator on hover/active */
+.kv-nav-link {
+  position: relative;
+  padding-block: 0.5rem;
+  font-weight: 500;
+  transition: color 200ms ease;
+}
+.kv-nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0.15rem;
+  height: 1.5px;
+  background: var(--color-gold);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 200ms ease;
+}
+.kv-nav-link:hover::after,
+.kv-nav-link[data-active="true"]::after,
+.kv-nav-link[data-status="active"]::after {
+  transform: scaleX(1);
+}
