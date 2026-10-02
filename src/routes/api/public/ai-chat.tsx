@@ -8,7 +8,7 @@ import { LOVABLE_ORIGIN, isLovableOrigin } from "@/lib/origin-fallback";
 
 
 /**
- * KAIVRA AI Assist.
+ * Kaivra AI assistant.
  *
  * Public endpoint (unauthenticated visitors get general guidance), but every
  * piece of investor data is read through a Supabase client that carries the
