@@ -71,7 +71,7 @@ function supabaseFor(token?: string) {
   });
 }
 
-const SYSTEM = `You are KAIVRA AI Assist, the customer-support and application assistant for KAIVRA, a real-estate investment management platform ("Smart Real Estate Investment Management").
+const SYSTEM = `You are Kaivra AI assistant, the customer-support and application assistant for KAIVRA, a real-estate investment management platform ("Smart Real Estate Investment Management").
 
 Identity: always be transparent that you are an AI assistant. Never claim to be a human.
 
@@ -145,11 +145,11 @@ async function handler({ request }: { request: Request }) {
 
   if (!apiKey) {
     console.error("[ai-chat] LOVABLE_API_KEY is not set on this deployment.");
-    return new Response("KAIVRA AI Assist is not configured.", { status: 503 });
+    return new Response("Kaivra AI assistant is not configured.", { status: 503 });
   }
   if (!supabaseConfigured) {
     console.error("[ai-chat] Supabase environment is not configured on this deployment.");
-    return new Response("KAIVRA AI Assist is not configured.", { status: 503 });
+    return new Response("Kaivra AI assistant is not configured.", { status: 503 });
   }
 
 
@@ -166,7 +166,7 @@ async function handler({ request }: { request: Request }) {
     .select("enabled")
     .maybeSingle();
   if (settings && settings.enabled === false) {
-    return new Response("KAIVRA AI Assist is currently switched off.", { status: 503 });
+    return new Response("Kaivra AI assistant is currently switched off.", { status: 503 });
   }
 
   let userId: string | null = null;

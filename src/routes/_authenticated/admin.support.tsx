@@ -40,7 +40,7 @@ export const Route = createFileRoute("/_authenticated/admin/support")({
       {
         name: "description",
         content:
-          "Answer investor live chats, handle escalations from KAIVRA AI Assist and manage support requests.",
+          "Answer investor live chats, handle escalations from Kaivra AI assistant and manage support requests.",
       },
       { property: "og:title", content: "KAIVRA | Support & Live Chat Centre" },
       { property: "og:description", content: "Investor live chat and support escalations." },
@@ -196,7 +196,7 @@ function AdminSupport() {
           <p className="eyebrow text-primary">AI &amp; Support</p>
           <h1 className="mt-1 text-2xl font-semibold tracking-tight">Support &amp; live chat</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Investor conversations escalated from KAIVRA AI Assist, updating live.
+            Investor conversations escalated from Kaivra AI assistant, updating live.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -246,7 +246,7 @@ function AdminSupport() {
             {rows.length === 0 ? (
               <EmptyState
                 title="No support requests"
-                body="Requests raised through KAIVRA AI Assist appear here."
+                body="Requests raised through Kaivra AI assistant appear here."
               />
             ) : (
               rows.map((t) => {
