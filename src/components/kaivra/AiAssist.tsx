@@ -159,14 +159,17 @@ export function AiAssist() {
         type="button"
         onClick={() => openAiAssist({ context: { route: routerState } })}
         aria-label="Open Kaivra AI assistant"
-        className="no-print fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-4 z-50 overflow-hidden rounded-full border-2 border-primary/60 shadow-lg transition-transform duration-200 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-95"
+        className="no-print fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-4 z-50 flex items-center gap-2.5 rounded-full border-2 border-primary/60 bg-background py-1 pl-1 pr-3 shadow-lg transition-transform duration-200 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-95"
       >
         <img
           src={assistantAvatar.url}
           alt=""
           aria-hidden="true"
-          className="h-14 w-14 bg-background object-cover"
+          className="h-14 w-14 shrink-0 rounded-full bg-background object-cover"
         />
+        <span className="pr-1 text-xs font-semibold tracking-wide text-foreground sm:text-sm">
+          KAIVRA AI Assist
+        </span>
       </button>
     );
   }
