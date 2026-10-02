@@ -3,15 +3,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useRouterState } from "@tanstack/react-router";
 import {
-  Bot,
   Headset,
   Loader2,
   MessageCircle,
   MessageSquarePlus,
   Send,
-  Sparkles,
   X,
 } from "lucide-react";
+import assistantAvatar from "@/assets/kaivra-ai-assistant.png.asset.json";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -56,7 +55,7 @@ const PRIVATE_ACTIONS = [
 ];
 
 const WELCOME =
-  "Hi, I'm KAIVRA AI Assist. I can help you navigate KAIVRA, understand your application and answer questions using verified KAIVRA information. I'm an AI assistant — I can connect you with a KAIVRA team member at any time.";
+  "Hi, I'm Kaivra AI assistant. I can help you navigate KAIVRA, understand your application and answer questions using verified KAIVRA information. I'm an AI assistant — I can connect you with a KAIVRA team member at any time.";
 
 export function AiAssist() {
   const { open, context } = useAiAssistState();
@@ -141,7 +140,7 @@ export function AiAssist() {
           {
             role: "assistant",
             content:
-              "KAIVRA AI Assist is temporarily unavailable. You can still reach a KAIVRA team member using the button below — everything else in the app keeps working normally.",
+              "Kaivra AI assistant is temporarily unavailable. You can still reach a KAIVRA team member using the button below — everything else in the app keeps working normally.",
           },
         ]);
       } finally {
@@ -159,10 +158,15 @@ export function AiAssist() {
       <button
         type="button"
         onClick={() => openAiAssist({ context: { route: routerState } })}
-        aria-label="Open KAIVRA AI Assist"
-        className="no-print fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-transform duration-200 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-95"
+        aria-label="Open Kaivra AI assistant"
+        className="no-print fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-4 z-50 overflow-hidden rounded-full border-2 border-primary/60 shadow-lg transition-transform duration-200 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-95"
       >
-        <Sparkles className="h-6 w-6" />
+        <img
+          src={assistantAvatar.url}
+          alt=""
+          aria-hidden="true"
+          className="h-14 w-14 bg-background object-cover"
+        />
       </button>
     );
   }
@@ -177,11 +181,16 @@ export function AiAssist() {
       />
       <div className="relative flex h-full w-full max-w-full flex-col overflow-hidden border border-border bg-background shadow-2xl duration-200 animate-in slide-in-from-bottom-4 sm:h-[min(38rem,calc(100vh-2rem))] sm:w-[26rem] sm:rounded-xl">
         <header className="flex items-center gap-3 border-b border-border bg-muted/40 px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-            <Bot className="h-5 w-5" />
+          <span className="shrink-0 overflow-hidden rounded-full border border-border">
+            <img
+              src={assistantAvatar.url}
+              alt=""
+              aria-hidden="true"
+              className="h-9 w-9 bg-background object-cover"
+            />
           </span>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-semibold">KAIVRA AI Assist</p>
+            <p className="truncate text-sm font-semibold">Kaivra AI assistant</p>
             <p className="truncate text-xs text-muted-foreground">Always here to help</p>
           </div>
           <Button variant="ghost" size="icon" onClick={closeAiAssist} aria-label="Close">
@@ -198,7 +207,7 @@ export function AiAssist() {
               {disabled ? (
                 <Bubble
                   role="assistant"
-                  content="KAIVRA AI Assist is currently switched off by the KAIVRA team. You can still contact an adviser or administrator below."
+                  content="Kaivra AI assistant is currently switched off by the KAIVRA team. You can still contact an adviser or administrator below."
                 />
               ) : null}
               {messages.map((m, i) => (
@@ -207,7 +216,7 @@ export function AiAssist() {
               {draft ? <Bubble role="assistant" content={draft} /> : null}
               {streaming && !draft ? (
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" /> KAIVRA AI Assist is typing…
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" /> Kaivra AI assistant is typing…
                 </div>
               ) : null}
 
@@ -240,7 +249,7 @@ export function AiAssist() {
                     }
                   }}
                   placeholder={disabled ? "Assistant unavailable" : "Ask about KAIVRA…"}
-                  aria-label="Message KAIVRA AI Assist"
+                  aria-label="Message Kaivra AI assistant"
                 />
                 <Button
                   size="icon"
@@ -556,7 +565,7 @@ function HandoffPanel({
       ) : null}
 
       <Button variant="ghost" className="w-full" onClick={onBack}>
-        Back to KAIVRA AI Assist
+        Back to Kaivra AI assistant
       </Button>
     </div>
   );
