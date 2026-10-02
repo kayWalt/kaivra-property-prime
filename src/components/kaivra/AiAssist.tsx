@@ -55,7 +55,7 @@ const PRIVATE_ACTIONS = [
 ];
 
 const WELCOME =
-  "Hi, I'm KAIVRA AI Assist. I can help you navigate KAIVRA, understand your application and answer questions using verified KAIVRA information. I'm an AI assistant — I can connect you with a KAIVRA team member at any time.";
+  "Hi, I'm Kaivra AI assistant. I can help you navigate KAIVRA, understand your application and answer questions using verified KAIVRA information. I'm an AI assistant — I can connect you with a KAIVRA team member at any time.";
 
 export function AiAssist() {
   const { open, context } = useAiAssistState();
@@ -140,7 +140,7 @@ export function AiAssist() {
           {
             role: "assistant",
             content:
-              "KAIVRA AI Assist is temporarily unavailable. You can still reach a KAIVRA team member using the button below — everything else in the app keeps working normally.",
+              "Kaivra AI assistant is temporarily unavailable. You can still reach a KAIVRA team member using the button below — everything else in the app keeps working normally.",
           },
         ]);
       } finally {
@@ -158,10 +158,15 @@ export function AiAssist() {
       <button
         type="button"
         onClick={() => openAiAssist({ context: { route: routerState } })}
-        aria-label="Open KAIVRA AI Assist"
-        className="no-print fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-transform duration-200 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-95"
+        aria-label="Open Kaivra AI assistant"
+        className="no-print fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-4 z-50 overflow-hidden rounded-full border-2 border-primary/60 shadow-lg transition-transform duration-200 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-95"
       >
-        <Sparkles className="h-6 w-6" />
+        <img
+          src={assistantAvatar.url}
+          alt=""
+          aria-hidden="true"
+          className="h-14 w-14 bg-background object-cover"
+        />
       </button>
     );
   }
