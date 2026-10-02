@@ -167,8 +167,13 @@ export function AiAssist() {
           aria-hidden="true"
           className="h-14 w-14 shrink-0 rounded-full bg-background object-cover"
         />
-        <span className="pr-1 text-xs font-semibold tracking-wide text-foreground sm:text-sm">
-          KAIVRA AI Assist
+        <span className="flex flex-col pr-1 leading-tight text-foreground">
+          <span className="text-xs font-semibold tracking-[0.16em] sm:text-sm">
+            KAIVRA
+          </span>
+          <span className="text-[11px] font-medium tracking-wide text-foreground/80 sm:text-xs">
+            AI assistant
+          </span>
         </span>
       </button>
     );
